@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd" updateCheck="false">
+
+	<!--
+		| Please see
+		http://ehcache.sourceforge.net/documentation/configuration.html for
+		detailed information on | how to configure caches in this file +
+	-->
+	<!-- Location of persistent caches on disk -->
+	<diskStore path="java.io.tmpdir/CalendarKeyCaches" />
+
+	<defaultCache eternal="false" maxElementsInMemory="1000"
+		overflowToDisk="false" diskPersistent="false" timeToIdleSeconds="0"
+		timeToLiveSeconds="600" memoryStoreEvictionPolicy="LRU" />
+
+	<!--
+		timeToIdle set to 5 minutes, timeToLive set to 20 minutes
+	-->
+	<cache name="CalendarAccountCache" eternal="false" statistics="true"
+		maxElementsInMemory="3000" overflowToDisk="false" diskPersistent="false"
+		timeToIdleSeconds="300" timeToLiveSeconds="1200"
+		memoryStoreEvictionPolicy="LRU" />
+	<cache name="DelegateCalendarAccountCache" eternal="false" statistics="true"
+		maxElementsInMemory="1000" overflowToDisk="false" diskPersistent="false"
+		timeToIdleSeconds="300" timeToLiveSeconds="1200"
+		memoryStoreEvictionPolicy="LRU" />
+
+	<!-- 10 minute TTL for calendarData -->
+	<cache name="CalendarScheduleDataCache" eternal="false" statistics="true"
+        maxElementsInMemory="15000" overflowToDisk="false" diskPersistent="false"
+        timeToIdleSeconds="0" timeToLiveSeconds="600"
+        memoryStoreEvictionPolicy="LRU" />
+    <cache name="CalendarTasksDataCache" eternal="false" statistics="true"
+        maxElementsInMemory="15000" overflowToDisk="false" diskPersistent="false"
+        timeToIdleSeconds="0" timeToLiveSeconds="600"
+        memoryStoreEvictionPolicy="LRU" />
+	
+</ehcache>
