@@ -15,7 +15,7 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 	font-style: inherit;
 	font-size: 100%;
 	font-family: inherit;
-	/* text-align: left;*/
+	text-align: left;
 	vertical-align: baseline;
 	background: transparent;
 }
@@ -53,7 +53,7 @@ html {
 
 body {
 	margin: 36px auto 0;
-	width: 960px;
+	width: 1040px;
 	color: #333;
 	background-color: transparent;
 	font: normal 100%/1.5 "Lucida Grande", Verdana, sans-serif;
@@ -329,7 +329,7 @@ margin-left: 0;
 
 #shell {
 	position: relative;
-	width: 958px;
+	width: 1038px;
 	border-width: 1px 1px 2px;
 	border-color: #c3bca1 #c3bca1 #b70101;
 	border-style: none solid solid;
@@ -338,7 +338,7 @@ margin-left: 0;
 }
 
 #content {
-	width: 898px;
+	width: 978px;
 	padding: 20px 30px 0 30px;
 	font-size: 82%;
 	line-height: 1.4;
