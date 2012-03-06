@@ -1,0 +1,145 @@
+body {
+  margin: 0px;
+  padding: 0px; 
+  font-family: Verdana, arial, "sans serif";	
+  font-size: 82%;	
+  line-height: 1.4;
+}
+
+a {
+  color: #990000;
+  text-decoration: none;
+}
+
+#outerpage {
+  width: 744px;
+  margin: 20px auto 0px auto;
+}
+
+#innerpage {
+  border: 1px solid #cc9900;
+  border-bottom: 5px solid #cc9900;
+  height: 1px;
+}
+html>body #innerpage {
+  height: auto;
+}
+
+#globalNav {
+  float: right;
+  margin: 0px;
+  margin-right: 5px;
+  font-size: .9em;
+  line-height: 1;
+  text-align: right;
+  width: 50%;
+}
+/* \*/
+#globalNav {
+  width: auto;
+}
+/* */
+
+#globalNav ul {
+  margin: 0px;
+  padding: 0px;
+  padding-top: 4px;
+}
+
+#globalNav ul li {
+  display: inline;
+}
+
+#globalNav a {
+  text-transform: uppercase;
+  padding: 0px 5px 1px 5px;
+  margin: 0px 2px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+#header {
+  background-color: #900;
+  width: 100%;
+}
+
+#header #uw {
+  margin: 0px 0px 0px 37px;
+  padding: 4px 0px 5px 0px;
+  line-height: 1;
+  font-size: .9em;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+
+#header #uw a {
+  color: #fff;
+  text-decoration: none;
+}
+
+#header #uw #crest {
+  float: left;
+  margin: -10px 12px 0px -32px;
+  position: absolute;
+  top: 20px;
+  left: auto;
+}
+
+#header h1 {
+ clear: left;
+ margin: 0px;
+ padding: 0px;
+ background-color: #fbf4ea;
+ border-top: 5px solid #cc9900;
+ border-bottom: 1px solid #cc9900;
+ height: 60px;
+}
+
+#header h1 span a {
+ font-size: 1.2em;
+ line-height: 1.2;
+ color: #900;
+ padding-top: 8px;
+ margin-left: 7px;
+ font-weight: normal;
+}
+
+#content {
+  margin: 0;
+  padding: 0.5em 15px 1em 15px;
+  background-color: #fff;
+}
+
+#content h2 {
+  margin-top: 5px;
+}
+
+#footer {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.9em;
+  line-height: 1.4em;
+}
+
+#footer p {
+  margin: 0px;
+  padding: 0px;
+}
+
+#logo{
+   float:right;
+   padding:7px 10px 0px 0px;
+   border: 0;
+  }
+
+.hide {
+  display: none;
+}
+
+.userid	{
+	font-weight: bold;
+}
+
+.error-message {
+    color: red;
+}

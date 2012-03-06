@@ -1,0 +1,11 @@
+body {font: normal 100%/1.5 "Lucida Grande", Verdana, sans-serif;margin-top: 0px;margin-right: 0px;margin-left: 2px;}
+a {color: #B70101;text-decoration: none;}
+img {border: 0;}
+#content {font-size: 82%;}
+.label {font-weight:bold;}
+.summary{padding-left:1em;}
+.nowshowing{padding-left:1em;padding-right:1em;}
+.navrow1{padding-left:1em;}
+.weak{color:#777;font-style:italic;}
+.navrow2{padding-left:4em;}
+.sharedaterange{max-width:240px;background-color:#B70101;color:#fff;text-align:center;word-spacing:1em;}

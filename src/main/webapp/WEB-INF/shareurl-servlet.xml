@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+       	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+           http://www.springframework.org/schema/webflow-config
+        	http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
+
+	<context:component-scan base-package="edu.wisc.wisccal.shareurl.web"/>
+	<context:annotation-config/>
+	<context:property-placeholder location="classpath:integration.properties"/>
+	
+	<!-- BEGIN webflow configuration -->
+	<webflow:flow-registry id="flowRegistry" flow-builder-services="flowBuilderServices">
+		<!--  <webflow:flow-location path="/WEB-INF/flows/delegate-login/delegate-login.xml" /> -->
+		<webflow:flow-location path="/WEB-INF/flows/generate/generate.xml" />
+		<webflow:flow-location path="/WEB-INF/flows/manage/manage.xml" />
+	</webflow:flow-registry>
+	<webflow:flow-executor id="flowExecutor" flow-registry="flowRegistry"/>
+	<webflow:flow-builder-services id="flowBuilderServices" />
+	
+	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="alwaysUseFullPath" value="true"/>
+		<property name="order" value="1"/>
+	</bean>
+	<bean id="flowHandlerMapping" class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping">
+	   <property name="flowRegistry" ref="flowRegistry"/>
+	   <property name="order" value="2"/>
+	</bean>
+	
+	<bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="alwaysUseFullPath" value="true"/>
+	</bean>
+	<bean id="flowHandlerAdapter" class="org.springframework.webflow.mvc.servlet.FlowHandlerAdapter">
+	   <property name="flowExecutor" ref="flowExecutor"/>
+	</bean>
+
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass"><value>org.springframework.web.servlet.view.JstlView</value></property>
+		<property name="prefix"><value>/WEB-INF/jsp/</value></property>
+		<property name="suffix"><value>.jsp</value></property>
+	</bean>
+	<bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="warnLogCategory" value="edu.wisc.wisccal.uncaughterrors"/>
+		<property name="exceptionMappings">
+			<props>
+				<prop key="org.springframework.webflow.engine.FlowInputMappingException">input-missing</prop>
+				<prop key="net.fortuna.ical4j.data.ParserException">parse-exception</prop>
+				<prop key="edu.wisc.wisccal.shareurl.web.ShareNotFoundException">share-not-found</prop>
+				<prop key="org.springframework.transaction.CannotCreateTransactionException">service-unavailable</prop>
+				<prop key="java.sql.SQLException">service-unavailable</prop>
+				<prop key="java.lang.Exception">uncaught-error</prop>
+			</props>
+		</property>
+	</bean>
+</beans>

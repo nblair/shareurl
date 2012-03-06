@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd"> 
+       
+    <input name="id" required="true" />
+    
+    <decision-state id="lookup">
+    	<if test="flowHelper.lookupShareForCurrentUserByKey(id, flowRequestContext)" then="share-details" else="share-not-found"/>
+    </decision-state>
+    
+    <view-state id="share-details">
+    	<transition on="revoke" to="end" history="invalidate">
+    		<evaluate expression="shareDao.revokeShare(flowScope.share)"></evaluate>
+    	</transition>
+    </view-state>
+    
+    <end-state id="share-not-found" view="/WEB-INF/jsp/share-not-found.jsp"/>
+    <end-state id="end" view="externalRedirect:contextRelative:/my-shares"/>
+</flow>

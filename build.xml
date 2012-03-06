@@ -1,0 +1,207 @@
+<project name="shareurl" basedir="." xmlns:artifact="urn:maven-artifact-ant">
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${basedir}/bootstrap/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant">
+		<classpath>
+			<pathelement location="${basedir}/bootstrap/maven-ant-tasks-2.0.10.jar" />
+		</classpath>
+	</typedef>
+
+	<property file="build.properties" />
+
+	<artifact:dependencies pathId="hsql.classpath">
+		<dependency groupId="hsqldb" artifactId="hsqldb" version="1.8.0.10" />
+	</artifact:dependencies>
+
+	<artifact:dependencies pathId="junit.classpath">
+		<dependency groupId="junit" artifactId="junit" version="4.4" />
+	</artifact:dependencies>
+
+	<artifact:dependencies pathId="mavenproject.classpath">
+		<pom file="${basedir}/pom.xml" />
+	</artifact:dependencies>
+
+	<target name="maven-install-oracle-jdbc-driver">
+		<fail unless="oracle.jdbc.jar" message="Cannot install Oracle JDBC driver in your maven repository: oracle.jdbc.jar property not set" />
+		<artifact:pom id="oracle-jdbc.pom" file="${basedir}/bootstrap/oracle-jdbc-driver-pom.xml" />
+		<artifact:install file="${oracle.jdbc.jar}">
+			<pom refid="oracle-jdbc.pom" />
+		</artifact:install>
+	</target>
+
+	<target name="check-tomcat-2-home-property">
+		<condition property="tomcat-2.defined">
+			<isset property="tomcat-2.home" />
+		</condition>
+	</target>
+
+	<target name="hsql" description="Start a HSQLDB instance consistent with the default RDBMS requirements of ShareURL">
+		<property name="spawn" value="false" />
+
+		<condition property="failonerror" value="false">
+			<equals arg1="${spawn}" arg2="true" />
+		</condition>
+		<property name="failonerror" value="true" />
+
+		<property name="port" value="${hsql.localhost.port}" />
+
+		<echo message="Starting HSQL" />
+		<echo message="Using: ${hsql.data.directory}" />
+		<java fork="true" spawn="${spawn}" maxmemory="16M" classname="org.hsqldb.Server" failonerror="${failonerror}">
+			<classpath refid="hsql.classpath" />
+			<arg value="-port" />
+			<arg value="${port}" />
+			<arg value="-database.0" />
+			<arg value="${hsql.data.directory}/shareurldb" />
+			<arg value="-dbname.0" />
+			<arg value="shareurldb" />
+		</java>
+	</target>
+
+	<target name="hsql-shutdown" description="Compacts then cleanly shuts down hsql, useful if the 'hsql' task was run with '-Dspawn=true'">
+		<echo message="Stopping HSQL" />
+		<trycatch reference="hsql-shutdown.exceptionId">
+			<try>
+				<java fork="true" dir="." classname="org.hsqldb.util.SqlTool" timeout="5000" errorproperty="hsql-shutdown.err.out" failonerror="true">
+					<classpath refid="hsql.classpath" />
+					<arg value="--rcFile" />
+					<arg value="${basedir}/bootstrap/hsqldb.sqltool.rc" />
+					<arg value="--sql" />
+					<arg value="shutdown compact;" />
+					<arg value="shareurldb" />
+				</java>
+			</try>
+			<catch>
+				<if>
+					<contains string="${hsql-shutdown.err.out}" substring="socket creation error" />
+					<then>
+						<echo level="error">HSQL database is not running</echo>
+					</then>
+					<else>
+						<echo>${hsql-shutdown.err.out}</echo>
+						<throw refid="hsql-shutdown.exceptionId" />
+					</else>
+				</if>
+			</catch>
+		</trycatch>
+	</target>
+
+	<target name="hsql-initialize" description="Initializes the ShareURL database (caution: destroys existing tables first!)">
+		<echo>hsql-initialize will remove any data in the HSQL database.</echo>
+		<input message="Are you sure you want to continue?" validargs="y,n" addproperty="confirmed" />
+		<condition property="do.abort">
+			<not>
+				<equals arg1="y" arg2="${confirmed}" />
+			</not>
+		</condition>
+		<fail if="do.abort">hsql-initialize aborted.</fail>
+
+		<java classname="edu.wisc.wisccal.shareurl.impl.InitializeCalendarKeyDatabase" fork="true" dir=".">
+			<jvmarg value="-Dedu.wisc.wisccal.shareurl.impl.InitializeCalendarKeyDatabase.CONFIG=${database.config}" />
+			<classpath>
+				<path refid="mavenproject.classpath" />
+				<!-- maven target is war, so we need to point to target/classes -->
+				<pathelement location="target/classes" />
+				<pathelement location="src/main/resources" />
+				<pathelement location="src/main/sql" />
+				<pathelement location="src/test/resources" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="create-default-configuration" description="Creates default configuration (if not present)">
+		<copy file="build-SAMPLE.properties" tofile="build.properties" />
+		<copy file="src/main/resources/database-SAMPLE.xml" tofile="src/main/resources/database.xml" />
+		<copy file="src/main/resources/log4j-SAMPLE.properties" tofile="src/main/resources/log4j.properties" />
+		<copy file="src/main/webapp/META-INF/context-SAMPLE.xml" tofile="src/main/webapp/META-INF/context.xml" />
+		<copy file="src/main/webapp/WEB-INF/applicationContext-SAMPLE.xml" tofile="src/main/webapp/WEB-INF/applicationContext.xml" />
+		<copy file="src/main/webapp/WEB-INF/security-SAMPLE.xml" tofile="src/main/webapp/WEB-INF/security.xml" />
+	</target>
+
+	<!-- This target removes the web application from the tomcat installation
+			you defined in build.properties -->
+	<target name="clean-webapp" description="Removes the war file and expanded directory from the Tomcat webapps directory">
+		<delete file="${tomcat.home}/webapps/share.war" />
+		<delete dir="${tomcat.home}/webapps/share" />
+	</target>
+
+	<!-- this target copies the war file you built (using mvn package) to the
+			tomcat installation you defined in build.properties -->
+	<target name="deploy-war" description="Copies the war file into the Tomcat webapps directory">
+		<copy file="target/share.war" todir="${tomcat.home}/webapps" />
+	</target>
+
+	<target name="clean-deploy" description="Calls 'clean-webapp' and 'deploy-war' targets">
+		<antcall target="clean-webapp" />
+		<antcall target="deploy-war" />
+	</target>
+
+	<target name="clean-webapp-2" description="Removes the war file and expanded directory from the secondary Tomcat instance's webapps directory" depends="check-tomcat-2-home-property">
+		<if>
+			<equals arg1="${tomcat-2.defined}" arg2="true" />
+			<then>
+				<delete file="${tomcat-2.home}/webapps/share.war" />
+				<delete dir="${tomcat-2.home}/webapps/share" />
+			</then>
+			<else>
+				<echo>'tomcat-2.home' property not defined.</echo>
+			</else>
+		</if>
+	</target>
+	<target name="deploy-war-2" description="Copies the war file into the secondary Tomcat instance's  webapps directory" depends="check-tomcat-2-home-property">
+		<if>
+			<equals arg1="${tomcat-2.defined}" arg2="true" />
+			<then>
+				<copy file="target/share.war" todir="${tomcat-2.home}/webapps" />
+			</then>
+			<else>
+				<echo>'tomcat-2.home' property not defined.</echo>
+			</else>
+		</if>
+	</target>
+	<target name="clean-deploy-2" description="Calls 'clean-webapp-2' and 'deploy-war-2' targets" depends="check-tomcat-2-home-property">
+		<if>
+			<equals arg1="${tomcat-2.defined}" arg2="true" />
+			<then>
+				<antcall target="clean-webapp-2" />
+				<antcall target="deploy-war-2" />
+			</then>
+			<else>
+				<echo>'tomcat-2.home' property not defined.</echo>
+			</else>
+		</if>
+	</target>
+
+
+	<path id="integration-test.classpath">
+		<path refid="junit.classpath" />
+		<path refid="mavenproject.classpath" />
+		<pathelement location="${basedir}/target/classes" />
+		<pathelement location="${basedir}/target/test-classes" />
+	</path>
+	<target name="test-single-account" description="Runs integration test to fetch agenda and parse for a single account">
+		<junit fork="yes" haltonfailure="yes">
+			<sysproperty key="accountUsername" value="${accountUsername}" />
+			<classpath refid="integration-test.classpath" />
+			<test name="edu.wisc.wisccal.shareurl.integration.SingleAccountIntegrationTest" />
+			<formatter type="plain" usefile="false" />
+		</junit>
+	</target>
+	<target name="test-single-account-ldaps">
+		<junit fork="yes" haltonfailure="yes">
+			<sysproperty key="javax.net.ssl.keyStore" value="/home/nblair/wisccal/keystore/ldap-client.jks" />
+			<sysproperty key="javax.net.ssl.keyStorePassword" value="wisccal" />
+			<sysproperty key="javax.net.ssl.trustStore" value="/home/nblair/wisccal/keystore/ldap-client.jks" />
+			<sysproperty key="javax.net.ssl.trustStorePassword" value="wisccal" />
+			<sysproperty key="accountUsername" value="${accountUsername}" />
+			<classpath refid="integration-test.classpath" />
+			<test name="edu.wisc.wisccal.shareurl.integration.SingleAccountIntegrationTest" />
+			<formatter type="plain" usefile="false" />
+		</junit>
+	</target>
+</project>
