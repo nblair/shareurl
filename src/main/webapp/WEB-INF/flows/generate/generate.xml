@@ -31,17 +31,13 @@
 		<transition on="addPreference" to="event-filters">
 			<evaluate expression="flowScope.sharePreferences.addPreference(new edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference(formBackingObject.propertyName,formBackingObject.propertyValue))"/>
 		</transition>
-		<transition on="addOraclePublic" to="event-filters">
+		<transition on="addPublic" to="event-filters">
 			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newClassPublicPreference())"/>
 		</transition>
-		<transition on="addOracleNormal" to="event-filters">
-			<!--  <evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newClassPublicPreference())"/> -->
-			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newOracleNormalPreference())"/>
-		</transition>
-		<transition on="addOracleConfidential" to="event-filters">
+		<transition on="addConfidential" to="event-filters">
 			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newClassConfidentialPreference())"/>
 		</transition>
-		<transition on="addOraclePersonal" to="event-filters">
+		<transition on="addPrivate" to="event-filters">
 			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newClassPrivatePreference())"/>
 		</transition>
 		<transition on="optionsComplete" to="review"/>

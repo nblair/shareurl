@@ -115,12 +115,11 @@ Use the form on the right to add filters that will return only the events that m
 <input type="submit" name="_eventId_addPreference" value="Add Preference" />&nbsp;&nbsp;
 </form:form>
 
-<h4>Additional inclusion filters:</h4>
+<h4>Additional inclusion filters for Event Type:</h4>
 <ul>
-<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addOraclePublic">Include Oracle "Public" Events</a></li>
-<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addOracleNormal">Include Oracle "Normal" Events</a></li>
-<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addOracleConfidential">Include Oracle "Confidential" Events</a></li>
-<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addOraclePersonal">Include Oracle "Personal" Events</a></li>
+<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addPublic">Include "Public" Events</a></li>
+<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addConfidential">Include "Show Date and Time" Events</a></li>
+<li><a class="shortcut" href="${flowExecutionUrl}&_eventId=addPrivate">Include "Private" Events</a></li>
 </ul>
 </div> <!-- end addFilters -->
 
