@@ -69,10 +69,18 @@
 		<qualifier value="people"></qualifier>
 	</bean>
 	 
+	<bean id="resourceLdapAttributesKey" class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
+		<property name="displayNameAttributeName" value="cn"/>
+		<property name="usernameAttributeName" value="mail"/>
+		<property name="emailAddressAttributeName" value="mail"/>
+		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid"/>
+		<property name="delegateOwnerAttributeName" value="wisceducalresourceownerid"/>
+		<property name="eligibilityAttributeName" value="icsstatus"/>
+	</bean>
 	<bean id="delegateAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl"> 
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" ref="resourceAccountBaseDn"/>
-		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
+		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey"/>
 		<qualifier value="delegates"></qualifier>
 	</bean>
 	
