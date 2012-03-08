@@ -7,7 +7,7 @@
     <description>Shared Calendar</description>
 	<c:forEach var="event" items="${allEvents}" varStatus="itemCount">
     <item>
-      <title><c:out value="${event.summary.value}"/>&#160;[<fmt:formatDate value="${event.startDate.date}" type="date" pattern="M/d"/>]</title> 
+      <title>[<fmt:formatDate value="${event.startDate.date}" type="date" pattern="M/d"/>]&#160;<c:out value="${event.summary.value}"/></title> 
       <description>
       <![CDATA[
       <c:out value="${event.description.value}"/>
