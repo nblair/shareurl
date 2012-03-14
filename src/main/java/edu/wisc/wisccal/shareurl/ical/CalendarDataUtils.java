@@ -18,6 +18,7 @@ package edu.wisc.wisccal.shareurl.ical;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.Iterator;
 
 import net.fortuna.ical4j.model.Calendar;
@@ -36,7 +37,13 @@ import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.FreeBusy;
 import net.fortuna.ical4j.model.property.ProdId;
+import net.fortuna.ical4j.model.property.RDate;
+import net.fortuna.ical4j.model.property.RRule;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.model.property.Version;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Helper methods for iCalendar data.
@@ -53,6 +60,7 @@ public final class CalendarDataUtils {
 	 */
 	public static final String UW_AVAILABLE_APPOINTMENT = "X-UW-AVAILABLE-APPOINTMENT";
 	
+	private static final Log LOG = LogFactory.getLog(CalendarDataUtils.class);
 	/**
 	 * 
 	 * @param propertyName
@@ -178,5 +186,68 @@ public final class CalendarDataUtils {
 	 */
 	public static boolean isDayEvent(VEvent event) {
 		return Value.DATE.equals(event.getStartDate().getParameter(Value.VALUE));
+	}
+	
+	/**
+	 * 
+	 * @param event
+	 * @return
+	 */
+	public static boolean isEventRecurring(VEvent event) {
+		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0;
+	}
+	
+	/**
+	 * 
+	 * @param event
+	 * @param startBoundary
+	 * @param endBoundary
+	 * @return
+	 */
+	public static PeriodList calculateRecurrence(VEvent event,
+			Date startBoundary, Date endBoundary) {
+		Period period = new Period(new DateTime(startBoundary), new DateTime(endBoundary));
+		PeriodList periodList = event.calculateRecurrenceSet(period);
+		return periodList;
+	}
+	
+	/**
+	 * Clone an event, using the {@link Period} argument for new start and end times.
+	 * Returned event will include a {@link RecurrenceId} property.
+	 * 
+	 * @param original
+	 * @param period
+	 * @return
+	 */
+	public static VEvent constructRecurrenceInstance(VEvent original, Period period) {
+		try {
+			VEvent copy = (VEvent) original.copy();
+			copy.getStartDate().setDate(period.getStart());
+			copy.getEndDate().setDate(period.getEnd());
+			copy.getProperties().add(new RecurrenceId(period.getStart()));
+			removeRecurrenceProperties(copy);
+			return copy;
+		} catch (ParseException e) {
+			LOG.warn("caught ParseException attempting to copy " + original, e);
+			return null;
+		} catch (IOException e) {
+			LOG.warn("caught IOException attempting to copy " + original, e);
+			return null;
+		} catch (URISyntaxException e) {
+			LOG.warn("caught URISyntaxException attempting to copy " + original, e);
+			return null;
+		}
+	}
+	/**
+	 * Remove all RDATE/RRULE/EXDATE/EXRULE properties from the event.
+	 * 
+	 * @param event
+	 */
+	@SuppressWarnings("unchecked")
+	public static void removeRecurrenceProperties(VEvent event) {
+		event.getProperties().removeAll(event.getProperties(RDate.RDATE));
+		event.getProperties().removeAll(event.getProperties(RDate.RRULE));
+		event.getProperties().removeAll(event.getProperties(RDate.EXDATE));
+		event.getProperties().removeAll(event.getProperties(RDate.EXRULE));
 	}
 }

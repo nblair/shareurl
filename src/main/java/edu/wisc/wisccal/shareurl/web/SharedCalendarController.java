@@ -17,6 +17,8 @@ package edu.wisc.wisccal.shareurl.web;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
@@ -159,13 +162,6 @@ public class SharedCalendarController {
 			response.setCharacterEncoding("UTF-8");	
 			ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 				
-			/*
-			if(ShareDisplayFormat.DEBUG.equals(displayFormat)) {
-				String raw = calendarDataDao.getRawCalendarData(account, requestDetails.getStartDate(), requestDetails.getEndDate());
-				model.put("ical", raw);
-				return "data/display-ical-astext";
-			}
-			*/
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
@@ -187,7 +183,7 @@ public class SharedCalendarController {
 				
 				@SuppressWarnings("unchecked")
 				List<VEvent> allEvents = new ArrayList<VEvent>(components);
-				
+				expandRecurrence(allEvents, requestDetails.getStartDate(), requestDetails.getEndDate());
 				Collections.sort(allEvents, new VEventComparator());
 				
 				model.put("allEvents", allEvents);
@@ -237,6 +233,28 @@ public class SharedCalendarController {
 			return "share-not-found";
 		}
 	}
+	/**
+	 * Checks each {@link VEvent} in the list for recurrence. If recurring, expands the event into multiple instances based on the rules.
+	 * 
+	 * @param events
+	 */
+	protected void expandRecurrence(List<VEvent> events, Date rangeStart, Date rangeEnd) {
+		List<VEvent> newEvents = new ArrayList<VEvent>();
+		for(Iterator<VEvent> i = events.iterator(); i.hasNext(); ) {
+			VEvent event = i.next();
+			if(CalendarDataUtils.isEventRecurring(event)) {
+				PeriodList recurringPeriods = CalendarDataUtils.calculateRecurrence(event, rangeStart, rangeEnd);
+				for(Object o: recurringPeriods) {
+					Period period = (Period) o;
+					VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
+					newEvents.add(recurrenceInstance);
+				}
+				i.remove();
+			}
+		}
+		events.addAll(newEvents);
+	}
+	
 	
 	/**
 	 * 
