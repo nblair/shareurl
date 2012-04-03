@@ -137,7 +137,7 @@ public final class CalendarDataUtils {
 	 */
 	public static VEvent getSingleEvent(final Calendar calendar, final String eventUid) {
 		if(eventUid == null) return null;
-		for (Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+		for (Iterator<?> i = calendar.getComponents(VEvent.VEVENT).iterator(); i.hasNext();) {
 			VEvent component = (VEvent) i.next();
 			if(eventUid.equals(component.getUid().getValue())) {
 				return component;
@@ -155,7 +155,7 @@ public final class CalendarDataUtils {
 	 */
 	public static Calendar convertClassPublic(final Calendar original) {
 		ComponentList resultComponents = new ComponentList();
-		for (Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
+		for (Iterator<?> i = original.getComponents(VEvent.VEVENT).iterator(); i.hasNext();) {
 			VEvent event = (VEvent) i.next();  
 			Property classProperty = event.getProperty(Clazz.CLASS);
 			if(!Clazz.PUBLIC.equals(classProperty)) {
@@ -168,20 +168,6 @@ public final class CalendarDataUtils {
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
 		return result;
-	}
-
-	/**
-	 * 
-	 * @param event
-	 * @return true if the event is a Scheduling Assistant Appointment
-	 */
-	public static boolean isSchedulingAssistantAppointment(VEvent event) {
-		Property property = event.getProperty(UW_AVAILABLE_APPOINTMENT);
-		if(null == property) {
-			return false;
-		} else {
-			return "TRUE".equals(property.getValue());
-		}
 	}
 
 	/**
