@@ -1,18 +1,18 @@
 /*******************************************************************************
-*  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*******************************************************************************/
+ *  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *******************************************************************************/
 package edu.wisc.wisccal.shareurl.ical;
 
 import java.io.IOException;
@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
@@ -54,12 +55,12 @@ import org.apache.commons.logging.LogFactory;
 public final class CalendarDataUtils {
 
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
-	
+
 	/**
 	 * The presence of this property with a value of TRUE indicates the event was created by the Scheduling Assistant.
 	 */
 	public static final String UW_AVAILABLE_APPOINTMENT = "X-UW-AVAILABLE-APPOINTMENT";
-	
+
 	private static final Log LOG = LogFactory.getLog(CalendarDataUtils.class);
 	/**
 	 * 
@@ -82,7 +83,7 @@ public final class CalendarDataUtils {
 			throw new InvalidPropertyValueException("invalid value (" + propertyValue + " for " + propertyName, e);
 		}
 	}
-	
+
 	/**
 	 * Convert the {@link VEvent}s within the {@link Calendar} argument to a
 	 * single {@link VFreeBusy} object with {@link FreeBusy} properties
@@ -98,33 +99,36 @@ public final class CalendarDataUtils {
 		vFreeBusy.getProperties().add(new DtStart(new DateTime(start)));
 		// add dtend from arguments
 		vFreeBusy.getProperties().add(new DtEnd(new DateTime(end)));
-		
+
 		// for each original event, add a FreeBUSY 
 		ComponentList originalEvents = original.getComponents();
-		
+
 		for(Object o : originalEvents) {
-			VEvent e = (VEvent) o;
-			if(isDayEvent(e)) {
-				// skip day events in free busy
-				continue;
+			Component component = (Component) o;
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent e = (VEvent) component;
+				if(isDayEvent(e)) {
+					// skip day events in free busy
+					continue;
+				}
+
+				PeriodList freeBusyPeriodList = new PeriodList();
+				Period eventPeriod = new Period(new DateTime(e.getStartDate().getDate()), 
+						new DateTime(e.getEndDate(true).getDate()));
+				freeBusyPeriodList.add(eventPeriod);
+
+				FreeBusy freeBusy = new FreeBusy(freeBusyPeriodList); 
+				vFreeBusy.getProperties().add(freeBusy);
 			}
-			
-			PeriodList freeBusyPeriodList = new PeriodList();
-			Period eventPeriod = new Period(new DateTime(e.getStartDate().getDate()), 
-					new DateTime(e.getEndDate(true).getDate()));
-			freeBusyPeriodList.add(eventPeriod);
-			
-			FreeBusy freeBusy = new FreeBusy(freeBusyPeriodList); 
-			vFreeBusy.getProperties().add(freeBusy);
 		}
-		
+
 		resultComponents.add(vFreeBusy);
 		Calendar result = new Calendar(resultComponents);
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
 		return result;
 	}
-	
+
 	/**
 	 * 
 	 * @param calendar
@@ -141,7 +145,7 @@ public final class CalendarDataUtils {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Convert the {@link Clazz} property for all {@link VEvent}s in the 
 	 * {@link Calendar} argument to {@link Clazz#PUBLIC}.
@@ -152,20 +156,20 @@ public final class CalendarDataUtils {
 	public static Calendar convertClassPublic(final Calendar original) {
 		ComponentList resultComponents = new ComponentList();
 		for (Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
-		    VEvent event = (VEvent) i.next();  
-		    Property classProperty = event.getProperty(Clazz.CLASS);
-		    if(!Clazz.PUBLIC.equals(classProperty)) {
-		    	event.getProperties().remove(classProperty);
-		    	event.getProperties().add(Clazz.PUBLIC);
-		    }
-		    resultComponents.add(event);
+			VEvent event = (VEvent) i.next();  
+			Property classProperty = event.getProperty(Clazz.CLASS);
+			if(!Clazz.PUBLIC.equals(classProperty)) {
+				event.getProperties().remove(classProperty);
+				event.getProperties().add(Clazz.PUBLIC);
+			}
+			resultComponents.add(event);
 		}
 		Calendar result = new Calendar(resultComponents);
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
 		return result;
 	}
-	
+
 	/**
 	 * 
 	 * @param event
@@ -179,7 +183,7 @@ public final class CalendarDataUtils {
 			return "TRUE".equals(property.getValue());
 		}
 	}
-	
+
 	/**
 	 * @param event
 	 * @return true event is an all day event
@@ -187,7 +191,7 @@ public final class CalendarDataUtils {
 	public static boolean isDayEvent(VEvent event) {
 		return Value.DATE.equals(event.getStartDate().getParameter(Value.VALUE));
 	}
-	
+
 	/**
 	 * 
 	 * @param event
@@ -196,7 +200,7 @@ public final class CalendarDataUtils {
 	public static boolean isEventRecurring(VEvent event) {
 		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0;
 	}
-	
+
 	/**
 	 * 
 	 * @param event
@@ -210,7 +214,7 @@ public final class CalendarDataUtils {
 		PeriodList periodList = event.calculateRecurrenceSet(period);
 		return periodList;
 	}
-	
+
 	/**
 	 * Clone an event, using the {@link Period} argument for new start and end times.
 	 * Returned event will include a {@link RecurrenceId} property.
