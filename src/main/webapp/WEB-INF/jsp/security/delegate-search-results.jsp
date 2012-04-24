@@ -2,7 +2,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>WiscCal Oracle Calendar Export - Resource Search Results</title>
+<title>Share your WiscCal Calendar - Resource Search Results</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 </head>
 
@@ -14,7 +14,7 @@
 
 <ul>
 <c:forEach items="${results}" var="delegate">
-<li><c:out value="${delegate.name}"/>
+<li>${delegate.displayName}&nbsp;(${delegate.emailAddress})
 <form action="<c:url value="/delegate_switch_user"/>" method="post">
 <fieldset>
 <input type="hidden" name="j_username" value="${delegate.username }"/>

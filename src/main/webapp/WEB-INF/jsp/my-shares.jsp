@@ -50,11 +50,14 @@ URL(s) reach an audience larger than your comfort level.</p>
 Logged in as:&nbsp;<security:authentication property="principal.activeDisplayName"/><br/><br/>
 <c:choose>
 <c:when test="${activeIsDelegate}">
+<%-- 
 <a href="<c:url value="/my-shares?logoutDelegate=true"/>">Log Out as WiscCal Resource and return to your personal account&nbsp;&#187;</a><br/>
-<a href="<c:url value="/delegate-login"/>">Log in as a different WiscCal Resource&nbsp;&#187;</a>
+--%>
+<a href="<c:url value="/delegate_switch_exit"/>">Log Out as WiscCal Resource and return to your personal account&nbsp;&#187;</a><br/>
+<a href="<c:url value="/delegate-login.html?diff"/>">Log in as a different WiscCal Resource&nbsp;&#187;</a>
 </c:when>
 <c:otherwise>
-<a href="<c:url value="/delegate-login"/>">Log in as a WiscCal Resource&nbsp;&#187;</a>
+<a href="<c:url value="/delegate-login.html"/>">Log in as a WiscCal Resource&nbsp;&#187;</a>
 </c:otherwise>
 </c:choose>
 </p>

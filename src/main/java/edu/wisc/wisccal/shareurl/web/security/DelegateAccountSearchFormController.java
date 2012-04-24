@@ -1,19 +1,24 @@
-/*******************************************************************************
-*  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*******************************************************************************/
-package edu.wisc.wisccal.shareurl.web;
+/**
+ * Licensed to Jasig under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work
+ * for additional information regarding copyright ownership.
+ * Jasig licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a
+ * copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
+package edu.wisc.wisccal.shareurl.web.security;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,26 +37,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
+import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetailsImpl;
 
 /**
  * {@link Controller} that provides a UI for searching for {@link IDelegateCalendarAccount}s.
- * 
- * @see SecurityContextHolder#getContext() 
+ *  
  * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: DelegateSearchFormController.java 2473 2010-09-03 20:35:40Z npblair $
+ * @version $Id: DelegateAccountSearchFormController.java 2039 2010-04-30 15:51:39Z npblair $
  */
 @Controller
 @RequestMapping("/delegate-search.html")
 @SessionAttributes("command")
-public class DelegateSearchFormController  {
+public class DelegateAccountSearchFormController {
 
 	private IDelegateCalendarAccountDao delegateCalendarAccountDao;
 
 	/**
 	 * @param delegateCalendarAccountDao the delegateCalendarAccountDao to set
 	 */
-	@Autowired
+	@Autowired(required=true)
 	public void setDelegateCalendarAccountDao(
 			IDelegateCalendarAccountDao delegateCalendarAccountDao) {
 		this.delegateCalendarAccountDao = delegateCalendarAccountDao;
@@ -68,17 +72,16 @@ public class DelegateSearchFormController  {
 	@RequestMapping(method=RequestMethod.GET)
 	protected String onGet(@RequestParam(value="q",required=false) final String qValue, final ModelMap model) {
 		if(StringUtils.isBlank(qValue)) {
-			DelegateSearchFormBackingObject fbo = new DelegateSearchFormBackingObject();
+			DelegateAccountSearchFormBackingObject fbo = new DelegateAccountSearchFormBackingObject();
 			model.addAttribute("command", fbo);
 			return "security/delegate-search-form";
 		}
-		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount currentAccount = currentUser.getCalendarAccount();
 		model.addAttribute("searchText", qValue);
 		List<IDelegateCalendarAccount> matches = new ArrayList<IDelegateCalendarAccount>();
 		if(null != qValue && qValue.length() > 2) {
-			final String searchText = StringUtils.replace(qValue, " ", "*");
-			matches = this.delegateCalendarAccountDao.searchForDelegates(searchText, currentAccount);
+			matches = this.delegateCalendarAccountDao.searchForDelegates(qValue, currentAccount);
 		}
 		List<IDelegateCalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
@@ -92,14 +95,13 @@ public class DelegateSearchFormController  {
 	 * @return
 	 */
 	@RequestMapping(method=RequestMethod.POST)
-	protected String search(@ModelAttribute("command") DelegateSearchFormBackingObject fbo, final ModelMap model) {
-		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	protected String search(@ModelAttribute("command") DelegateAccountSearchFormBackingObject fbo, final ModelMap model) {
+		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount currentAccount = currentUser.getCalendarAccount();
 		model.addAttribute("searchText", fbo.getSearchText());
 		List<IDelegateCalendarAccount> matches = new ArrayList<IDelegateCalendarAccount>();
 		if(null != fbo.getSearchText() && fbo.getSearchText().length() > 2) {
-			final String searchText = StringUtils.replace(fbo.getSearchText(), " ", "*");
-			matches = this.delegateCalendarAccountDao.searchForDelegates(searchText, currentAccount);
+			matches = this.delegateCalendarAccountDao.searchForDelegates(fbo.getSearchText(), currentAccount);
 		}
 		List<IDelegateCalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
@@ -121,5 +123,4 @@ public class DelegateSearchFormController  {
 		}
 		return results;
 	}
-	
 }

@@ -2,7 +2,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>WiscCal Oracle Calendar Export - Find a Resource</title>
+<title>Share Your WiscCal Calendar - Find a Resource</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">

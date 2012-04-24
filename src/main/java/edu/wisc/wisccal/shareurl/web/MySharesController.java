@@ -58,6 +58,7 @@ public class MySharesController  {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if(logoutDelegate) {
 			//currentUser.clearActingOnBehalfOf();
+			// TODO redirect to exit?
 		}
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(LOG.isDebugEnabled()) {

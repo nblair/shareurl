@@ -45,8 +45,10 @@
 		<url-pattern>/mailplus_security_check</url-pattern>
 		<url-pattern>/delegate_switch_user</url-pattern>
 		<url-pattern>/delegate_switch_exit</url-pattern>
-		<url-pattern>/delegate-search</url-pattern>
-		<url-pattern>/delegate-login</url-pattern>
+		<!--  
+		<url-pattern>/delegate-search.html</url-pattern>
+		<url-pattern>/delegate-login.html</url-pattern>
+		-->
 	</servlet-mapping>
 
 	<filter>

@@ -33,8 +33,8 @@
 		<security:intercept-url pattern="/generate" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 		<security:intercept-url pattern="/my-shares" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 		<security:intercept-url pattern="/manage" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
-		<security:intercept-url pattern="/delegate-search" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
-		<security:intercept-url pattern="/delegate-login" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
+		<security:intercept-url pattern="/delegate-search.html" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
+		<security:intercept-url pattern="/delegate-login.html" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 
 		<security:logout invalidate-session="true" logout-url="/logout.html" success-handler-ref="logoutSuccessHandler"/>
 		

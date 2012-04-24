@@ -9,8 +9,6 @@ if ($.browser.mozilla && (parseFloat($.browser.version) < 1.9)) {
 }
 // -->
 </script>
-<rs:resourceURL var="linkify" value="/js/linkify.js"/>
-<script type="text/javascript" src="${linkify}"></script>
 <rs:resourceURL var="mainStyle" value="/themes/uw-2011/css/main_one_column.css"/>
 <link rel="stylesheet" href="${mainStyle}" type="text/css" media="all" />
 <rs:resourceURL var="ie6" value="/themes/uw-2011/css/ie6.css"/>

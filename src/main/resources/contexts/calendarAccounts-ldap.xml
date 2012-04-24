@@ -44,12 +44,6 @@
 			</map>
 		</property>
 	</bean>
-	<bean id="userAccountBaseDn" class="java.lang.String">
-		<constructor-arg value="${ldap.userAccountBaseDn}"/>
-	</bean>
-	<bean id="resourceAccountBaseDn" class="java.lang.String">
-		<constructor-arg value="${ldap.resourceAccountBaseDn}"/>
-	</bean>
 	
 	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
 		<constructor-arg ref="ldapContextSource" />
@@ -59,13 +53,15 @@
 		<property name="usernameAttributeName" value="mail"/>
 		<property name="emailAddressAttributeName" value="mail"/>
 		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid"/>
-		<property name="delegateOwnerAttributeName" value="wisceducalresourceownerid"/>
+		<property name="delegateOwnerAttributeName" value="owner"/>
 		<property name="eligibilityAttributeName" value="icsstatus"/>
 	</bean>
 	<bean id="calendarAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
 		<property name="ldapTemplate" ref="ldapTemplate"/>
-		<property name="baseDn" ref="userAccountBaseDn"/>
+		<property name="baseDn" value="${ldap.userAccountBaseDn}"/>
 		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
+		<property name="enforceSpecificObjectClass" value="true"/>
+		<property name="requiredObjectClass" value="wisceduperson"/>
 		<qualifier value="people"></qualifier>
 	</bean>
 	 
@@ -74,13 +70,15 @@
 		<property name="usernameAttributeName" value="mail"/>
 		<property name="emailAddressAttributeName" value="mail"/>
 		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid"/>
-		<property name="delegateOwnerAttributeName" value="wisceducalresourceownerid"/>
+		<property name="delegateOwnerAttributeName" value="owner"/>
 		<property name="eligibilityAttributeName" value="icsstatus"/>
 	</bean>
 	<bean id="delegateAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl"> 
 		<property name="ldapTemplate" ref="ldapTemplate"/>
-		<property name="baseDn" ref="resourceAccountBaseDn"/>
+		<property name="baseDn" value="${ldap.resourceAccountBaseDn}"/>
 		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey"/>
+		<property name="enforceSpecificObjectClass" value="true"/>
+		<property name="requiredObjectClass" value="wisceducalresource"/>
 		<qualifier value="delegates"></qualifier>
 	</bean>
 	
