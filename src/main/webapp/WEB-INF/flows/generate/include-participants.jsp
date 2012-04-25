@@ -40,13 +40,14 @@ overflow:hidden;
 float:left;
 margin:2px;
 padding:3px;
+border: 1px solid gray;
 width:45%;
 }
 #exclude {
 float:left;
 margin:2px;
 padding:3px;
-border-left: 1px solid gray;
+border: 1px solid gray;
 width:45%;
 }
 #clear {

@@ -49,6 +49,7 @@
 			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newIncludeParticipantsPreference())"/>
 		</transition>
 		<transition on="exclude" to="review"/>
+		<transition on="cancel" to="end" history="invalidate"/>
 	</view-state>
 	
 	<view-state id="review">
