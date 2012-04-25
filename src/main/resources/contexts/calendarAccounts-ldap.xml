@@ -56,13 +56,13 @@
 		<property name="delegateOwnerAttributeName" value="owner"/>
 		<property name="eligibilityAttributeName" value="icsstatus"/>
 	</bean>
-	<bean id="calendarAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
+	<bean id="peopleCalendarAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" value="${ldap.userAccountBaseDn}"/>
 		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
 		<property name="enforceSpecificObjectClass" value="true"/>
 		<property name="requiredObjectClass" value="wisceduperson"/>
-		<qualifier value="people"></qualifier>
+		<qualifier value="people"/>
 	</bean>
 	 
 	<bean id="resourceLdapAttributesKey" class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
@@ -79,7 +79,11 @@
 		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey"/>
 		<property name="enforceSpecificObjectClass" value="true"/>
 		<property name="requiredObjectClass" value="wisceducalresource"/>
-		<qualifier value="delegates"></qualifier>
+		<qualifier value="delegates"/>
+	</bean>
+	<bean id="calendarAccountDao" class="org.jasig.schedassist.impl.CompositeCalendarAccountDaoImpl">
+		<property name="calendarAccountDao" ref="peopleCalendarAccountDao"/>
+		<property name="delegateCalendarAccountDao" ref="delegateAccountDao"/>
 	</bean>
 	
 </beans>

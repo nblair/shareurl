@@ -27,6 +27,7 @@ import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,7 +93,7 @@ public class FreeBusyReadURLController  {
 	 * @param calendarAccountDao the calendarAccountDao to set
 	 */
 	@Autowired
-	public void setCalendarAccountDao(ICalendarAccountDao calendarAccountDao) {
+	public void setCalendarAccountDao(@Qualifier("composite") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
 	}
 
