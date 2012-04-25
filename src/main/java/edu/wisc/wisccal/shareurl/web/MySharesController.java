@@ -25,7 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -41,7 +40,6 @@ import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
 @Controller
 public class MySharesController  {
 
-	public static final String LOGOUT_DELEGATE = "logoutDelegate";
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private IShareDao shareDao;
 
@@ -54,12 +52,8 @@ public class MySharesController  {
 	}
 	
 	@RequestMapping("/my-shares")
-	public String showView(ModelMap model, @RequestParam(value="logoutDelegate",required=false,defaultValue="false") boolean logoutDelegate) {
+	public String showView(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if(logoutDelegate) {
-			//currentUser.clearActingOnBehalfOf();
-			// TODO redirect to exit?
-		}
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("displaying manage share form for " + activeAccount);
