@@ -34,6 +34,7 @@ import edu.wisc.wisccal.shareurl.domain.AccessClassification;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
+import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
 import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -253,6 +254,8 @@ IShareDao {
 			return new AccessClassificationMatchPreference(access);
 		} else if(PropertyMatchPreference.PROPERTY_MATCH.equals(persistencePref.getPreferenceType())){
 			return new PropertyMatchPreference(persistencePref.getPreferenceKey(), persistencePref.getPreferenceValue());
+		} else if (IncludeParticipantsPreference.INCLUDE_PARTICIPANTS.equals(persistencePref.getPreferenceType())) {
+			return new IncludeParticipantsPreference(Boolean.parseBoolean(persistencePref.getPreferenceValue()));
 		} else {
 			LOG.warn("could not match any preference types for " + persistencePref + ", returning null");
 			return null;

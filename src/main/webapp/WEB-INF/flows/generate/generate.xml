@@ -15,7 +15,7 @@
     	<transition on="filtered" to="event-filters">
     		<set name="flowScope.formBackingObject" value="new edu.wisc.wisccal.shareurl.web.ShareFilterFormBackingObject()"/>
     	</transition>
-    	<transition on="full" to="review">
+    	<transition on="full" to="include-participants">
     		<set name="flowScope.formBackingObject" value="new edu.wisc.wisccal.shareurl.web.ShareFilterFormBackingObject()"/>
     	</transition>
     	<transition on="cancel" to="end" history="invalidate"/>
@@ -40,8 +40,15 @@
 		<transition on="addPrivate" to="event-filters">
 			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newClassPrivatePreference())"/>
 		</transition>
-		<transition on="optionsComplete" to="review"/>
+		<transition on="optionsComplete" to="include-participants"/>
 		<transition on="cancel" to="end" history="invalidate"/>
+	</view-state>
+	
+	<view-state id="include-participants">
+		<transition on="include" to="review">
+			<evaluate expression="flowScope.sharePreferences.addPreference(flowHelper.newIncludeParticipantsPreference())"/>
+		</transition>
+		<transition on="exclude" to="review"/>
 	</view-state>
 	
 	<view-state id="review">

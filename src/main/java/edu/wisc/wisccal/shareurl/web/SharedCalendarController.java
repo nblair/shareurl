@@ -170,6 +170,10 @@ public class SharedCalendarController {
 				// filter agenda based on preferences
 				agenda = eventFilter.filterEvents(agenda, share.getSharePreferences());
 			}
+			
+			if(!share.getSharePreferences().isIncludeParticipants()) {
+				CalendarDataUtils.removeParticipants(agenda, account);
+			}
 			// short-circuit if a single event can be found.
 			if(null != requestDetails.getEventId()) {
 				//response.setContentType("text/html");

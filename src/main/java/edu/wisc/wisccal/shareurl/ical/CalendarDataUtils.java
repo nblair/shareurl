@@ -33,10 +33,12 @@ import net.fortuna.ical4j.model.PropertyFactoryImpl;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.parameter.Value;
+import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.FreeBusy;
+import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
@@ -45,6 +47,7 @@ import net.fortuna.ical4j.model.property.Version;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
  * Helper methods for iCalendar data.
@@ -239,5 +242,23 @@ public final class CalendarDataUtils {
 		event.getProperties().removeAll(event.getProperties(RDate.RRULE));
 		event.getProperties().removeAll(event.getProperties(RDate.EXDATE));
 		event.getProperties().removeAll(event.getProperties(RDate.EXRULE));
+	}
+	
+	/**
+	 * Remove all ATTENDEE and ORGANIZER properties from the events in the calendar.
+	 * 
+	 * @param event
+	 * @param account
+	 */
+	@SuppressWarnings("unchecked")
+	public static void removeParticipants(Calendar calendar, ICalendarAccount account) {
+		for(Iterator<?> i = calendar.getComponents(VEvent.VEVENT).iterator(); i.hasNext();) {
+			VEvent event = (VEvent) i.next();
+			event.getProperties().removeAll(event.getProperties(Attendee.ATTENDEE));
+			event.getProperties().removeAll(event.getProperties(Organizer.ORGANIZER));
+			event.getAlarms().clear();
+		}
+		
+		
 	}
 }

@@ -25,6 +25,7 @@ import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.AccessClassification;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
+import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
 import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -70,6 +71,9 @@ public class FlowHelper {
 	}
 	public ISharePreference newClassPrivatePreference() {
 		return new AccessClassificationMatchPreference(AccessClassification.PRIVATE);
+	}
+	public ISharePreference newIncludeParticipantsPreference() {
+		return new IncludeParticipantsPreference(true);
 	}
 	
 	/**

@@ -88,6 +88,21 @@ public class SharePreferences implements Serializable {
 			return false;
 		}
 	}
+	
+	/**
+	 * Short cut to determine if this share has an
+	 * IncludeParticipants preference set to true.
+	 * 
+	 * @return the value of the IncludeParticipants preference, or false if not set
+	 */
+	public boolean isIncludeParticipants() {
+		Set<ISharePreference> prefs = getPreferencesByType(IncludeParticipantsPreference.INCLUDE_PARTICIPANTS);
+		for(ISharePreference pref: prefs) {
+			return Boolean.parseBoolean(pref.getValue());
+		}
+		// preference not present, default is false
+		return false;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
