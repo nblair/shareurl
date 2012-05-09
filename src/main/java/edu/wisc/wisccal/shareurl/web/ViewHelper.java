@@ -38,13 +38,13 @@ public class ViewHelper {
 	 * For a given {@link HttpServletRequest}, ferret out:
 	 * <ul>
 	 * <li>scheme (http or https)</li>
-	 * <li>virtual server name (e.g. tools.wisccal.wisc.edu)</li>
+	 * <li>virtual server name (e.g. calendar.wisc.edu)</li>
 	 * <li>server port, if non-standard</li>
 	 * <ul>
 	 * 
 	 * The result of this method is a {@link String} that looks like:
 	 * <pre>
-	 * https://tools.wisccal.wisc.edu
+	 * https://calendar.wisc.edu
 	 * </pre>
 	 * 
 	 * @param request
