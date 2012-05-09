@@ -46,6 +46,10 @@ If you post your Share URL on another public Web site, anyone who stumbles acros
 your WiscCal account regardless of the access level you set when you created the event. If someone else has invited you to a confidential 
 meeting, that meeting may appear in your agenda and be viewable using this Share URL.</p>
 
+<div class="info" id="news" style="margin: 1em 0 1em 0; font-weight: bold;">
+<p>This instance of ShareURL is "pre-production" until June 4 2012; please continue to use <a href="https://tools.wisccal.wisc.edu/cal/">the old WiscCal instance</a> until that date.</p>
+</div>
+
 <ul>
 <li><strong><a href="<c:url value="/my-shares"/>">Manage ShareURLs for your personal or role based account&nbsp;&#187;</a></strong></li>
 <li><strong><a href="<c:url value="/delegate-login.html"/>">Manage ShareURLs for a WiscCal <acronym title="Conference Room, Projector, etc.">Resource</acronym>&nbsp;&#187;</a></strong></li>
