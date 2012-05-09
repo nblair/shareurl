@@ -47,7 +47,7 @@ your WiscCal account regardless of the access level you set when you created the
 meeting, that meeting may appear in your agenda and be viewable using this Share URL.</p>
 
 <ul>
-<li><strong><a href="<c:url value="/my-shares?logoutDelegate=true"/>">Manage ShareURLs for your personal or role based account&nbsp;&#187;</a></strong></li>
+<li><strong><a href="<c:url value="/my-shares"/>">Manage ShareURLs for your personal or role based account&nbsp;&#187;</a></strong></li>
 <li><strong><a href="<c:url value="/delegate-login.html"/>">Manage ShareURLs for a WiscCal <acronym title="Conference Room, Projector, etc.">Resource</acronym>&nbsp;&#187;</a></strong></li>
 </ul>
 
