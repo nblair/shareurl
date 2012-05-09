@@ -47,26 +47,23 @@ share this information or how it is used.
 Review the preferences you have chosen for this ShareURL and click Generate to create it.
 </p>
 
-<c:choose>
-<c:when test="${sharePreferences.freeBusyOnly}">
-<p><i>This ShareURL will contain only Free/Busy information.</i></p>
-</c:when>
-<c:otherwise>
-<c:choose>
-<c:when test="${empty sharePreferences.preferences}">
-<p><i>No event filters selected, return all events in my Calendar.</i></p>
-</c:when>
-<c:otherwise>
-<h4>Share URL will include only events that meet the following criteria:</h4>
+
 <ul>
-<c:forEach items="${sharePreferences.preferences}" var="pref" varStatus="status">
-<li><c:out value="${pref.displayName}"/>&nbsp;<c:if test="${not status.last}"><strong>OR</strong></c:if></li>
-</c:forEach>
+<c:if test="${sharePreferences.includeParticipants}">
+<li><strong>Include Event Participants.</strong></li>
+</c:if>
+<c:if test="${sharePreferences.freeBusyOnly}">
+<li>Free Busy only.</li>
+</c:if>
+<c:choose>
+<c:when test="${sharePreferences.eventFilterCount == 0}">
+<li>No event filters - all calendar data returned.</li>
+</c:when>
+<c:otherwise>
+<li>${sharePreferences.filterDisplay}</li>
+</c:otherwise>
+</c:choose>
 </ul>
-</c:otherwise>
-</c:choose>
-</c:otherwise>
-</c:choose>
 
 <form:form >
 <input type="submit" name="_eventId_generate" value="Generate" onclick=""/>

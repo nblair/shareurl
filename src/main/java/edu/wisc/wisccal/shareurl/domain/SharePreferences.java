@@ -109,6 +109,20 @@ public class SharePreferences implements Serializable {
 	
 	/**
 	 * 
+	 * @return
+	 */
+	public int getEventFilterCount() {
+		int filteringPreferenceCount = 0;
+		for(ISharePreference pref : preferences) {
+			if(PropertyMatchPreference.PROPERTY_MATCH.equals(pref.getType()) || AccessClassificationMatchPreference.CLASS_ATTRIBUTE.equals(pref.getType())) {
+				filteringPreferenceCount++;
+			}
+		}
+		return filteringPreferenceCount;
+	}
+	
+	/**
+	 * 
 	 * @return a human readable display of the filter type properties associated with these preferences
 	 */
 	public String getFilterDisplay() {

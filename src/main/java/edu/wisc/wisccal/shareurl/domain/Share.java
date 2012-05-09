@@ -114,13 +114,7 @@ public class Share implements Serializable {
 	 * @return
 	 */
 	public int getEventFilterCount() {
-		int filteringPreferenceCount = 0;
-		for(ISharePreference pref : this.sharePreferences.getPreferences()) {
-			if(!FreeBusyPreference.FREE_BUSY.equals(pref.getType())) {
-				filteringPreferenceCount++;
-			}
-		}
-		return filteringPreferenceCount;
+		return this.sharePreferences.getEventFilterCount();
 	}
 	
 	/**

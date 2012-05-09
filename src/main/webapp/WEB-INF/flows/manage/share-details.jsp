@@ -76,26 +76,22 @@ Logged in as:&nbsp;<security:authentication property="principal.activeDisplayNam
 </p>
 <h2>ShareURL Details for <i>${share.key }</i></h2>
 
-<c:choose>
-<c:when test="${share.freeBusyOnly == true}">
-<i>Free Busy only.</i>
-</c:when>
-<c:otherwise>
+<ul>
+<c:if test="${share.includeParticipants}">
+<li><strong>Include Event Participants.</strong></li>
+</c:if>
+<c:if test="${share.freeBusyOnly}">
+<li>Free Busy only.</li>
+</c:if>
 <c:choose>
 <c:when test="${share.eventFilterCount == 0}">
-<i>No event filters - all calendar data returned.</i>
+<li>No event filters - all calendar data returned.</li>
 </c:when>
 <c:otherwise>
-Includes events:
-<ul>
-<c:forEach items="${share.sharePreferences.preferences}" var="pref" varStatus="prefStatus">
-<li><c:out value="${pref.displayName}"/>&nbsp;<c:if test="${not prefStatus.last}"><strong>OR</strong></c:if></li>
-</c:forEach>
+<li>${sharePreferences.filterDisplay}</li>
+</c:otherwise>
+</c:choose>
 </ul>
-</c:otherwise>
-</c:choose>
-</c:otherwise>
-</c:choose>
 
 <h2>Example Share URLs</h2>
 <ul class="examples">
