@@ -71,13 +71,11 @@ Logged in as:&nbsp;<security:authentication property="principal.activeDisplayNam
 <c:otherwise>
 <c:choose>
 <c:when test="${share.eventFilterCount == 0}">
-<li><a title="Manage <c:out value="${share.key}"/>" href="<c:url value="manage?id=${share.key}"/>">Manage <c:out value="${share.key }"/> (All Calendar Data)</a></li>
+<li><a title="Manage <c:out value="${share.key}"/>" href="<c:url value="manage?id=${share.key}"/>">Manage <c:out value="${share.key }"/> (All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>)</a></li>
 </c:when>
 <c:otherwise>
 <li><a title="Manage <c:out value="${share.key}"/>" href="<c:url value="manage?id=${share.key}"/>">Manage <c:out value="${share.key }"/> 
-(<c:forEach items="${share.sharePreferences.preferences}" var="pref" varStatus="status">
-<c:out value="${pref.displayName}"/><c:if test="${not status.last}">,&nbsp;</c:if>
-</c:forEach>)
+(${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>)
 </a></li>
 </c:otherwise>
 </c:choose>

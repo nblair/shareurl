@@ -17,6 +17,7 @@ package edu.wisc.wisccal.shareurl.domain;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -31,6 +32,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class SharePreferences implements Serializable {
 
 	
+	private static final String COMMA = ", ";
+
 	/**
 	 * 
 	 */
@@ -102,6 +105,37 @@ public class SharePreferences implements Serializable {
 		}
 		// preference not present, default is false
 		return false;
+	}
+	
+	/**
+	 * 
+	 * @return a human readable display of the filter type properties associated with these preferences
+	 */
+	public String getFilterDisplay() {
+		StringBuilder display = new StringBuilder();
+		Set<ISharePreference> prefs = getPreferencesByType(PropertyMatchPreference.PROPERTY_MATCH);
+		for(Iterator<ISharePreference> i = prefs.iterator(); i.hasNext();) {
+			ISharePreference p = i.next();
+			display.append(p.getDisplayName());
+			if(i.hasNext()) {
+				display.append(COMMA);
+			}
+		}
+		
+		prefs = getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
+		if(prefs.size() != 0 && display.length() != 0) {
+			display.append(COMMA);
+		}
+		for(Iterator<ISharePreference> i = prefs.iterator(); i.hasNext();) {
+			ISharePreference p = i.next();
+			display.append(p.getDisplayName());
+			if(i.hasNext()) {
+				display.append(COMMA);
+			}
+		}
+		
+		return display.toString();
+		
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

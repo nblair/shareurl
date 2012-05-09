@@ -95,10 +95,18 @@ public class Share implements Serializable {
 
 	/**
 	 * 
-	 * @return
+	 * @return true if this share is a "Free Busy Only" share
 	 */
 	public boolean isFreeBusyOnly() {
 		return this.sharePreferences.isFreeBusyOnly();
+	}
+	
+	/**
+	 * 
+	 * @return true if this share will include event participants
+	 */
+	public boolean isIncludeParticipants() {
+		return this.sharePreferences.isIncludeParticipants();
 	}
 	
 	/**
