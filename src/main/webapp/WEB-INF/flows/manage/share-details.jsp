@@ -88,7 +88,7 @@ Logged in as:&nbsp;<security:authentication property="principal.activeDisplayNam
 <li>No event filters - all calendar data returned.</li>
 </c:when>
 <c:otherwise>
-<li>${sharePreferences.filterDisplay}</li>
+<li>${share.sharePreferences.filterDisplay}</li>
 </c:otherwise>
 </c:choose>
 </ul>
