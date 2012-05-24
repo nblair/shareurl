@@ -128,13 +128,11 @@
 		<property name="userDetailsService" ref="mailPlusUserAccountDetailsService"/>
 		<property name="authenticator">
 			<bean class="org.springframework.security.ldap.authentication.BindAuthenticator">
-				<constructor-arg ref="mailPlusContextSource">
-					
-				</constructor-arg>
+				<constructor-arg ref="mailPlusContextSource"/>
 				<property name="userSearch">
 					<bean class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">
 						<constructor-arg value="${ldap.mailplus.baseDn}"/>
-						<constructor-arg value="(mail={0})"/>
+						<constructor-arg value="(&amp;(mail={0})(objectclass=wisceduperson))"/>
 						<constructor-arg ref="mailPlusContextSource"/>
 					</bean>
 				</property>
