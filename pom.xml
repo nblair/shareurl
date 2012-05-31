@@ -2,15 +2,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.wisc.wisccal</groupId>
 	<artifactId>shareurl</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>shareurl</name>
 	<description>ShareURL 3.0; implemented using Jasig Scheduling Assistant libraries.</description>
 
 	<scm>
-		<connection>scm:svn:https://code.doit.wisc.edu/svn/wisccal/shareurl/tags/shareurl-3.0.0</connection>
-		<developerConnection>scm:svn:https://code.doit.wisc.edu/svn/wisccal/shareurl/tags/shareurl-3.0.0</developerConnection>
-		<url>https://code.doit.wisc.edu/fisheye/browse/wisccal/shareurl/tags/shareurl-3.0.0</url>
+		<connection>scm:svn:https://code.doit.wisc.edu/svn/wisccal/shareurl/trunk</connection>
+		<developerConnection>scm:svn:https://code.doit.wisc.edu/svn/wisccal/shareurl/trunk</developerConnection>
+		<url>https://code.doit.wisc.edu/fisheye/browse/wisccal/shareurl/trunk</url>
 	</scm>
 	
 	<repositories>
