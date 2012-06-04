@@ -42,7 +42,7 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Nicholas Blair, nblair@doit.wisc.edu
  * @version $Id: FreeBusyReadRequestDetails.java 1722 2010-02-15 22:01:26Z npblair $
  */
-public class FreeBusyReadRequestDetails {
+public class FreeBusyReadRequestDetails implements IShareRequestDetails {
 
 	/**
 	 * Name of query parameter to define the desired start date.

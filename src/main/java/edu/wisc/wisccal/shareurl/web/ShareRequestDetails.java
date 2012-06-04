@@ -40,7 +40,7 @@ import edu.wisc.wisccal.shareurl.domain.Share;
  * @author Nicholas Blair, nblair@doit.wisc.edu
  * @version $Id: ShareRequestDetails.java 3437 2011-10-25 15:29:17Z npblair $
  */
-public final class ShareRequestDetails {
+public final class ShareRequestDetails implements IShareRequestDetails {
 
 	private static Log LOG = LogFactory.getLog(ShareRequestDetails.class);
 
