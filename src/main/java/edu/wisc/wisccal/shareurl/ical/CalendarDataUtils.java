@@ -43,6 +43,7 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.RecurrenceId;
+import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
 import org.apache.commons.logging.Log;
@@ -258,7 +259,28 @@ public final class CalendarDataUtils {
 			event.getProperties().removeAll(event.getProperties(Organizer.ORGANIZER));
 			event.getAlarms().clear();
 		}
-		
-		
+	}
+	
+	/**
+	 * Method to return a String to help uniquely identity an event.
+	 * If the event is not recurring, simply returns the value of the UID property.
+	 * If recurring, the value returned is UID/RECURRENCE-ID.
+	 * 
+	 * Gracefully handles null situations.
+	 * 
+	 * @param component
+	 * @return never null, will be "N/A" if any null condition exists
+	 */
+	public static String nullSafeGetDebugId(Component component) {
+		if(component == null) {
+			return "N/A";
+		}
+		Property uid = component.getProperty(Uid.UID);
+		String uidValue = uid != null ? uid.getValue() : "N/A";
+		Property recurrenceId = component.getProperty(RecurrenceId.RECURRENCE_ID);
+		if(recurrenceId == null) {
+			return uidValue;
+		}
+		return uidValue + "/" +recurrenceId.getValue();
 	}
 }

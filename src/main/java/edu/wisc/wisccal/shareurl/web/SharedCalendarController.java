@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.PeriodList;
@@ -164,6 +165,8 @@ public class SharedCalendarController {
 			ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 				
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
+			filterAgendaForDateRange(agenda, requestDetails);
+			
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
 				return handleFreeBusyShare(agenda, requestDetails, response, model);
@@ -260,7 +263,29 @@ public class SharedCalendarController {
 		events.addAll(newEvents);
 	}
 	
-	
+	/**
+	 * Mutative method to inspect all {@link VEvent} components in the agenda argument
+	 * and remove those that have DTSTARTs that fall outside of the date range in the 
+	 * {@link ShareRequestDetails}.
+	 * 
+	 * @param agenda
+	 * @param requestDetails
+	 */
+	protected void filterAgendaForDateRange(Calendar agenda, ShareRequestDetails requestDetails) {
+		requestDetails.getStartDate();
+		
+		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext() ;){
+			Component c = (Component) i.next();
+			if(VEvent.VEVENT.equals(c.getName())) {
+				VEvent event = (VEvent) c;
+				if(requestDetails.getStartDate().after(event.getStartDate().getDate()) || 
+						requestDetails.getEndDate().before(event.getStartDate().getDate())) {
+					LOG.debug("removing event " + CalendarDataUtils.nullSafeGetDebugId(event) + " since startdate falls outside of requestDetails window " + requestDetails);
+					i.remove();
+				}
+			}
+		}
+	}
 	/**
 	 * 
 	 * @param agenda

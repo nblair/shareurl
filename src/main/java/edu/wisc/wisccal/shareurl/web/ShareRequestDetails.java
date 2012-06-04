@@ -31,6 +31,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.util.UrlPathHelper;
 
+import edu.wisc.wisccal.shareurl.domain.Share;
+
 /**
  * Class that binds {@link HttpServletRequest} attributes and
  * parameters to {@link Share}s and features.
