@@ -12,7 +12,7 @@
     
     <view-state id="share-details">
     	<transition on="revoke" to="end" history="invalidate">
-    		<evaluate expression="shareDao.revokeShare(flowScope.share)"></evaluate>
+    		<evaluate expression="flowHelper.revokeShare(flowScope.share)"></evaluate>
     	</transition>
     </view-state>
     

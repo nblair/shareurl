@@ -62,6 +62,14 @@ public class FlowHelper {
 		return shareDao.generateNewShare(activeAccount, preferences);
 	}
 	
+	/**
+	 * 
+	 * @param share
+	 */
+	public void revokeShare(Share share) {
+		shareDao.revokeShare(share);
+	}
+	
 	public ISharePreference newClassPublicPreference() {
 		return new AccessClassificationMatchPreference(AccessClassification.PUBLIC);
 	}
