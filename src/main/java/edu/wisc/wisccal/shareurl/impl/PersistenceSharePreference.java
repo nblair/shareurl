@@ -86,5 +86,68 @@ public final class PersistenceSharePreference  {
 		this.preferenceValue = preferenceValue;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((preferenceKey == null) ? 0 : preferenceKey.hashCode());
+		result = prime * result
+				+ ((preferenceType == null) ? 0 : preferenceType.hashCode());
+		result = prime * result
+				+ ((preferenceValue == null) ? 0 : preferenceValue.hashCode());
+		result = prime * result
+				+ ((shareKey == null) ? 0 : shareKey.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PersistenceSharePreference other = (PersistenceSharePreference) obj;
+		if (preferenceKey == null) {
+			if (other.preferenceKey != null)
+				return false;
+		} else if (!preferenceKey.equals(other.preferenceKey))
+			return false;
+		if (preferenceType == null) {
+			if (other.preferenceType != null)
+				return false;
+		} else if (!preferenceType.equals(other.preferenceType))
+			return false;
+		if (preferenceValue == null) {
+			if (other.preferenceValue != null)
+				return false;
+		} else if (!preferenceValue.equals(other.preferenceValue))
+			return false;
+		if (shareKey == null) {
+			if (other.shareKey != null)
+				return false;
+		} else if (!shareKey.equals(other.shareKey))
+			return false;
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "PersistenceSharePreference [shareKey=" + shareKey
+				+ ", preferenceType=" + preferenceType + ", preferenceKey="
+				+ preferenceKey + ", preferenceValue=" + preferenceValue + "]";
+	}
+
 
 }
