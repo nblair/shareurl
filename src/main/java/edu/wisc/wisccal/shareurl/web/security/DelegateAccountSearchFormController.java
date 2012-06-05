@@ -37,7 +37,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
 import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetailsImpl;
+import edu.wisc.wisccal.shareurl.sasecurity.DelegateCalendarAccountUserDetailsImpl;
 
 /**
  * {@link Controller} that provides a UI for searching for {@link IDelegateCalendarAccount}s.
@@ -71,6 +73,10 @@ public class DelegateAccountSearchFormController {
 	 */
 	@RequestMapping(method=RequestMethod.GET)
 	protected String onGet(@RequestParam(value="q",required=false) final String qValue, final ModelMap model) {
+		CalendarAccountUserDetails currentPrincipal = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if(currentPrincipal instanceof DelegateCalendarAccountUserDetailsImpl) {
+			return "redirect:/resource-logout-first.html";
+		}
 		if(StringUtils.isBlank(qValue)) {
 			DelegateAccountSearchFormBackingObject fbo = new DelegateAccountSearchFormBackingObject();
 			model.addAttribute("command", fbo);
@@ -96,6 +102,10 @@ public class DelegateAccountSearchFormController {
 	 */
 	@RequestMapping(method=RequestMethod.POST)
 	protected String search(@ModelAttribute("command") DelegateAccountSearchFormBackingObject fbo, final ModelMap model) {
+		CalendarAccountUserDetails currentPrincipal = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if(currentPrincipal instanceof DelegateCalendarAccountUserDetailsImpl) {
+			return "redirect:/resource-logout-first.html";
+		}
 		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount currentAccount = currentUser.getCalendarAccount();
 		model.addAttribute("searchText", fbo.getSearchText());

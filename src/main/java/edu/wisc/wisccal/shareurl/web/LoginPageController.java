@@ -38,4 +38,14 @@ public class LoginPageController {
 	public String showMailPlusLogout() {
 		return "mailplus-logout";
 	}
+	
+	/**
+	 * View shown when the user requests a feature that 
+	 * is not accessible to resource accounts.
+	 * @return the name of the view
+	 */
+	@RequestMapping("/resource-logout-first.html")
+	public String showResourceLogoutFirst() {
+		return "security/resource-log-out-first";
+	}
 }

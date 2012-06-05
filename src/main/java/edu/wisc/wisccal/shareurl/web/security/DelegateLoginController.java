@@ -20,8 +20,12 @@
 
 package edu.wisc.wisccal.shareurl.web.security;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
+import edu.wisc.wisccal.shareurl.sasecurity.DelegateCalendarAccountUserDetailsImpl;
 
 /**
  * Simple {@link Controller} to display the delegate-login form.
@@ -38,12 +42,18 @@ public class DelegateLoginController  {
 	 */
 	@RequestMapping("/delegate-login.html")
 	protected String viewLoginForm() {
+		CalendarAccountUserDetails currentPrincipal = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if(currentPrincipal instanceof DelegateCalendarAccountUserDetailsImpl) {
+			return "redirect:/resource-logout-first.html";
+		}
 		return FORM_VIEW_NAME;
 	}
 	
+	/*
 	@RequestMapping(value="/delegate-login.html", params="diff")
 	protected String differentResource() {
 		// TODO inject behavior to log out as current resource and return to "original user"
 		return FORM_VIEW_NAME;
 	}
+	*/
 }
