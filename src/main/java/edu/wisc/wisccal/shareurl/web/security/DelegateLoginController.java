@@ -48,12 +48,5 @@ public class DelegateLoginController  {
 		}
 		return FORM_VIEW_NAME;
 	}
-	
-	/*
-	@RequestMapping(value="/delegate-login.html", params="diff")
-	protected String differentResource() {
-		// TODO inject behavior to log out as current resource and return to "original user"
-		return FORM_VIEW_NAME;
-	}
-	*/
+
 }
