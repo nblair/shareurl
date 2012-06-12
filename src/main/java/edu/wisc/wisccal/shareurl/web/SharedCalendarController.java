@@ -199,6 +199,10 @@ public class SharedCalendarController {
 				model.put("shareId", requestDetails.getShareKey());
 				model.put("datePhrase", requestDetails.getDatePhrase());
 			} else if (displayFormat.isIcalendar()) {
+				if(requestDetails.requiresBreakRecurrence()) {
+					CalendarDataUtils.breakRecurrence(agenda);
+				}
+				
 				if(requestDetails.requiresConvertClass()) {
 					model.put("ical", CalendarDataUtils.convertClassPublic(agenda).toString());
 				} else {

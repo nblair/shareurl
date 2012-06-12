@@ -58,6 +58,8 @@ import org.jasig.schedassist.model.ICalendarAccount;
  */
 public final class CalendarDataUtils {
 
+	private static final String UW_SEPARATOR = "_UW_";
+
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
 
 	/**
@@ -282,5 +284,32 @@ public final class CalendarDataUtils {
 			return uidValue;
 		}
 		return uidValue + "/" +recurrenceId.getValue();
+	}
+	
+	/**
+	 * Mutative method.
+	 * Implements the "breakRecurrence" algorithm:
+	 * Scan each VEVENT in the calendar argument. If the event
+	 * has a RECURRENCE-ID property, remove it and append it to the
+	 * UID property.
+	 * 
+	 * @param original
+	 */
+	public static void breakRecurrence(final Calendar original) {
+		for (Iterator<?> i = original.getComponents(Component.VEVENT).iterator(); i.hasNext();) {
+		    Component component = (Component) i.next();
+		    if(VEvent.VEVENT.equals(component.getName())) {
+		    	VEvent event = (VEvent) component;
+		    	RecurrenceId recurrenceId = event.getRecurrenceId();
+		    	if(recurrenceId != null) {
+		    		StringBuilder newUid = new StringBuilder();
+		    		newUid.append(event.getUid().getValue());
+		    		newUid.append(UW_SEPARATOR);
+		    		newUid.append(event.getRecurrenceId().getValue());
+		    		event.getUid().setValue(newUid.toString());
+		    		event.getProperties().remove(event.getRecurrenceId());
+		    	}
+		    }  
+		}
 	}
 }
