@@ -269,7 +269,10 @@ public class SharedCalendarController {
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			agenda = eventFilter.filterEvents(agenda, share.getSharePreferences());
-			
+			// short-circuit if a single event can be found.
+			if(null != requestDetails.getEventId()) {
+				return handleSingleEvent(agenda, requestDetails, model, response);
+			}
 			prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
 
 			// determine the view
