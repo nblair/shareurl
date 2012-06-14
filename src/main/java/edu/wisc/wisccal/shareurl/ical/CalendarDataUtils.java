@@ -153,27 +153,25 @@ public final class CalendarDataUtils {
 	}
 
 	/**
+	 * Mutative method.
 	 * Convert the {@link Clazz} property for all {@link VEvent}s in the 
 	 * {@link Calendar} argument to {@link Clazz#PUBLIC}.
 	 * 
 	 * @param original
 	 * @return the same calendar with all values for the {@link Clazz} property set to {@link Clazz#PUBLIC}.
 	 */
-	public static Calendar convertClassPublic(final Calendar original) {
-		ComponentList resultComponents = new ComponentList();
-		for (Iterator<?> i = original.getComponents(VEvent.VEVENT).iterator(); i.hasNext();) {
-			VEvent event = (VEvent) i.next();  
-			Property classProperty = event.getProperty(Clazz.CLASS);
-			if(!Clazz.PUBLIC.equals(classProperty)) {
-				event.getProperties().remove(classProperty);
-				event.getProperties().add(Clazz.PUBLIC);
+	public static void convertClassPublic(final Calendar original) {
+		for (Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				Clazz classProperty = event.getClassification();
+				if(!Clazz.PUBLIC.equals(classProperty)) {
+					event.getProperties().remove(classProperty);
+					event.getProperties().add(Clazz.PUBLIC);
+				}
 			}
-			resultComponents.add(event);
 		}
-		Calendar result = new Calendar(resultComponents);
-		result.getProperties().add(Version.VERSION_2_0);
-		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
-		return result;
 	}
 
 	/**
@@ -246,7 +244,7 @@ public final class CalendarDataUtils {
 		event.getProperties().removeAll(event.getProperties(RDate.EXDATE));
 		event.getProperties().removeAll(event.getProperties(RDate.EXRULE));
 	}
-	
+
 	/**
 	 * Remove all ATTENDEE and ORGANIZER properties from the events in the calendar.
 	 * 
@@ -262,7 +260,7 @@ public final class CalendarDataUtils {
 			event.getAlarms().clear();
 		}
 	}
-	
+
 	/**
 	 * Method to return a String to help uniquely identity an event.
 	 * If the event is not recurring, simply returns the value of the UID property.
@@ -285,7 +283,7 @@ public final class CalendarDataUtils {
 		}
 		return uidValue + "/" +recurrenceId.getValue();
 	}
-	
+
 	/**
 	 * Mutative method.
 	 * Implements the "breakRecurrence" algorithm:
@@ -297,19 +295,27 @@ public final class CalendarDataUtils {
 	 */
 	public static void breakRecurrence(final Calendar original) {
 		for (Iterator<?> i = original.getComponents(Component.VEVENT).iterator(); i.hasNext();) {
-		    Component component = (Component) i.next();
-		    if(VEvent.VEVENT.equals(component.getName())) {
-		    	VEvent event = (VEvent) component;
-		    	RecurrenceId recurrenceId = event.getRecurrenceId();
-		    	if(recurrenceId != null) {
-		    		StringBuilder newUid = new StringBuilder();
-		    		newUid.append(event.getUid().getValue());
-		    		newUid.append(UW_SEPARATOR);
-		    		newUid.append(event.getRecurrenceId().getValue());
-		    		event.getUid().setValue(newUid.toString());
-		    		event.getProperties().remove(event.getRecurrenceId());
-		    	}
-		    }  
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				convertToCombinationUid(event);
+			}  
+		}
+	}
+
+	/**
+	 * 
+	 * @param event
+	 */
+	public static void convertToCombinationUid(VEvent event) {
+		RecurrenceId recurrenceId = event.getRecurrenceId();
+		if(recurrenceId != null) {
+			StringBuilder newUid = new StringBuilder();
+			newUid.append(event.getUid().getValue());
+			newUid.append(UW_SEPARATOR);
+			newUid.append(event.getRecurrenceId().getValue());
+			event.getUid().setValue(newUid.toString());
+			event.getProperties().remove(event.getRecurrenceId());
 		}
 	}
 }

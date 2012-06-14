@@ -66,14 +66,16 @@ public class CalendarDataUtilsTest {
 		VEvent event = new VEvent(new DateTime(makeDateTime("20100210-0900")), new DateTime(makeDateTime("20100210-1000")), "a");
 		event.getProperties().add(Clazz.PUBLIC);
 		
+		VEvent clone = (VEvent) event.copy();
+		
 		components.add(event);
 		
 		Calendar original = new Calendar(components);
 		original.getProperties().add(Version.VERSION_2_0);
 		original.getProperties().add(new ProdId(CalendarDataUtils.SHAREURL_PROD_ID));
 		
-		Calendar result = CalendarDataUtils.convertClassPublic(original);
-		Assert.assertEquals(result, original);
+		CalendarDataUtils.convertClassPublic(original);
+		Assert.assertEquals(clone, original.getComponent(VEvent.VEVENT));
 	}
 	
 	/**
@@ -94,10 +96,9 @@ public class CalendarDataUtilsTest {
 		components.add(confidentialEvent);
 		
 		Calendar original = new Calendar(components);
-		Calendar result = CalendarDataUtils.convertClassPublic(original);
-		Assert.assertNotSame(result, original);
+		CalendarDataUtils.convertClassPublic(original);
 		
-		for (Iterator<?> i = result.getComponents().iterator(); i.hasNext();) {
+		for (Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
 			VEvent event = (VEvent) i.next();  
 			Assert.assertEquals(Clazz.PUBLIC, event.getProperty(Clazz.CLASS));
 		}
