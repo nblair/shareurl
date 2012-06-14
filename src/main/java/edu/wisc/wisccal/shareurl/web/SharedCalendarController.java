@@ -216,7 +216,9 @@ public class SharedCalendarController {
 	 * @param start
 	 * @param end
 	 */
+	@SuppressWarnings("unchecked")
 	protected void expandRecurrenceAndAlterUid(Calendar calendar, Date start, Date end) {
+		ComponentList newComponents = new ComponentList();
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName()) ){
@@ -227,14 +229,18 @@ public class SharedCalendarController {
 						Period period = (Period) o;
 						VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
-						calendar.getComponents().add(recurrenceInstance);
+						newComponents.add(recurrenceInstance);
 					}
 				}
 			}
 		}
+		
+		if(!newComponents.isEmpty()) {
+			calendar.getComponents().addAll(newComponents);
+		}
 	}
 	/**
-	 * 
+	 * Request handler.
 	 */
 	@RequestMapping("/u/**")
 	public String getShareUrl(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
@@ -306,6 +312,7 @@ public class SharedCalendarController {
 	 * @return
 	 */
 	protected String handleSingleEvent(final Calendar agenda, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
+		expandRecurrenceAndAlterUid(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 		ComponentList events = agenda.getComponents(VEvent.VEVENT);
 		VEvent matchingEvent = null;
 		for(Object o : events) {

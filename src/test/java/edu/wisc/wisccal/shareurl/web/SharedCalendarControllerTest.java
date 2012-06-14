@@ -58,6 +58,44 @@ public class SharedCalendarControllerTest {
 	}	
 	
 	/**
+	 * All defaults, empty calendar.
+	 * Model should be prepped for default HTML view.
+	 */
+	@Test
+	public void testPrepareModelHTMLViewWithRecurringEvent() {
+		SharedCalendarController controller = new SharedCalendarController();
+		
+		ModelMap model = new ModelMap();
+		Calendar calendar = new Calendar();
+		String uidValue = "xyz123";
+		
+		java.util.Date today = new java.util.Date();
+		VEvent event = new VEvent(new Date(today), new Date(DateUtils.addDays(today, 1)), "test day event");
+		event.getProperties().add(new RRule(new Recur(Recur.DAILY, 1)));
+		event.getProperties().add(new Uid(uidValue));
+		calendar.getComponents().add(event);
+		
+		java.util.Date twoDaysAhead = DateUtils.addDays(new java.util.Date(), 2);
+		VEvent event2 = new VEvent(new Date(twoDaysAhead), new Date(DateUtils.addDays(today, 1)), "test day event diff title");
+		event2.getProperties().add(new RecurrenceId(new Date(twoDaysAhead)));
+		event2.getProperties().add(new Uid(uidValue));
+		calendar.getComponents().add(event2);
+		
+		MockHttpServletRequest httpRequest = new MockHttpServletRequest("GET", "/12345abcde");
+		ShareRequestDetails requestDetails = new ShareRequestDetails(httpRequest);
+		
+		SharePreferences share = new SharePreferences();
+		
+		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		controller.prepareModel(share, requestDetails, calendar, account, model);
+	
+		Assert.assertEquals("12345abcde", model.get("shareId"));
+		Assert.assertFalse((Boolean) model.get("empty"));
+		Assert.assertEquals(calendar.getComponents(), model.get("allEvents"));
+		Assert.assertEquals(1, StringUtils.countMatches(calendar.toString(), "UID:xyz123_UW_"));
+	}
+	
+	/**
 	 * All defaults, empty calendar. ical parameter present.
 	 * Model should be prepped for iCalendar view.
 	 */
@@ -90,7 +128,8 @@ public class SharedCalendarControllerTest {
 		ModelMap model = new ModelMap();
 		Calendar calendar = new Calendar();
 		String uidValue = "xyz123";
-		VEvent event = new VEvent(new Date(new java.util.Date()), "test day event");
+		java.util.Date today = new java.util.Date();
+		VEvent event = new VEvent(new Date(today), new Date(DateUtils.addDays(today, 1)), "test day event");
 		event.getProperties().add(new RRule(new Recur(Recur.DAILY, 1)));
 		event.getProperties().add(new Uid(uidValue));
 		calendar.getComponents().add(event);
