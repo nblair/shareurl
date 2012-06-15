@@ -231,6 +231,9 @@ public class SharedCalendarController {
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
 						newComponents.add(recurrenceInstance);
 					}
+					
+					// remove the "parent" event" now that we have individual recurrence instances
+					i.remove();
 				}
 			}
 		}
