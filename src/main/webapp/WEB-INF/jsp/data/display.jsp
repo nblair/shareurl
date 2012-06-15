@@ -65,7 +65,7 @@ ${startDateFormatted}
 	<!-- BEGIN appointments -->
 	<c:forEach var="event" items="${allEvents}">
 	<c:choose>
-	<c:when test="${oevent:isCancelled}">
+	<c:when test="${oevent:isCancelled(event)}">
 	<c:set var="statusClass" value="cancel"/>
 	</c:when>
 	<c:otherwise>
