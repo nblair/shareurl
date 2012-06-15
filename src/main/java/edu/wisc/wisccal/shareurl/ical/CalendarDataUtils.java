@@ -43,6 +43,7 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.RecurrenceId;
+import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
@@ -180,6 +181,14 @@ public final class CalendarDataUtils {
 	 */
 	public static boolean isDayEvent(VEvent event) {
 		return Value.DATE.equals(event.getStartDate().getParameter(Value.VALUE));
+	}
+	
+	/**
+	 * @param event
+	 * @return true if the event has {@link Status#VEVENT_CANCELLED}.
+	 */
+	public static boolean isCancelled(VEvent event) {
+		return Status.VEVENT_CANCELLED.equals(event.getStatus());
 	}
 
 	/**

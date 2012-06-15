@@ -36,6 +36,11 @@
 </c:otherwise>
 </c:choose>
 <link rel="alternate" title="Shared Calendar" href="<c:url value="/u/${shareId}/${datePhrase}?rss"/>" type="application/rss+xml" />
+<style type="text/css">
+.cancel {
+text-decoration: line-through;
+}
+</style>
 </head>
 <body>
 <div id="content">
@@ -60,6 +65,15 @@ ${startDateFormatted}
 	<!-- BEGIN appointments -->
 	<c:forEach var="event" items="${allEvents}">
 	<c:choose>
+	<c:when test="${oevent:isCancelled}">
+	<c:set var="statusClass" value="cancel"/>
+	</c:when>
+	<c:otherwise>
+	<c:set var="statusClass" value=""/>
+	</c:otherwise>
+	</c:choose>
+	<div class="${statusClass}">
+	<c:choose>
 	<c:when test="${oevent:isDayEvent(event) == true}">
 	<img src="${flagIcon}" alt="Event" title="Event"/>
 	<span class="weak"><fmt:formatDate value="${event.startDate.date}" type="time" pattern="MM/dd/yyyy"/>&nbsp;All day</span>
@@ -75,6 +89,7 @@ ${startDateFormatted}
 	<br/>
 	</c:otherwise>
 	</c:choose>
+	</div>
 	</c:forEach>
 	<!-- END appointments -->				
 </c:otherwise>
