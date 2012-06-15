@@ -17,9 +17,12 @@ package edu.wisc.wisccal.shareurl.web;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,8 +35,12 @@ import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.property.FreeBusy;
+import net.fortuna.ical4j.model.property.RDate;
+import net.fortuna.ical4j.model.property.RRule;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.model.property.Uid;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
@@ -218,28 +225,56 @@ public class SharedCalendarController {
 	 */
 	@SuppressWarnings("unchecked")
 	protected void expandRecurrenceAndAlterUid(Calendar calendar, Date start, Date end) {
-		ComponentList newComponents = new ComponentList();
+		//ComponentList newComponents = new ComponentList();
+		
+		Collections.sort(calendar.getComponents(), new Comparator<Component>() {
+			@Override
+			public int compare(Component o1, Component o2) {
+				CompareToBuilder builder = new CompareToBuilder();
+				builder.append(o1.getName(), o2.getName());
+				builder.append(-(o1.getProperties(RRule.RRULE).size() + o1.getProperties(RDate.RDATE).size()), 
+						-(o2.getProperties(RRule.RRULE).size() + o2.getProperties(RDate.RDATE).size()));
+				builder.append(o1.getProperties(RecurrenceId.RECURRENCE_ID).size(), o2.getProperties(RecurrenceId.RECURRENCE_ID).size());
+				return builder.toComparison();
+			}
+		});
+		
+		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
+		
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName()) ){
 				VEvent event = (VEvent) component;
 				if(CalendarDataUtils.isEventRecurring(event)) {
 					PeriodList recurringPeriods = CalendarDataUtils.calculateRecurrence(event, start, end);
+					
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
+						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
+						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
-						newComponents.add(recurrenceInstance);
+						//newComponents.add(recurrenceInstance);
 					}
 					
 					// remove the "parent" event" now that we have individual recurrence instances
+					if(!recurringPeriods.isEmpty()) {
+						i.remove();
+					}
+				} else if (event.getProperty(RecurrenceId.RECURRENCE_ID) != null) {
+					EventCombinationId comboId = new EventCombinationId(event);
+					eventMap.put(comboId, event);
+					
+					CalendarDataUtils.convertToCombinationUid(event);
 					i.remove();
 				}
+				
+				
 			}
 		}
 		
-		if(!newComponents.isEmpty()) {
-			calendar.getComponents().addAll(newComponents);
+		if(!eventMap.values().isEmpty()) {
+			calendar.getComponents().addAll(eventMap.values());
 		}
 	}
 	/**
@@ -403,4 +438,102 @@ public class SharedCalendarController {
 		return viewName;
 	}
 
+	/**
+	 * 
+	 * @author Nicholas Blair
+	 */
+	protected static class EventCombinationId {
+		
+		private String uid;
+		private String recurrenceId;
+		/**
+		 * 
+		 * @param event
+		 */
+		protected EventCombinationId(VEvent event) {
+			this.uid = event.getUid().getValue();
+			this.recurrenceId = event.getRecurrenceId().getValue();
+		}
+		/**
+		 * @return the uid
+		 */
+		public String getUid() {
+			return uid;
+		}
+		/**
+		 * @param uid the uid to set
+		 */
+		public void setUid(String uid) {
+			this.uid = uid;
+		}
+		/**
+		 * @return the recurrenceId
+		 */
+		public String getRecurrenceId() {
+			return recurrenceId;
+		}
+		/**
+		 * @param recurrenceId the recurrenceId to set
+		 */
+		public void setRecurrenceId(String recurrenceId) {
+			this.recurrenceId = recurrenceId;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((recurrenceId == null) ? 0 : recurrenceId.hashCode());
+			result = prime * result + ((uid == null) ? 0 : uid.hashCode());
+			return result;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof EventCombinationId)) {
+				return false;
+			}
+			EventCombinationId other = (EventCombinationId) obj;
+			if (recurrenceId == null) {
+				if (other.recurrenceId != null) {
+					return false;
+				}
+			} else if (!recurrenceId.equals(other.recurrenceId)) {
+				return false;
+			}
+			if (uid == null) {
+				if (other.uid != null) {
+					return false;
+				}
+			} else if (!uid.equals(other.uid)) {
+				return false;
+			}
+			return true;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("EventCombinationId [uid=");
+			builder.append(uid);
+			builder.append(", recurrenceId=");
+			builder.append(recurrenceId);
+			builder.append("]");
+			return builder.toString();
+		}
+		
+	}
 }

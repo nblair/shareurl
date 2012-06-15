@@ -145,6 +145,24 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		}
 	}
 
+	/**
+	 * @param pathData
+	 * @param client
+	 * @param displayFormat
+	 * @param overrideBreakRecurrence
+	 * @param overrideConvertClass
+	 */
+	ShareRequestDetails(PathData pathData, Client client,
+			ShareDisplayFormat displayFormat, boolean overrideBreakRecurrence,
+			boolean overrideConvertClass) {
+		this.pathData = pathData;
+		this.client = client;
+		this.displayFormat = displayFormat;
+		this.overrideBreakRecurrence = overrideBreakRecurrence;
+		this.overrideConvertClass = overrideConvertClass;
+	}
+
+
 
 	/**
 	 * @return the shareKey (never null)
@@ -474,7 +492,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @author Nicholas Blair, nblair@doit.wisc.edu
 	 * @version $Id: ShareRequestDetails.java 3437 2011-10-25 15:29:17Z npblair $
 	 */
-	static enum Client {
+	protected static enum Client {
 		GOOGLE,
 		APPLE,
 		MOZILLA,
@@ -488,7 +506,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @author Nicholas Blair, nblair@doit.wisc.edu
 	 * @version $Id: ShareRequestDetails.java 3437 2011-10-25 15:29:17Z npblair $
 	 */
-	static class PathData {
+	protected static class PathData {
 		private String shareKey;
 		private String eventId;
 		private String datePhrase;
