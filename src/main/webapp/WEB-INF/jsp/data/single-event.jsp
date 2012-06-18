@@ -29,7 +29,7 @@
 <div class="event">
 <p>
 <span class="label">Summary:&nbsp;</span>
-<span class="summary">${event.summary.value}</span>
+<span class="summary">${event.summary.value}<c:if test="${oevent:isCancelled(event)}"> - CANCELLED</c:if></span>
 </p>
 <div class="when">
 <p>
