@@ -241,6 +241,46 @@ public final class CalendarDataUtils {
 			return null;
 		}
 	}
+	
+	public static VEvent cheapRecurrenceCopy(VEvent original, Period period) {
+		
+		VEvent copy = new VEvent();
+		copy.getProperties().add(new DtStart(period.getStart()));
+		copy.getProperties().add(new DtEnd(period.getEnd()));
+		copy.getProperties().add(new RecurrenceId(period.getStart()));
+		if(original.getUid() != null) {
+			copy.getProperties().add(propertyCopy(original.getUid()));
+		}
+		if(original.getSummary() != null) {
+			copy.getProperties().add(propertyCopy(original.getSummary()));
+		}
+		if(original.getLocation() != null) {
+			copy.getProperties().add(propertyCopy(original.getLocation()));
+		}
+		if(original.getDescription() != null) {
+			copy.getProperties().add(propertyCopy(original.getDescription()));
+		}
+		if(original.getStatus() != null) {
+			copy.getProperties().add(propertyCopy(original.getStatus()));
+		}
+		
+		return copy;
+	}
+	
+	protected static Property propertyCopy(Property property) {
+		try {
+			return property.copy();
+		} catch (IOException e) {
+			LOG.error("failed to copy property " + property, e);
+			throw new IllegalArgumentException("failed to copy property " + property, e);
+		} catch (URISyntaxException e) {
+			LOG.error("failed to copy property " + property, e);
+			throw new IllegalArgumentException("failed to copy property " + property, e);
+		} catch (ParseException e) {
+			LOG.error("failed to copy property " + property, e);
+			throw new IllegalArgumentException("failed to copy property " + property, e);
+		}
+	}
 	/**
 	 * Remove all RDATE/RRULE/EXDATE/EXRULE properties from the event.
 	 * 

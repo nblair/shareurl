@@ -237,11 +237,11 @@ public class SharedCalendarControllerTest {
 				
 				String [] uidSplit = uid.getValue().split("_UW_");
 				if(uidSplit[1].startsWith("20120620")) {
-					Assert.assertTrue(event.getStartDate().getValue().endsWith("103000"));
-					Assert.assertTrue(event.getEndDate().getValue().endsWith("113000"));
+					Assert.assertTrue("event start date " + event.getStartDate().getValue() + " does not end in 103000", event.getStartDate().getValue().endsWith("103000"));
+					Assert.assertTrue("event end date " + event.getEndDate().getValue() + " does not end in 113000", event.getEndDate().getValue().endsWith("113000"));
 				} else {
-					Assert.assertTrue(event.getStartDate().getValue().endsWith("100000"));
-					Assert.assertTrue(event.getEndDate().getValue().endsWith("110000"));
+					Assert.assertTrue("event start date " + event.getStartDate().getValue() + " does not end in 100000", event.getStartDate().getValue().endsWith("100000"));
+					Assert.assertTrue("event end date " + event.getEndDate().getValue() + " does not end in 110000" , event.getEndDate().getValue().endsWith("110000"));
 				}
 			}
 		}

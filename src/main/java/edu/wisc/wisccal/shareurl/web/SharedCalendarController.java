@@ -250,7 +250,8 @@ public class SharedCalendarController {
 					
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
-						VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
+						//VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
+						VEvent recurrenceInstance = CalendarDataUtils.cheapRecurrenceCopy(event, period);
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
