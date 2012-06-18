@@ -308,10 +308,12 @@ public class SharedCalendarController {
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			agenda = eventFilter.filterEvents(agenda, share.getSharePreferences());
+			/*
 			if(request.getParameter("debug") != null) {
 				model.put("ical", agenda.toString());
 				return "data/display-ical-astext";
 			}
+			*/
 			// short-circuit if a single event can be found.
 			if(null != requestDetails.getEventId()) {
 				return handleSingleEvent(agenda, requestDetails, model, response);
