@@ -62,7 +62,7 @@ ${startDateFormatted}
 <span class="weak summary">No events.</span>
 </c:when>	
 <c:otherwise>		
-	<!-- BEGIN appointments -->
+	
 	<c:forEach var="event" items="${allEvents}">
 	<c:choose>
 	<c:when test="${oevent:isCancelled(event)}">
@@ -72,6 +72,8 @@ ${startDateFormatted}
 	<c:set var="statusClass" value=""/>
 	</c:otherwise>
 	</c:choose>
+	
+	<!-- begin ${event.uid.value} -->
 	<div class="${statusClass}">
 	<c:choose>
 	<c:when test="${oevent:isDayEvent(event) == true}">
@@ -90,8 +92,10 @@ ${startDateFormatted}
 	</c:otherwise>
 	</c:choose>
 	</div>
+	<!-- end ${event.uid.value} -->
+	
 	</c:forEach>
-	<!-- END appointments -->				
+				
 </c:otherwise>
 </c:choose>	
 </div>

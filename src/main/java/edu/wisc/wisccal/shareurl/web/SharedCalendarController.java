@@ -308,18 +308,16 @@ public class SharedCalendarController {
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			agenda = eventFilter.filterEvents(agenda, share.getSharePreferences());
-			/*
-			if(request.getParameter("debug") != null) {
-				model.put("ical", agenda.toString());
-				return "data/display-ical-astext";
+			prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
+			if(share.getSharePreferences().isFreeBusyOnly()) {
+				// this share is free busy only
+				return handleFreeBusyShare(agenda, requestDetails, response, model);
 			}
-			*/
 			// short-circuit if a single event can be found.
 			if(null != requestDetails.getEventId()) {
 				return handleSingleEvent(agenda, requestDetails, model, response);
 			}
-			prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
-
+			
 			// determine the view
 			String viewName;
 			switch(displayFormat) {
@@ -400,7 +398,6 @@ public class SharedCalendarController {
 
 		Calendar freebusy = CalendarDataUtils.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 		if(displayFormat.isMarkupLanguage()) {
-
 			VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
 			PeriodList periodList = new PeriodList();
 			for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {

@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.property.FreeBusy;
 
@@ -112,6 +111,11 @@ public class FreeBusyReadURLController  {
 
 			Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
 			if(null != share && share.isFreeBusyOnly()) {
+				if(!requestDetails.isICalendarOutput()) {
+					// asking for HTML view, should redirect to SharedCalendarController
+					// TODO convert start/end to dr phrase	
+					return "redirect:/u/" + requestDetails.getShareKey();
+				}
 				ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 				Calendar calendar = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 				ShareHelper.filterAgendaForDateRange(calendar, requestDetails);
@@ -120,31 +124,17 @@ public class FreeBusyReadURLController  {
 				model.put("startDate", requestDetails.getStartDate());
 				model.put("endDate", requestDetails.getEndDate());
 				model.put("shareKey", requestDetails.getShareKey());
-				if(requestDetails.isICalendarOutput()) {
-					model.put("ical", freeBusy.toString());
-					if(null != request.getParameter(AS_TEXT)) {
-						return "fb/display-ical-astext";
-					} else {
-						HTTPHelper.addContentDispositionHeader(response, share.getKey() + IFB);
-						return "fb/display-ical";
-					}	
+				
+				model.put("ical", freeBusy.toString());
+				if(null != request.getParameter(AS_TEXT)) {
+					return "fb/display-ical-astext";
 				} else {
-					VFreeBusy vFreeBusy = (VFreeBusy) freeBusy.getComponent(VFreeBusy.VFREEBUSY);
-					PeriodList periodList = new PeriodList();
-					for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
-						FreeBusy fb = (FreeBusy) o;
-						periodList.addAll(fb.getPeriods());
-					}
-					if(periodList.size() == 0) {
-						model.put("noEvents", true);
-					} else {
-						model.put("busyPeriods", periodList);
-					}
-					return "fb/display";
-				}
+					HTTPHelper.addContentDispositionHeader(response, share.getKey() + IFB);
+					return "fb/display-ical";
+				}	
 			} else {
 				response.setStatus(404);
-				return"share-not-found";
+				return "share-not-found";
 			}
 		} catch (FreeBusyParameterFormatException e) {
 			// spec officially designates 400 as the error code for parameter format problems

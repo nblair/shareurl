@@ -44,6 +44,7 @@ import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.model.property.Status;
+import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
@@ -119,6 +120,10 @@ public final class CalendarDataUtils {
 					continue;
 				}
 
+				if(Transp.TRANSPARENT.equals(e.getTransparency())) {
+					// skip transparent events in free busy
+					continue;
+				}
 				PeriodList freeBusyPeriodList = new PeriodList();
 				Period eventPeriod = new Period(new DateTime(e.getStartDate().getDate()), 
 						new DateTime(e.getEndDate(true).getDate()));
