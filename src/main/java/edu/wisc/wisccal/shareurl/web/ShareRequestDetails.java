@@ -25,8 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.util.UrlPathHelper;
@@ -225,16 +223,13 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	@Override
 	public String toString() {
-		ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-		builder.append("pathData", pathData);
-		builder.append("displayFormat", displayFormat);
-		builder.append("client", client);
-		builder.append("overrideBreakRecurrence", overrideBreakRecurrence);
-		builder.append("overrideConvertClass", overrideConvertClass);
-		return builder.toString();
+		return "ShareRequestDetails [pathData=" + pathData + ", client="
+				+ client + ", displayFormat=" + displayFormat
+				+ ", overrideBreakRecurrence=" + overrideBreakRecurrence
+				+ ", overrideConvertClass=" + overrideConvertClass
+				+ ", getEndDate()=" + getEndDate() + ", getStartDate()="
+				+ getStartDate() + "]";
 	}
-
-	
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)

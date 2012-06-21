@@ -307,8 +307,29 @@ public class SharedCalendarController {
 			ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
+			if(LOG.isDebugEnabled()) {
+				List<String> eventUids = eventDebugIds(agenda);
+				LOG.debug("begin processing " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+			}
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("begin processing " + requestDetails + "; " + account + " has raw agenda " + agenda);
+			}
 			agenda = eventFilter.filterEvents(agenda, share.getSharePreferences());
+			if(LOG.isDebugEnabled()) {
+				List<String> eventUids = eventDebugIds(agenda);
+				LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+			}
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("post filterEvents for " + requestDetails + "; " + account + " has raw agenda " + agenda);
+			}
 			prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
+			if(LOG.isDebugEnabled()) {
+				List<String> eventUids = eventDebugIds(agenda);
+				LOG.debug("post prepareModel " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+			}
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("post prepareModel " + requestDetails + "; " + account + " has raw agenda " + agenda);
+			}
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
 				return handleFreeBusyShare(agenda, requestDetails, response, model);
@@ -351,6 +372,19 @@ public class SharedCalendarController {
 		}
 	}
 
+	List<String> eventDebugIds(Calendar calendar) {
+		if(calendar == null) {
+			return Collections.emptyList();
+		}
+		List<String> eventUids = new ArrayList<String>();
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component c = (Component) i.next();
+			if(VEvent.VEVENT.equals(c.getName())) {
+				eventUids.add(CalendarDataUtils.nullSafeGetDebugId(c));
+			}
+		}
+		return eventUids;
+	}
 	/**
 	 * 
 	 * @param agenda
