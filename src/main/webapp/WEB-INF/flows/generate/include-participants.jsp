@@ -35,20 +35,9 @@ padding-right:15px;
 }
 #formscontainer {
 overflow:hidden;
-}
-#include {
-float:left;
 margin:2px;
-padding:3px;
+padding:2.5em;
 border: 1px solid gray;
-width:45%;
-}
-#exclude {
-float:left;
-margin:2px;
-padding:3px;
-border: 1px solid gray;
-width:45%;
 }
 #clear {
 clear:both;
@@ -78,16 +67,13 @@ event participants (organizer and attendees) or not.<br/>
 
 <div id="formscontainer">
 
-<div id="include">
 <form:form>
-<input type="submit" value="Include Event Participants" name="_eventId_include" />
+<select name="_eventId">
+<option value="exclude" selected="selected">Exclude Participants</option>
+<option value="include">Include Participants</option>
+</select>
+<input type="submit" value="Next"/>
 </form:form>
-</div>
-<div id="exclude">
-<form:form>
-<input type="submit" value="Exclude Event Participants" name="_eventId_exclude" />
-</form:form>
-</div>
 
 </div> <!-- end formscontainer -->
 
