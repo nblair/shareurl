@@ -21,6 +21,8 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Version;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
@@ -35,6 +37,8 @@ import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 @Component
 public class EventFilterImpl implements IEventFilter {
 
+	protected final Log log = LogFactory.getLog(this.getClass());
+	
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.ical.IEventFilter#filterEvents(net.fortuna.ical4j.model.Calendar, edu.wisc.wisccal.calendarkey.SharePreferences)
 	 */
@@ -51,10 +55,19 @@ public class EventFilterImpl implements IEventFilter {
 
 		for(Object c : components) {
 			VEvent event = (VEvent) c;
+			boolean kept = false;
+			ISharePreference keeper = null;
 			for(ISharePreference pref : preferences.getPreferences()) {
 				if(pref.matches(event)) {
-					resultComponents.add(event);
+					kept = resultComponents.add(event);
 					break;
+				}
+			}
+			if(log.isDebugEnabled()) {
+				if(kept) {
+					log.debug(keeper + " retained " + CalendarDataUtils.nullSafeGetDebugId(event));
+				} else {
+					log.debug("dropping " + CalendarDataUtils.nullSafeGetDebugId(event));
 				}
 			}
 		}
