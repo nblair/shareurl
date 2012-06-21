@@ -113,8 +113,7 @@ public class FreeBusyReadURLController  {
 			if(null != share && share.isFreeBusyOnly()) {
 				if(!requestDetails.isICalendarOutput()) {
 					// asking for HTML view, should redirect to SharedCalendarController
-					// TODO convert start/end to dr phrase	
-					return "redirect:/u/" + requestDetails.getShareKey();
+					return "redirect:/u/" + requestDetails.getShareKey() + "/" + requestDetails.toShareRequestDatePhrase();
 				}
 				ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 				Calendar calendar = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());

@@ -32,6 +32,8 @@ import net.fortuna.ical4j.model.Period;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.web.util.UrlPathHelper;
 
+import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
+
 
 /**
  * Immutable java bean to extract the FreeBusy Read URL parameters from
@@ -202,6 +204,23 @@ public class FreeBusyReadRequestDetails implements IShareRequestDetails {
 		return DEFAULT_FORMAT.equals(this.format);
 	}
 
+	/**
+	 * Converts the startDate and endDate fields into the 
+	 * "dr(X,Y)" format used by {@link ShareRequestDetails}.
+	 * 
+	 * @see CalendarDataUtils#approximateDifference(Date, Date)
+	 * @return the date phrase
+	 */
+	public String toShareRequestDatePhrase() {
+		Date now = new Date();
+		StringBuilder result = new StringBuilder();
+		result.append("dr(");
+		result.append(CalendarDataUtils.approximateDifference(now, startDate));
+		result.append(",");
+		result.append(CalendarDataUtils.approximateDifference(endDate, now));
+		result.append(")");
+		return result.toString();
+	}
 	/**
 	 * The return value for {@link ServletRequest#getParameterMap()} is a 
 	 * {@link Map} with {@link String}s for keys and {@link String} ARRAYS for values.

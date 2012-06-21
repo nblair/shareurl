@@ -60,6 +60,8 @@ import org.jasig.schedassist.model.ICalendarAccount;
  */
 public final class CalendarDataUtils {
 
+	private static final long MILLISECS_PER_DAY = 24*60*60*1000;
+	
 	private static final String UW_SEPARATOR = "_UW_";
 
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
@@ -371,5 +373,24 @@ public final class CalendarDataUtils {
 			event.getUid().setValue(newUid.toString());
 			event.getProperties().remove(event.getRecurrenceId());
 		}
+	}
+	
+	/**
+	 * Returns the approximate difference in DAYS between start and end.
+	 * 
+	 * @param start
+	 * @param end
+	 * @return the approximate number of days between the 2 dates
+	 */
+	public static long approximateDifference(Date start, Date end) {
+		java.util.Calendar s = java.util.Calendar.getInstance();
+		s.setTime(start);
+		java.util.Calendar e = java.util.Calendar.getInstance();
+		e.setTime(end);
+
+		long endL   =  e.getTimeInMillis() +  e.getTimeZone().getOffset(e.getTimeInMillis());
+		long startL = s.getTimeInMillis() + s.getTimeZone().getOffset(s.getTimeInMillis());
+		
+		return (endL - startL) / MILLISECS_PER_DAY;
 	}
 }
