@@ -42,7 +42,10 @@
 	</bean>
 	
 	<bean id="methodInterceptor" class="org.jasig.schedassist.impl.caldav.NoopHttpMethodInterceptorImpl"/>
+	<!--  
 	<bean id="credentialsProviderFactory" class="org.jasig.schedassist.impl.caldav.oracle.OracleCommsCredentialsProviderFactoryImpl"/>
+	-->
+	<bean id="credentialsProviderFactory" class="org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderFactoryImpl"/>
 	
 	<bean id="caldavAdminAuthScope" class="org.apache.http.auth.AuthScope">
     	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>
