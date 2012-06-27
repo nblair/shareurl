@@ -166,7 +166,7 @@ public class SharedCalendarController {
 		// are we targeting a markup display?
 		if(display.isMarkupLanguage()) {
 			// - norecurrence first priority, will result in "addressable" UID properties for each event, including recurrence instances
-			CalendarDataUtils.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+			CalendarDataUtils.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
@@ -194,7 +194,7 @@ public class SharedCalendarController {
 
 			// - adjust recurrence if necessary
 			if(requestDetails.requiresNoRecurrence()) {
-				CalendarDataUtils.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+				CalendarDataUtils.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
 				ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 			} else if(requestDetails.requiresBreakRecurrence()) {
 				CalendarDataUtils.breakRecurrence(agenda);
@@ -322,7 +322,7 @@ public class SharedCalendarController {
 	 * @return
 	 */
 	protected String handleSingleEvent(final Calendar agenda, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
-		CalendarDataUtils.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+		CalendarDataUtils.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 		ComponentList events = agenda.getComponents(VEvent.VEVENT);
 		VEvent matchingEvent = null;
 		for(Object o : events) {

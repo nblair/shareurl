@@ -254,7 +254,18 @@ public final class CalendarDataUtils {
 		}
 	}
 	
-	public static VEvent cheapRecurrenceCopy(VEvent original, Period period) {
+	/**
+	 * {@link Component#copy()} can be very CPU/RAM expensive.
+	 * This is a cheaper alternative, that constructs a new event and only copies over
+	 * specific properties.
+	 * All X-Properties are ignored, as well as recurrence related properties.
+	 * 
+	 * @param original
+	 * @param period
+	 * @param preserveParticipants if false, ORGANIZER and ATTENDEE properties are not copied
+	 * @return a copy of the event, less some properties
+	 */
+	public static VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants) {
 		
 		VEvent copy = new VEvent();
 		copy.getProperties().add(new DtStart(period.getStart()));
@@ -275,7 +286,12 @@ public final class CalendarDataUtils {
 		if(original.getStatus() != null) {
 			copy.getProperties().add(propertyCopy(original.getStatus()));
 		}
-		
+		if(preserveParticipants) {
+			if(original.getOrganizer() != null) {
+				copy.getProperties().add(propertyCopy(original.getOrganizer()));
+			}
+			copy.getProperties().addAll(original.getProperties(Attendee.ATTENDEE));
+		}
 		return copy;
 	}
 	
@@ -370,9 +386,12 @@ public final class CalendarDataUtils {
 	 * 
 	 * @see PreferRecurrenceComponentComparator
 	 * @param calendar
+	 * @param start
+	 * @param end
+	 * @param preserveParticipants
 	 */
 	@SuppressWarnings("unchecked")
-	public static void noRecurrence(final Calendar calendar, Date start, Date end) {
+	public static void noRecurrence(final Calendar calendar, Date start, Date end, boolean preserveParticipants) {
 		Collections.sort(calendar.getComponents(), new PreferRecurrenceComponentComparator());
 		
 		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
@@ -387,7 +406,7 @@ public final class CalendarDataUtils {
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						//VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
-						VEvent recurrenceInstance = CalendarDataUtils.cheapRecurrenceCopy(event, period);
+						VEvent recurrenceInstance = CalendarDataUtils.cheapRecurrenceCopy(event, period, preserveParticipants);
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
