@@ -18,8 +18,12 @@ package edu.wisc.wisccal.shareurl.ical;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
@@ -48,6 +52,7 @@ import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -358,6 +363,63 @@ public final class CalendarDataUtils {
 			}  
 		}
 	}
+	/**
+	 * Mutative method.
+	 * Implements the "no recurrence" algorithm.
+	 * Expand recurrence for all events in the calendar and remove all recurrence properties.
+	 * 
+	 * @see PreferRecurrenceComponentComparator
+	 * @param calendar
+	 */
+	@SuppressWarnings("unchecked")
+	public static void noRecurrence(final Calendar calendar, Date start, Date end) {
+		Collections.sort(calendar.getComponents(), new PreferRecurrenceComponentComparator());
+		
+		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
+		
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName()) ){
+				VEvent event = (VEvent) component;
+				if(CalendarDataUtils.isEventRecurring(event)) {
+					PeriodList recurringPeriods = CalendarDataUtils.calculateRecurrence(event, start, end);
+					
+					for(Object o: recurringPeriods) {
+						Period period = (Period) o;
+						//VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
+						VEvent recurrenceInstance = CalendarDataUtils.cheapRecurrenceCopy(event, period);
+						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
+						eventMap.put(comboId, recurrenceInstance);
+						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
+					}
+					
+					// remove the "parent" event" now that we have individual recurrence instances
+					if(!recurringPeriods.isEmpty()) {
+						i.remove();
+					}
+				} else if (event.getProperty(RecurrenceId.RECURRENCE_ID) != null) {
+					EventCombinationId comboId = new EventCombinationId(event);
+					eventMap.put(comboId, event);
+					
+					CalendarDataUtils.convertToCombinationUid(event);
+					i.remove();
+				}
+				
+				
+			}
+		}
+		
+		if(!eventMap.values().isEmpty()) {
+			calendar.getComponents().addAll(eventMap.values());
+			// sort once more to shift timezones to the bottom
+			Collections.sort(calendar.getComponents(), new Comparator<Component>() {
+				@Override
+				public int compare(Component o1, Component o2) {
+					return new CompareToBuilder().append(o1.getName(), o2.getName()).toComparison();
+				}
+			});
+		}
+	}
 
 	/**
 	 * 
@@ -392,5 +454,104 @@ public final class CalendarDataUtils {
 		long startL = s.getTimeInMillis() + s.getTimeZone().getOffset(s.getTimeInMillis());
 		
 		return (endL - startL) / MILLISECS_PER_DAY;
+	}
+	/**
+	 * Class to represnt the combination id for an event: UID and RECURRENCE-ID.
+	 * 
+	 * @author Nicholas Blair
+	 */
+	protected static class EventCombinationId {
+		
+		private String uid;
+		private String recurrenceId;
+		/**
+		 * 
+		 * @param event
+		 */
+		protected EventCombinationId(VEvent event) {
+			this.uid = event.getUid().getValue();
+			this.recurrenceId = event.getRecurrenceId().getValue();
+		}
+		/**
+		 * @return the uid
+		 */
+		public String getUid() {
+			return uid;
+		}
+		/**
+		 * @param uid the uid to set
+		 */
+		public void setUid(String uid) {
+			this.uid = uid;
+		}
+		/**
+		 * @return the recurrenceId
+		 */
+		public String getRecurrenceId() {
+			return recurrenceId;
+		}
+		/**
+		 * @param recurrenceId the recurrenceId to set
+		 */
+		public void setRecurrenceId(String recurrenceId) {
+			this.recurrenceId = recurrenceId;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((recurrenceId == null) ? 0 : recurrenceId.hashCode());
+			result = prime * result + ((uid == null) ? 0 : uid.hashCode());
+			return result;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof EventCombinationId)) {
+				return false;
+			}
+			EventCombinationId other = (EventCombinationId) obj;
+			if (recurrenceId == null) {
+				if (other.recurrenceId != null) {
+					return false;
+				}
+			} else if (!recurrenceId.equals(other.recurrenceId)) {
+				return false;
+			}
+			if (uid == null) {
+				if (other.uid != null) {
+					return false;
+				}
+			} else if (!uid.equals(other.uid)) {
+				return false;
+			}
+			return true;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("EventCombinationId [uid=");
+			builder.append(uid);
+			builder.append(", recurrenceId=");
+			builder.append(recurrenceId);
+			builder.append("]");
+			return builder.toString();
+		}
+		
 	}
 }

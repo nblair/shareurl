@@ -50,6 +50,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final String COMPATIBILITY_PARAM = "compat";
 	public static final String BREAK_RECURRENCE = "br";
 	public static final String CONVERT_CLASS = "cc";
+	public static final String NO_RECURRENCE = "nr";
 	
 	public static final String CLIENT_PARAM = "client";
 
@@ -91,6 +92,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	private final ShareDisplayFormat displayFormat;
 	private boolean overrideBreakRecurrence = false;
 	private boolean overrideConvertClass = false;
+	private boolean requestNoRecurrence = false;
 
 	/**
 	 * 
@@ -123,6 +125,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 						overrideBreakRecurrence = true;
 					} else if(CONVERT_CLASS.equals(compatValue)) {
 						overrideConvertClass = true;
+					} else if (NO_RECURRENCE.equals(compatValue)) {
+						requestNoRecurrence = true;
 					}
 				}
 			}
@@ -158,6 +162,25 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		this.displayFormat = displayFormat;
 		this.overrideBreakRecurrence = overrideBreakRecurrence;
 		this.overrideConvertClass = overrideConvertClass;
+	}
+	
+	/**
+	 * @param pathData
+	 * @param client
+	 * @param displayFormat
+	 * @param overrideBreakRecurrence
+	 * @param overrideConvertClass
+	 * @param requestNoRecurrence
+	 */
+	ShareRequestDetails(PathData pathData, Client client,
+			ShareDisplayFormat displayFormat, boolean overrideBreakRecurrence,
+			boolean overrideConvertClass, boolean requestNoRecurrence) {
+		this.pathData = pathData;
+		this.client = client;
+		this.displayFormat = displayFormat;
+		this.overrideBreakRecurrence = overrideBreakRecurrence;
+		this.overrideConvertClass = overrideConvertClass;
+		this.requestNoRecurrence = requestNoRecurrence;
 	}
 
 
@@ -199,6 +222,13 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	public ShareDisplayFormat getDisplayFormat() {
 		return this.displayFormat;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean requiresNoRecurrence() {
+		return requestNoRecurrence;
 	}
 	/**
 	 * 
