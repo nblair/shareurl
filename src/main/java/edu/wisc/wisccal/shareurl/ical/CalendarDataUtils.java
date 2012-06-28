@@ -84,7 +84,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	protected static final String X_UW_OLD_RECURRENCE_ID = "X-UW-OLD-RECUR-ID";
 
 	private static final long MILLISECS_PER_DAY = 24*60*60*1000;
-	
+
 	private static final String UW_SEPARATOR = "_UW_";
 
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
@@ -206,7 +206,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public static boolean isDayEvent(VEvent event) {
 		return Value.DATE.equals(event.getStartDate().getParameter(Value.VALUE));
 	}
-	
+
 	/**
 	 * @param event
 	 * @return true if the event has {@link Status#VEVENT_CANCELLED}.
@@ -263,7 +263,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			return null;
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#cheapRecurrenceCopy(net.fortuna.ical4j.model.component.VEvent, net.fortuna.ical4j.model.Period, boolean)
@@ -271,7 +271,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants) {
-		
+
 		VEvent copy = new VEvent();
 		copy.getProperties().add(new DtStart(period.getStart()));
 		copy.getProperties().add(new DtEnd(period.getEnd()));
@@ -302,7 +302,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 		return copy;
 	}
-	
+
 	/**
 	 * 
 	 * @param property
@@ -401,16 +401,16 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	@SuppressWarnings("unchecked")
 	public void noRecurrence(final Calendar calendar, Date start, Date end, boolean preserveParticipants) {
 		Collections.sort(calendar.getComponents(), new PreferRecurrenceComponentComparator());
-		
+
 		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
-		
+
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName()) ){
 				VEvent event = (VEvent) component;
 				if(CalendarDataUtils.isEventRecurring(event)) {
 					PeriodList recurringPeriods = calculateRecurrence(event, start, end);
-					
+
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						//VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
@@ -419,7 +419,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
 					}
-					
+
 					// remove the "parent" event" now that we have individual recurrence instances
 					if(!recurringPeriods.isEmpty()) {
 						i.remove();
@@ -427,15 +427,15 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				} else if (event.getProperty(RecurrenceId.RECURRENCE_ID) != null) {
 					EventCombinationId comboId = new EventCombinationId(event);
 					eventMap.put(comboId, event);
-					
+
 					CalendarDataUtils.convertToCombinationUid(event);
 					i.remove();
 				}
-				
-				
+
+
 			}
 		}
-		
+
 		if(!eventMap.values().isEmpty()) {
 			calendar.getComponents().addAll(eventMap.values());
 			// sort once more to shift timezones to the bottom
@@ -474,18 +474,18 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(null == organizer && attendees.size() == 0) {
 			return EventParticipation.PERSONAL_EVENT;
 		}
-		
+
 		if(!organizer.getValue().equalsIgnoreCase(mailto(calendarAccount.getEmailAddress()))) {
 			return EventParticipation.ORGANIZER;
 		}
-		
+
 		for(Object o: attendees) {
 			Attendee attendee = (Attendee) o;
 			if(attendee.getValue().equals(mailto(calendarAccount.getEmailAddress()))) {
 				return EventParticipation.ATTENDEE;
 			}
 		}
-		
+
 		return EventParticipation.NOT_INVOLVED;
 	}
 	/*
@@ -528,12 +528,13 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			}
 		}
 	}
-	/* (non-Javadoc)
-	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#simplify(net.fortuna.ical4j.model.Calendar)
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#simplify(net.fortuna.ical4j.model.Calendar, boolean)
 	 */
 	@Override
 	public edu.wisc.wisccal.shareurl.domain.simple.Calendar simplify(
-			Calendar calendar) {
+			Calendar calendar, boolean includeParticipants) {
 		if(calendar == null) {
 			return null;
 		}
@@ -543,7 +544,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
-				Event event = convert((VEvent) component);
+				Event event = convert((VEvent) component, includeParticipants);
 				result.getEntries().add(event);
 			} else if (VFreeBusy.VFREEBUSY.equals(component.getName())) {
 				List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> freeBusy = convert((VFreeBusy) component);
@@ -552,7 +553,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 
 	 * @param vfreebusy
@@ -585,9 +586,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	/**
 	 * 
 	 * @param vevent
+	 * @param removeParticipants
 	 * @return
 	 */
-	public Event convert(VEvent vevent) {
+	public Event convert(VEvent vevent, boolean includeParticipants) {
 		Event event = new Event();
 		event.setUid(nullSafePropertyValue(vevent.getUid()));
 		event.setStartTime(vevent.getStartDate().getDate());
@@ -597,24 +599,26 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		event.setDescription(nullSafePropertyValue(vevent.getDescription()));
 		event.setPrivacy(nullSafePropertyValue(vevent.getClassification()));
 		event.setLocation(nullSafePropertyValue(vevent.getLocation()));
-		net.fortuna.ical4j.model.property.Organizer organizer = vevent.getOrganizer();
-		if(organizer != null) {
-			edu.wisc.wisccal.shareurl.domain.simple.Organizer o = new edu.wisc.wisccal.shareurl.domain.simple.Organizer();
-			o.setDisplayName(nullSafeParameterValue(organizer.getParameter(Cn.CN)));
-			o.setEmailAddress(removeMailto(organizer.getValue()));
-			o.setDesignateOrganizer(nullSafeParameterValue(organizer.getParameter(SentBy.SENT_BY)));
-			event.setOrganizer(o);
-		}
-		PropertyList attendees = vevent.getProperties(Attendee.ATTENDEE);
-		for(Object o: attendees) {
-			Attendee attendee = (Attendee) o;
-			
-			edu.wisc.wisccal.shareurl.domain.simple.Attendee a = new edu.wisc.wisccal.shareurl.domain.simple.Attendee();
-			a.setDisplayName(nullSafeParameterValue(attendee.getParameter(Cn.CN)));
-			a.setEmailAddress(removeMailto(attendee.getValue()));
-			a.setParticipationStatus(nullSafeParameterValue(attendee.getParameter(PartStat.PARTSTAT)));
-			
-			event.getAttendees().add(a);
+		if(includeParticipants) {
+			net.fortuna.ical4j.model.property.Organizer organizer = vevent.getOrganizer();
+			if(organizer != null) {
+				edu.wisc.wisccal.shareurl.domain.simple.Organizer o = new edu.wisc.wisccal.shareurl.domain.simple.Organizer();
+				o.setDisplayName(nullSafeParameterValue(organizer.getParameter(Cn.CN)));
+				o.setEmailAddress(removeMailto(organizer.getValue()));
+				o.setDesignateOrganizer(nullSafeParameterValue(organizer.getParameter(SentBy.SENT_BY)));
+				event.setOrganizer(o);
+			}
+			PropertyList attendees = vevent.getProperties(Attendee.ATTENDEE);
+			for(Object o: attendees) {
+				Attendee attendee = (Attendee) o;
+
+				edu.wisc.wisccal.shareurl.domain.simple.Attendee a = new edu.wisc.wisccal.shareurl.domain.simple.Attendee();
+				a.setDisplayName(nullSafeParameterValue(attendee.getParameter(Cn.CN)));
+				a.setEmailAddress(removeMailto(attendee.getValue()));
+				a.setParticipationStatus(nullSafeParameterValue(attendee.getParameter(PartStat.PARTSTAT)));
+
+				event.getAttendees().add(a);
+			}
 		}
 		event.setRecurrenceId(nullSafePropertyValue(vevent.getRecurrenceId()));
 		if(event.getRecurrenceId() == null) {
@@ -636,14 +640,14 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(property == null) {
 			return null;
 		}
-		
+
 		return property.getValue();
 	}
 	String nullSafeParameterValue(Parameter parameter) {
 		if(parameter == null) { 
 			return null;
 		}
-		
+
 		return parameter.getValue();
 	}
 	/**
@@ -662,7 +666,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			event.getProperties().remove(event.getRecurrenceId());
 		}
 	}
-	
+
 	/**
 	 * Returns the approximate difference in DAYS between start and end.
 	 * 
@@ -678,10 +682,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 		long endL   =  e.getTimeInMillis() +  e.getTimeZone().getOffset(e.getTimeInMillis());
 		long startL = s.getTimeInMillis() + s.getTimeZone().getOffset(s.getTimeInMillis());
-		
+
 		return (endL - startL) / MILLISECS_PER_DAY;
 	}
-	
+
 	/**
 	 * 
 	 * @param emailAddress

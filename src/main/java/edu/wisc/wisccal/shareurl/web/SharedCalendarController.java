@@ -224,7 +224,7 @@ public class SharedCalendarController {
 			Collections.sort(allEvents, new VEventComparator());
 
 			if(ShareDisplayFormat.JSON.equals(display)) {
-				model.put("calendar", calendarDataProcessor.simplify(agenda));
+				model.put("calendar", calendarDataProcessor.simplify(agenda, sharePreferences.isIncludeParticipants()));
 			} else {
 				model.put("allEvents", allEvents);
 				model.put("startDate", requestDetails.getStartDate());
@@ -233,7 +233,7 @@ public class SharedCalendarController {
 				model.put("datePhrase", requestDetails.getDatePhrase());	
 			}
 		} else {
-			// we are targeting a data format output (JSON or iCalendar)
+			// we are targeting iCalendar format
 			// - remove participants if necessary
 			if(!sharePreferences.isIncludeParticipants()) {
 				calendarDataProcessor.removeParticipants(agenda, account);
@@ -431,7 +431,7 @@ public class SharedCalendarController {
 
 		} else {
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
-				model.put("freebusy", calendarDataProcessor.simplify(freebusy));
+				model.put("freebusy", calendarDataProcessor.simplify(freebusy, true));
 			} else if (displayFormat.isIcalendar()) {
 				model.put("ical", freebusy.toString());
 			}
