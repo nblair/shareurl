@@ -30,8 +30,10 @@ import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.property.FreeBusy;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.model.property.Uid;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
@@ -209,15 +211,13 @@ public class SharedCalendarController {
 		}
 		// are we targeting a markup display?
 		if(display.isMarkupLanguage()) {
-			// - norecurrence first priority, will result in "addressable" UID properties for each event, including recurrence instances
-			calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
+			// - expandrecurrence first priority, want VEVENTs for each recurrence instance
+			calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 
 			ComponentList components = agenda.getComponents(VEvent.VEVENT);
-
-			model.put("empty", components.size() == 0);
 			@SuppressWarnings("unchecked")
 			List<VEvent> allEvents = new ArrayList<VEvent>(components);
 
@@ -226,6 +226,7 @@ public class SharedCalendarController {
 			if(ShareDisplayFormat.JSON.equals(display)) {
 				model.put("calendar", calendarDataProcessor.simplify(agenda, sharePreferences.isIncludeParticipants()));
 			} else {
+				model.put("empty", components.size() == 0);
 				model.put("allEvents", allEvents);
 				model.put("startDate", requestDetails.getStartDate());
 				model.put("endDate", requestDetails.getEndDate());
@@ -366,6 +367,21 @@ public class SharedCalendarController {
 		}
 		return eventUids;
 	}
+	boolean eventMatchesRequestedEventId(VEvent event, ShareRequestDetails requestDetails) {
+		Uid currentUid = event.getUid();
+		if(null != currentUid && requestDetails.getEventId().equals(currentUid.getValue())) {
+			// match UID, now safely match recurrenceId
+			RecurrenceId recurId = event.getRecurrenceId();
+			if(recurId == null && StringUtils.isBlank(requestDetails.getRecurrenceId())) {
+				return true;
+			} else if (recurId != null && recurId.getValue().equals(requestDetails.getRecurrenceId())) {
+				return true;
+			}
+
+		}
+
+		return false;
+	}
 	/**
 	 * 
 	 * @param agenda
@@ -373,15 +389,21 @@ public class SharedCalendarController {
 	 * @return
 	 */
 	protected String handleSingleEvent(final Calendar agenda, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
-		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
-		ComponentList events = agenda.getComponents(VEvent.VEVENT);
+		// - expandrecurrence first priority, want VEVENTs for each recurrence instance
+		calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
+
+		// - filter VEvents to those only with DTSTART within requestDetails start/end
+		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+		
 		VEvent matchingEvent = null;
-		for(Object o : events) {
-			VEvent current = (VEvent) o;
-			Uid currentUid = current.getUid();
-			if(null != currentUid && requestDetails.getEventId().equals(currentUid.getValue())) {
-				matchingEvent = current;
-				break;
+		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent current = (VEvent) component;
+				if(eventMatchesRequestedEventId(current, requestDetails)) {
+					matchingEvent = current;
+					break;
+				}
 			}
 		}
 

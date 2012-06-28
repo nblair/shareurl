@@ -393,6 +393,57 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			}  
 		}
 	}
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#expandRecurrence(net.fortuna.ical4j.model.Calendar, java.util.Date, java.util.Date)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void expandRecurrence(Calendar calendar, Date start, Date end, boolean preserveParticipants) {
+		Collections.sort(calendar.getComponents(), new PreferRecurrenceComponentComparator());
+
+		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
+
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName()) ){
+				VEvent event = (VEvent) component;
+				if(CalendarDataUtils.isEventRecurring(event)) {
+					PeriodList recurringPeriods = calculateRecurrence(event, start, end);
+
+					for(Object o: recurringPeriods) {
+						Period period = (Period) o;
+						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants);
+						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
+						eventMap.put(comboId, recurrenceInstance);
+					}
+
+					// remove the "parent" event" now that we have individual recurrence instances
+					if(!recurringPeriods.isEmpty()) {
+						i.remove();
+					}
+				} else if (event.getProperty(RecurrenceId.RECURRENCE_ID) != null) {
+					EventCombinationId comboId = new EventCombinationId(event);
+					eventMap.put(comboId, event);
+					i.remove();
+				}
+
+
+			}
+		}
+
+		if(!eventMap.values().isEmpty()) {
+			calendar.getComponents().addAll(eventMap.values());
+			// sort once more to shift timezones to the bottom
+			Collections.sort(calendar.getComponents(), new Comparator<Component>() {
+				@Override
+				public int compare(Component o1, Component o2) {
+					return new CompareToBuilder().append(o1.getName(), o2.getName()).toComparison();
+				}
+			});
+		}
+		
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#noRecurrence(net.fortuna.ical4j.model.Calendar, java.util.Date, java.util.Date, boolean)
@@ -539,7 +590,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			return null;
 		}
 		edu.wisc.wisccal.shareurl.domain.simple.Calendar result = new edu.wisc.wisccal.shareurl.domain.simple.Calendar();
-		result.setProductId(nullSafePropertyValue(calendar.getProductId()));
+		result.setProductId(SHAREURL_PROD_ID);
 		result.setVersion(nullSafePropertyValue(calendar.getVersion()));
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();

@@ -40,6 +40,10 @@ import edu.wisc.wisccal.shareurl.domain.Share;
  */
 public final class ShareRequestDetails implements IShareRequestDetails {
 
+	public static final String PERSONAL = "personal";
+	public static final String ATTENDING = "attending";
+	public static final String ORGANIZING = "organizing";
+
 	private static Log LOG = LogFactory.getLog(ShareRequestDetails.class);
 
 	public static final String RSS = "rss";
@@ -146,11 +150,11 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 			}
 		}
 		
-		if(request.getParameter("organizing") != null) {
+		if(request.getParameter(ORGANIZING) != null) {
 			this.organizerOnly = true;
-		} else if (request.getParameter("attending") != null) {
+		} else if (request.getParameter(ATTENDING) != null) {
 			this.attendeeOnly = true;
-		} else if (request.getParameter("personal") != null) {
+		} else if (request.getParameter(PERSONAL) != null) {
 			this.personalOnly = true;
 		}
 		
@@ -208,10 +212,17 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	}
 
 	/**
-	 * @return the eventId, if defined (may return null)
+	 * @return the eventId requested in the path, if defined (may return null)
 	 */
 	public String getEventId() {
 		return this.pathData.getEventId();
+	}
+	/**
+	 * 
+	 * @return the recurrenceId requested in the path, if defined (may return null)
+	 */
+	public String getRecurrenceId() {
+		return this.pathData.getRecurrenceId();
 	}
 	/**
 	 * @return the endDate (never null)
@@ -271,6 +282,12 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	public boolean isAttendeeOnly() {
 		return attendeeOnly;
+	}
+	/**
+	 * @return the personalOnly
+	 */
+	public boolean isPersonalOnly() {
+		return personalOnly;
 	}
 
 	public int getNumberDaysDisplayed() {
@@ -400,12 +417,21 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 
 		String datePhraseCandidate = "";
 
-		// if we have three tokens
-		if(tokens.length == 3) {
-			// second token is date range
+		
+		if(tokens.length == 4) {
 			datePhraseCandidate = tokens[1];
-			// third token is event id
 			pathData.setEventId(tokens[2]);
+			pathData.setRecurrenceId(tokens[3]);
+		} else if(tokens.length == 3) {
+			// 2nd token could be either date range or uid
+			Matcher matcher = DR_PATTERN.matcher(tokens[1]);
+			if(matcher.matches()) {
+				datePhraseCandidate = tokens[1];
+				pathData.setEventId(tokens[2]);
+			} else {
+				pathData.setEventId(tokens[1]);
+				pathData.setRecurrenceId(tokens[2]);
+			}
 		} else if(tokens.length == 2){
 			// 2nd token could be either date range or uid
 			Matcher matcher = DR_PATTERN.matcher(tokens[1]);
@@ -430,7 +456,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @return
 	 */
 	static ShareDisplayFormat determineDisplayFormat(final HttpServletRequest request) {
-		String jsonAttribute = (String) request.getParameter("json");
+		String jsonAttribute = (String) request.getParameter(JSON);
 		if(null != jsonAttribute) {
 			return ShareDisplayFormat.JSON;
 		}
@@ -453,6 +479,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	}
 
 	/**
+	 * Mutates the {@link PathData} argument, calling {@link PathData#setStartDate(Date)}
+	 * and {@link PathData#setEndDate(Date)} as appropriate.
 	 * 
 	 * @param datePhraseCandidate
 	 * @param pathData
@@ -562,6 +590,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	protected static class PathData {
 		private String shareKey;
 		private String eventId;
+		private String recurrenceId;
 		private String datePhrase;
 		private Date startDate;
 		private Date endDate;
@@ -651,6 +680,18 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		public void setEndDateIndex(int endDateIndex) {
 			this.endDateIndex = endDateIndex;
 		}
+		/**
+		 * @return the recurrenceId
+		 */
+		public String getRecurrenceId() {
+			return recurrenceId;
+		}
+		/**
+		 * @param recurrenceId the recurrenceId to set
+		 */
+		public void setRecurrenceId(String recurrenceId) {
+			this.recurrenceId = recurrenceId;
+		}
 		/* (non-Javadoc)
 		 * @see java.lang.Object#hashCode()
 		 */
@@ -666,6 +707,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 			result = prime * result
 					+ ((eventId == null) ? 0 : eventId.hashCode());
 			result = prime * result
+					+ ((recurrenceId == null) ? 0 : recurrenceId.hashCode());
+			result = prime * result
 					+ ((shareKey == null) ? 0 : shareKey.hashCode());
 			result = prime * result
 					+ ((startDate == null) ? 0 : startDate.hashCode());
@@ -677,57 +720,47 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		 */
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) {
+			if (this == obj)
 				return true;
-			}
-			if (obj == null) {
+			if (obj == null)
 				return false;
-			}
-			if (!(obj instanceof PathData)) {
+			if (getClass() != obj.getClass())
 				return false;
-			}
 			PathData other = (PathData) obj;
 			if (datePhrase == null) {
-				if (other.datePhrase != null) {
+				if (other.datePhrase != null)
 					return false;
-				}
-			} else if (!datePhrase.equals(other.datePhrase)) {
+			} else if (!datePhrase.equals(other.datePhrase))
 				return false;
-			}
 			if (endDate == null) {
-				if (other.endDate != null) {
+				if (other.endDate != null)
 					return false;
-				}
-			} else if (!endDate.equals(other.endDate)) {
+			} else if (!endDate.equals(other.endDate))
 				return false;
-			}
-			if (endDateIndex != other.endDateIndex) {
+			if (endDateIndex != other.endDateIndex)
 				return false;
-			}
 			if (eventId == null) {
-				if (other.eventId != null) {
+				if (other.eventId != null)
 					return false;
-				}
-			} else if (!eventId.equals(other.eventId)) {
+			} else if (!eventId.equals(other.eventId))
 				return false;
-			}
+			if (recurrenceId == null) {
+				if (other.recurrenceId != null)
+					return false;
+			} else if (!recurrenceId.equals(other.recurrenceId))
+				return false;
 			if (shareKey == null) {
-				if (other.shareKey != null) {
+				if (other.shareKey != null)
 					return false;
-				}
-			} else if (!shareKey.equals(other.shareKey)) {
+			} else if (!shareKey.equals(other.shareKey))
 				return false;
-			}
 			if (startDate == null) {
-				if (other.startDate != null) {
+				if (other.startDate != null)
 					return false;
-				}
-			} else if (!startDate.equals(other.startDate)) {
+			} else if (!startDate.equals(other.startDate))
 				return false;
-			}
-			if (startDateIndex != other.startDateIndex) {
+			if (startDateIndex != other.startDateIndex)
 				return false;
-			}
 			return true;
 		}
 		/* (non-Javadoc)
@@ -735,23 +768,11 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		 */
 		@Override
 		public String toString() {
-			StringBuilder builder = new StringBuilder();
-			builder.append("PathData [shareKey=");
-			builder.append(shareKey);
-			builder.append(", eventId=");
-			builder.append(eventId);
-			builder.append(", datePhrase=");
-			builder.append(datePhrase);
-			builder.append(", startDate=");
-			builder.append(startDate);
-			builder.append(", endDate=");
-			builder.append(endDate);
-			builder.append(", startDateIndex=");
-			builder.append(startDateIndex);
-			builder.append(", endDateIndex=");
-			builder.append(endDateIndex);
-			builder.append("]");
-			return builder.toString();
+			return "PathData [shareKey=" + shareKey + ", eventId=" + eventId
+					+ ", recurrenceId=" + recurrenceId + ", datePhrase="
+					+ datePhrase + ", startDate=" + startDate + ", endDate="
+					+ endDate + ", startDateIndex=" + startDateIndex
+					+ ", endDateIndex=" + endDateIndex + "]";
 		}
 		
 		

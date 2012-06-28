@@ -226,6 +226,24 @@ public class ShareRequestDetailsTest {
 		assertEquals("someeventid", details.getEventId());
 		assertEquals("someshareid", details.getShareKey());
 	}	
+	/**
+	 * pass "/someshareid/dr(1,1)/someeventid", expect proper dates, "someshareid" for share id, and "someeventid" for event id.
+	 * @throws Exception
+	 */
+	@Test
+	public void testShareIdValidDrEventIdAndRecurrenceId() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid/dr(1,1)/someeventid/recurid");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		
+		Date [] expectedDates = createExpectedDates(1, 1);
+		assertEquals(expectedDates[0], details.getStartDate());
+		assertEquals(expectedDates[1], details.getEndDate());
+		assertEquals("dr(1,1)", details.getDatePhrase());
+		
+		assertEquals("someeventid", details.getEventId());
+		assertEquals("someshareid", details.getShareKey());
+		assertEquals("recurid", details.getRecurrenceId());
+	}	
 	
 	/**
 	 * pass malformed date range "/someshareid/d(1,2)", expect defaults for date.
@@ -260,8 +278,9 @@ public class ShareRequestDetailsTest {
 		assertEquals(expectedDates[0], details.getStartDate());
 		assertEquals(expectedDates[1], details.getEndDate());
 		assertEquals("dr(0,0)", details.getDatePhrase());
-		
-		assertEquals("someeventid", details.getEventId());
+		// since d(1,2) doesn't match the DR pattern, this token will get interpreted as the event Id
+		assertEquals("d(1,2)", details.getEventId());
+		assertEquals("someeventid", details.getRecurrenceId());
 		assertEquals("someshareid", details.getShareKey());
 	}	
 	

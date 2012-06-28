@@ -107,7 +107,6 @@ public class SharedCalendarControllerTest {
 		Assert.assertEquals("12345abcde", model.get("shareId"));
 		Assert.assertFalse((Boolean) model.get("empty"));
 		Assert.assertEquals(calendar.getComponents(), model.get("allEvents"));
-		Assert.assertEquals(1, StringUtils.countMatches(calendar.toString(), "UID:xyz123_UW_"));
 	}
 	
 	/**
@@ -198,12 +197,12 @@ public class SharedCalendarControllerTest {
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(5, calendar.getComponents(VEvent.VEVENT).size());
-		// inspect the calendar, look for the following events:
+		List<String> expectedStarts = Arrays.asList(new String[] {"20120618T083000", "20120619T083000","20120620T083000", "20120621T083000","20120622T083000"} );
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
 				VEvent event = (VEvent) component;
-				Assert.assertTrue(event.getUid().getValue().contains("_UW_"));
+				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
 			}
 		}
 	}
@@ -234,22 +233,12 @@ public class SharedCalendarControllerTest {
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(3, calendar.getComponents(VEvent.VEVENT).size());
-		// inspect the calendar, look for the following events:
+		List<String> expectedStarts = Arrays.asList(new String[] {"20120618T100000", "20120620T103000", "20120622T100000"} );
 		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
 				VEvent event = (VEvent) component;
-				Uid uid = event.getUid();
-				Assert.assertTrue(uid.getValue().contains("_UW_"));
-				
-				String [] uidSplit = uid.getValue().split("_UW_");
-				if(uidSplit[1].startsWith("20120620")) {
-					Assert.assertTrue("event start date " + event.getStartDate().getValue() + " does not end in 103000", event.getStartDate().getValue().endsWith("103000"));
-					Assert.assertTrue("event end date " + event.getEndDate().getValue() + " does not end in 113000", event.getEndDate().getValue().endsWith("113000"));
-				} else {
-					Assert.assertTrue("event start date " + event.getStartDate().getValue() + " does not end in 100000", event.getStartDate().getValue().endsWith("100000"));
-					Assert.assertTrue("event end date " + event.getEndDate().getValue() + " does not end in 110000" , event.getEndDate().getValue().endsWith("110000"));
-				}
+				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
 			}
 		}
 	}
@@ -287,8 +276,6 @@ public class SharedCalendarControllerTest {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
 				VEvent event = (VEvent) component;
-				Uid uid = event.getUid();
-				Assert.assertTrue(uid.getValue().contains("_UW_"));
 				
 				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
 			}

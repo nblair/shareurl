@@ -79,18 +79,23 @@ ${startDateFormatted}
 	<c:when test="${oevent:isDayEvent(event) == true}">
 	<img src="${flagIcon}" alt="Event" title="Event"/>
 	<span class="weak"><fmt:formatDate value="${event.startDate.date}" type="time" pattern="MM/dd/yyyy"/>&nbsp;All day</span>
-	<br/>
-	<a title="event details" href="<c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}"/>"><span class="summary">${event.summary.value}</span></a>
-	<br/>
 	</c:when>
 	<c:otherwise>
 	<img src="${clockIcon}" alt="Meeting" title="Meeting"/>
 	<span class="weak"><fmt:formatDate value="${event.startDate.date}" type="time" pattern="MM/dd/yyyy"/>&nbsp;<fmt:formatDate value="${event.startDate.date}" type="time" pattern="hh:mm a"/> - <fmt:formatDate value="${event.endDate.date}" type="time" pattern="hh:mm a"/></span>
-	<br/>
-	<a title="event details" href="<c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}"/>"><span class="summary">${event.summary.value}</span></a>
-	<br/>
 	</c:otherwise>
 	</c:choose>
+	<br/>
+	<c:choose>
+	<c:when test="${empty event.recurrenceId}">
+	<a title="event details" href="<c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}"/>"><span class="summary">${event.summary.value}</span></a>
+	</c:when>
+	<c:otherwise>
+	<a title="event details" href="<c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}/${event.recurrenceId.value}"/>"><span class="summary">${event.summary.value}</span></a>
+	</c:otherwise>
+	</c:choose>
+	
+	<br/>
 	</div>
 	<!-- end ${event.uid.value} -->
 	

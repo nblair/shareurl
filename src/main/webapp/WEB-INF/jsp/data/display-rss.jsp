@@ -16,8 +16,17 @@
       </c:if>
       ]]></description>
       <pubDate><fmt:formatDate value="${event.startDate.date}" type="time" pattern="EEE, dd MMM yyyy HH:mm:ss z"/></pubDate>
+      <c:choose>
+      <c:when test="${empty event.recurrenceId}">
       <guid><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}"/></guid>   
       <link><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}"/></link>
+      </c:when>
+      <c:otherwise>
+      <guid><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}/${event.recurrenceId.value}"/></guid>   
+      <link><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}/${event.recurrenceId.value}"/></link>
+      </c:otherwise>
+      </c:choose>
+      
     </item>
     </c:forEach>
   </channel>

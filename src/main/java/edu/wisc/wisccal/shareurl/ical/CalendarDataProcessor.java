@@ -116,6 +116,16 @@ public interface CalendarDataProcessor {
 	
 	/**
 	 * Mutative method.
+	 * Expands recurrence for all events in the calendar.
+	 * 
+	 * @param calendar
+	 * @param start
+	 * @param end
+	 * @param preserveParticipants
+	 */
+	void expandRecurrence(final Calendar calendar, java.util.Date start, java.util.Date end, boolean preserveParticipants);
+	/**
+	 * Mutative method.
 	 * Implements the "no recurrence" algorithm.
 	 * Expand recurrence for all events in the calendar and remove all recurrence properties.
 	 * 
