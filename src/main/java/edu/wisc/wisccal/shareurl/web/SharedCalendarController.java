@@ -214,7 +214,7 @@ public class SharedCalendarController {
 
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
-			
+
 			ComponentList components = agenda.getComponents(VEvent.VEVENT);
 
 			model.put("empty", components.size() == 0);
@@ -251,7 +251,7 @@ public class SharedCalendarController {
 			if(requestDetails.requiresConvertClass()) {
 				calendarDataProcessor.convertClassPublic(agenda);
 			}
-			
+
 			model.put("ical", agenda.toString());
 		}
 	}
@@ -303,7 +303,7 @@ public class SharedCalendarController {
 				// this share is free busy only
 				return handleFreeBusyShare(agenda, requestDetails, response, model);
 			}
-			
+
 			prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
 			if(LOG.isDebugEnabled()) {
 				List<String> eventUids = eventDebugIds(agenda);
@@ -312,12 +312,12 @@ public class SharedCalendarController {
 			if(LOG.isTraceEnabled()) {
 				LOG.trace("post prepareModel " + requestDetails + "; " + account + " has raw agenda " + agenda);
 			}
-			
+
 			// short-circuit if a single event can be found.
 			if(null != requestDetails.getEventId()) {
 				return handleSingleEvent(agenda, requestDetails, model, response);
 			}
-			
+
 			// determine the view
 			String viewName;
 			switch(displayFormat) {
@@ -381,6 +381,7 @@ public class SharedCalendarController {
 			Uid currentUid = current.getUid();
 			if(null != currentUid && requestDetails.getEventId().equals(currentUid.getValue())) {
 				matchingEvent = current;
+				break;
 			}
 		}
 
@@ -411,31 +412,33 @@ public class SharedCalendarController {
 		model.put("requestDetails", requestDetails);
 		final ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 
+		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
+		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+
 		Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 		if(displayFormat.isMarkupLanguage()) {
-			VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
-			PeriodList periodList = new PeriodList();
-			for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
-				FreeBusy fb = (FreeBusy) o;
-				periodList.addAll(fb.getPeriods());
-			}
-			if(periodList.size() == 0) {
-				model.put("noEvents", true);
-			} else {
-				model.put("busyPeriods", periodList);
-			}
-			model.put("startDate", requestDetails.getStartDate());
-			model.put("endDate", requestDetails.getEndDate());
-			model.put("shareKey", requestDetails.getShareKey());
-			model.put("datePhrase", requestDetails.getDatePhrase());
-
-		} else {
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
 				model.put("freebusy", calendarDataProcessor.simplify(freebusy, true));
-			} else if (displayFormat.isIcalendar()) {
-				model.put("ical", freebusy.toString());
+			} else {
+				VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
+				PeriodList periodList = new PeriodList();
+				for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
+					FreeBusy fb = (FreeBusy) o;
+					periodList.addAll(fb.getPeriods());
+				}
+				if(periodList.size() == 0) {
+					model.put("noEvents", true);
+				} else {
+					model.put("busyPeriods", periodList);
+				}
+				model.put("startDate", requestDetails.getStartDate());
+				model.put("endDate", requestDetails.getEndDate());
+				model.put("shareKey", requestDetails.getShareKey());
+				model.put("datePhrase", requestDetails.getDatePhrase());
 			}
-			
+		} else {	
+			// display format is iCalendar
+			model.put("ical", freebusy.toString());
 		} 
 		// determine the view
 		String viewName;
@@ -461,5 +464,5 @@ public class SharedCalendarController {
 		return viewName;
 	}
 
-	
+
 }
