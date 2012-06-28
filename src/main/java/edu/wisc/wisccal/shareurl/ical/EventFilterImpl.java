@@ -23,6 +23,7 @@ import net.fortuna.ical4j.model.property.Version;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
@@ -38,7 +39,22 @@ import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 public class EventFilterImpl implements IEventFilter {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
-	
+	private CalendarDataProcessor calendarDataProcessor;
+	/**
+	 * @return the calendarDataProcessor
+	 */
+	public CalendarDataProcessor getCalendarDataProcessor() {
+		return calendarDataProcessor;
+	}
+	/**
+	 * @param calendarDataProcessor the calendarDataProcessor to set
+	 */
+	@Autowired
+	public void setCalendarDataProcessor(CalendarDataProcessor calendarDataProcessor) {
+		this.calendarDataProcessor = calendarDataProcessor;
+	}
+
+
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.ical.IEventFilter#filterEvents(net.fortuna.ical4j.model.Calendar, edu.wisc.wisccal.calendarkey.SharePreferences)
 	 */
@@ -65,9 +81,9 @@ public class EventFilterImpl implements IEventFilter {
 			}
 			if(log.isDebugEnabled()) {
 				if(kept) {
-					log.debug(keeper + " retained " + CalendarDataUtils.nullSafeGetDebugId(event));
+					log.debug(keeper + " retained " + calendarDataProcessor.getDebugId(event));
 				} else {
-					log.debug("dropping " + CalendarDataUtils.nullSafeGetDebugId(event));
+					log.debug("dropping " + calendarDataProcessor.getDebugId(event));
 				}
 			}
 		}

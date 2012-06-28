@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
-import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
+import edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor;
 
 /**
  * <p>FreeBusy shares support an additional URL syntax defined as "Free Busy Read URL" (Calconnect Document CD0903, Version 1.0).
@@ -74,6 +74,7 @@ public class FreeBusyReadURLController  {
 	private IShareDao shareDao;
 	private ICalendarDataDao calendarDataDao;
 	private ICalendarAccountDao calendarAccountDao;
+	private CalendarDataProcessor calendarDataProcessor;
 	/**
 	 * @param shareDao the shareDao to set
 	 */
@@ -95,7 +96,37 @@ public class FreeBusyReadURLController  {
 	public void setCalendarAccountDao(@Qualifier("composite") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
 	}
-
+	/**
+	 * @return the calendarDataProcessor
+	 */
+	public CalendarDataProcessor getCalendarDataProcessor() {
+		return calendarDataProcessor;
+	}
+	/**
+	 * @param calendarDataProcessor the calendarDataProcessor to set
+	 */
+	@Autowired
+	public void setCalendarDataProcessor(CalendarDataProcessor calendarDataProcessor) {
+		this.calendarDataProcessor = calendarDataProcessor;
+	}
+	/**
+	 * @return the shareDao
+	 */
+	public IShareDao getShareDao() {
+		return shareDao;
+	}
+	/**
+	 * @return the calendarDataDao
+	 */
+	public ICalendarDataDao getCalendarDataDao() {
+		return calendarDataDao;
+	}
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
 	/**
 	 * 
 	 * @param request
@@ -118,7 +149,7 @@ public class FreeBusyReadURLController  {
 				ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 				Calendar calendar = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 				ShareHelper.filterAgendaForDateRange(calendar, requestDetails);
-				Calendar freeBusy = CalendarDataUtils.convertToFreeBusy(calendar, requestDetails.getStartDate(), requestDetails.getEndDate());
+				Calendar freeBusy = calendarDataProcessor.convertToFreeBusy(calendar, requestDetails.getStartDate(), requestDetails.getEndDate());
 
 				model.put("startDate", requestDetails.getStartDate());
 				model.put("endDate", requestDetails.getEndDate());

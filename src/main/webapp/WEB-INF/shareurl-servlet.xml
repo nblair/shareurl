@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:webflow="http://www.springframework.org/schema/webflow-config"
@@ -40,11 +41,16 @@
 	   <property name="flowExecutor" ref="flowExecutor"/>
 	</bean>
 
-	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-		<property name="viewClass"><value>org.springframework.web.servlet.view.JstlView</value></property>
-		<property name="prefix"><value>/WEB-INF/jsp/</value></property>
-		<property name="suffix"><value>.jsp</value></property>
-	</bean>
+	<bean id="xmlViewResolver" class="org.springframework.web.servlet.view.XmlViewResolver"
+            p:order="0" 
+            p:location="/WEB-INF/views.xml"/>
+
+    <bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"   
+    		p:order="1" 
+    		p:cache="true"
+        	p:viewClass="org.springframework.web.servlet.view.JstlView"
+       	 	p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" />
+       	 	
 	<bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
 		<property name="warnLogCategory" value="edu.wisc.wisccal.uncaughterrors"/>
 		<property name="exceptionMappings">

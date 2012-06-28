@@ -73,8 +73,8 @@ public class CalendarDataUtilsTest {
 		Calendar original = new Calendar(components);
 		original.getProperties().add(Version.VERSION_2_0);
 		original.getProperties().add(new ProdId(CalendarDataUtils.SHAREURL_PROD_ID));
-		
-		CalendarDataUtils.convertClassPublic(original);
+		CalendarDataUtils instance = new CalendarDataUtils();
+		instance.convertClassPublic(original);
 		Assert.assertEquals(clone, original.getComponent(VEvent.VEVENT));
 	}
 	
@@ -96,7 +96,8 @@ public class CalendarDataUtilsTest {
 		components.add(confidentialEvent);
 		
 		Calendar original = new Calendar(components);
-		CalendarDataUtils.convertClassPublic(original);
+		CalendarDataUtils instance = new CalendarDataUtils();
+		instance.convertClassPublic(original);
 		
 		for (Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
 			VEvent event = (VEvent) i.next();  

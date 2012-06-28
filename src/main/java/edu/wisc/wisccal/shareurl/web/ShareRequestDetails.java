@@ -44,6 +44,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 
 	public static final String RSS = "rss";
 	public static final String ICAL = "ical";
+	public static final String JSON = "json";
 	public static final String ASTEXT = "asText";
 
 	public static final String USER_AGENT = "User-Agent";
@@ -93,6 +94,9 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	private boolean overrideBreakRecurrence = false;
 	private boolean overrideConvertClass = false;
 	private boolean requestNoRecurrence = false;
+	private boolean organizerOnly = false;
+	private boolean attendeeOnly = false;
+	private boolean personalOnly = false;
 
 	/**
 	 * 
@@ -142,6 +146,14 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 			}
 		}
 		
+		if(request.getParameter("organizing") != null) {
+			this.organizerOnly = true;
+		} else if (request.getParameter("attending") != null) {
+			this.attendeeOnly = true;
+		} else if (request.getParameter("personal") != null) {
+			this.personalOnly = true;
+		}
+		
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(this);
 		}
@@ -174,13 +186,16 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	ShareRequestDetails(PathData pathData, Client client,
 			ShareDisplayFormat displayFormat, boolean overrideBreakRecurrence,
-			boolean overrideConvertClass, boolean requestNoRecurrence) {
+			boolean overrideConvertClass, boolean requestNoRecurrence,
+			boolean organizerOnly, boolean attendeeOnly) {
 		this.pathData = pathData;
 		this.client = client;
 		this.displayFormat = displayFormat;
 		this.overrideBreakRecurrence = overrideBreakRecurrence;
 		this.overrideConvertClass = overrideConvertClass;
 		this.requestNoRecurrence = requestNoRecurrence;
+		this.organizerOnly = organizerOnly;
+		this.attendeeOnly = attendeeOnly;
 	}
 
 
@@ -245,6 +260,19 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		return overrideConvertClass || Client.GOOGLE.equals(client);
 	}
 	
+	/**
+	 * @return the organizerOnly
+	 */
+	public boolean isOrganizerOnly() {
+		return organizerOnly;
+	}
+	/**
+	 * @return the attendeeOnly
+	 */
+	public boolean isAttendeeOnly() {
+		return attendeeOnly;
+	}
+
 	public int getNumberDaysDisplayed() {
 		return pathData.getEndDateIndex() - pathData.getStartDateIndex();
 	}
@@ -402,9 +430,9 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @return
 	 */
 	static ShareDisplayFormat determineDisplayFormat(final HttpServletRequest request) {
-		String rawAttribute = (String) request.getParameter("debug");
-		if(null != rawAttribute) {
-			return ShareDisplayFormat.DEBUG;
+		String jsonAttribute = (String) request.getParameter("json");
+		if(null != jsonAttribute) {
+			return ShareDisplayFormat.JSON;
 		}
 		String rssViewAttribute = (String) request.getParameter(RSS);
 		if(null != rssViewAttribute) {

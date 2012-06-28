@@ -38,7 +38,7 @@ public class ShareHelper {
 				VEvent event = (VEvent) c;
 				if(requestDetails.getStartDate().after(event.getStartDate().getDate()) || 
 						requestDetails.getEndDate().before(event.getStartDate().getDate())) {
-					LOG.debug("removing event " + CalendarDataUtils.nullSafeGetDebugId(event) + " since startdate falls outside of requestDetails window " + requestDetails);
+					LOG.debug("removing event " + CalendarDataUtils.staticGetDebugId(event) + " since startdate falls outside of requestDetails window " + requestDetails);
 					i.remove();
 				}
 			}

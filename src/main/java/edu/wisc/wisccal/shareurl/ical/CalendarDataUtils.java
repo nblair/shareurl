@@ -18,24 +18,33 @@ package edu.wisc.wisccal.shareurl.ical;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyFactory;
 import net.fortuna.ical4j.model.PropertyFactoryImpl;
+import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
+import net.fortuna.ical4j.model.parameter.Cn;
+import net.fortuna.ical4j.model.parameter.FbType;
+import net.fortuna.ical4j.model.parameter.PartStat;
+import net.fortuna.ical4j.model.parameter.SentBy;
+import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
@@ -52,10 +61,15 @@ import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.springframework.stereotype.Service;
+
+import edu.wisc.wisccal.shareurl.domain.simple.Event;
+import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
 
 /**
  * Helper methods for iCalendar data.
@@ -63,7 +77,8 @@ import org.jasig.schedassist.model.ICalendarAccount;
  * @author Nicholas Blair, nblair@doit.wisc.edu
  * @version $Id: CalendarDataUtils.java 1691 2010-02-10 18:58:13Z npblair $
  */
-public final class CalendarDataUtils {
+@Service
+public final class CalendarDataUtils implements CalendarDataProcessor {
 
 	private static final long MILLISECS_PER_DAY = 24*60*60*1000;
 	
@@ -99,15 +114,12 @@ public final class CalendarDataUtils {
 		}
 	}
 
-	/**
-	 * Convert the {@link VEvent}s within the {@link Calendar} argument to a
-	 * single {@link VFreeBusy} object with {@link FreeBusy} properties
-	 * corresponding with each event start/end time.
-	 * 
-	 * @param original
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#convertToFreeBusy(net.fortuna.ical4j.model.Calendar, java.util.Date, java.util.Date)
 	 */
-	public static Calendar convertToFreeBusy(final Calendar original, final java.util.Date start, final java.util.Date end) {
+	@Override
+	public Calendar convertToFreeBusy(final Calendar original, final java.util.Date start, final java.util.Date end) {
 		ComponentList resultComponents = new ComponentList();
 		VFreeBusy vFreeBusy = new VFreeBusy();
 		// add dtstart from arguments
@@ -165,15 +177,12 @@ public final class CalendarDataUtils {
 		return null;
 	}
 
-	/**
-	 * Mutative method.
-	 * Convert the {@link Clazz} property for all {@link VEvent}s in the 
-	 * {@link Calendar} argument to {@link Clazz#PUBLIC}.
-	 * 
-	 * @param original
-	 * @return the same calendar with all values for the {@link Clazz} property set to {@link Clazz#PUBLIC}.
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#convertClassPublic(net.fortuna.ical4j.model.Calendar)
 	 */
-	public static void convertClassPublic(final Calendar original) {
+	@Override
+	public void convertClassPublic(final Calendar original) {
 		for (Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
@@ -212,14 +221,12 @@ public final class CalendarDataUtils {
 		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0;
 	}
 
-	/**
-	 * 
-	 * @param event
-	 * @param startBoundary
-	 * @param endBoundary
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#calculateRecurrence(net.fortuna.ical4j.model.component.VEvent, java.util.Date, java.util.Date)
 	 */
-	public static PeriodList calculateRecurrence(VEvent event,
+	@Override
+	public PeriodList calculateRecurrence(VEvent event,
 			Date startBoundary, Date endBoundary) {
 		Period period = new Period(new DateTime(startBoundary), new DateTime(endBoundary));
 		PeriodList periodList = event.calculateRecurrenceSet(period);
@@ -234,7 +241,7 @@ public final class CalendarDataUtils {
 	 * @param period
 	 * @return
 	 */
-	public static VEvent constructRecurrenceInstance(VEvent original, Period period) {
+	public VEvent constructRecurrenceInstance(VEvent original, Period period) {
 		try {
 			VEvent copy = (VEvent) original.copy();
 			copy.getStartDate().setDate(period.getStart());
@@ -254,18 +261,13 @@ public final class CalendarDataUtils {
 		}
 	}
 	
-	/**
-	 * {@link Component#copy()} can be very CPU/RAM expensive.
-	 * This is a cheaper alternative, that constructs a new event and only copies over
-	 * specific properties.
-	 * All X-Properties are ignored, as well as recurrence related properties.
-	 * 
-	 * @param original
-	 * @param period
-	 * @param preserveParticipants if false, ORGANIZER and ATTENDEE properties are not copied
-	 * @return a copy of the event, less some properties
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#cheapRecurrenceCopy(net.fortuna.ical4j.model.component.VEvent, net.fortuna.ical4j.model.Period, boolean)
 	 */
-	public static VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants) {
+	@SuppressWarnings("unchecked")
+	@Override
+	public VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants) {
 		
 		VEvent copy = new VEvent();
 		copy.getProperties().add(new DtStart(period.getStart()));
@@ -295,6 +297,11 @@ public final class CalendarDataUtils {
 		return copy;
 	}
 	
+	/**
+	 * 
+	 * @param property
+	 * @return
+	 */
 	protected static Property propertyCopy(Property property) {
 		try {
 			return property.copy();
@@ -309,27 +316,27 @@ public final class CalendarDataUtils {
 			throw new IllegalArgumentException("failed to copy property " + property, e);
 		}
 	}
-	/**
-	 * Remove all RDATE/RRULE/EXDATE/EXRULE properties from the event.
-	 * 
-	 * @param event
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#removeRecurrenceProperties(net.fortuna.ical4j.model.component.VEvent)
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	public static void removeRecurrenceProperties(VEvent event) {
+	public void removeRecurrenceProperties(VEvent event) {
 		event.getProperties().removeAll(event.getProperties(RDate.RDATE));
 		event.getProperties().removeAll(event.getProperties(RDate.RRULE));
 		event.getProperties().removeAll(event.getProperties(RDate.EXDATE));
 		event.getProperties().removeAll(event.getProperties(RDate.EXRULE));
+		event.getProperties().removeAll(event.getProperties(RecurrenceId.RECURRENCE_ID));
 	}
 
-	/**
-	 * Remove all ATTENDEE and ORGANIZER properties from the events in the calendar.
-	 * 
-	 * @param event
-	 * @param account
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#removeParticipants(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
 	 */
 	@SuppressWarnings("unchecked")
-	public static void removeParticipants(Calendar calendar, ICalendarAccount account) {
+	@Override
+	public void removeParticipants(Calendar calendar, ICalendarAccount account) {
 		for(Iterator<?> i = calendar.getComponents(VEvent.VEVENT).iterator(); i.hasNext();) {
 			VEvent event = (VEvent) i.next();
 			event.getProperties().removeAll(event.getProperties(Attendee.ATTENDEE));
@@ -338,17 +345,23 @@ public final class CalendarDataUtils {
 		}
 	}
 
-	/**
-	 * Method to return a String to help uniquely identity an event.
-	 * If the event is not recurring, simply returns the value of the UID property.
-	 * If recurring, the value returned is UID/RECURRENCE-ID.
-	 * 
-	 * Gracefully handles null situations.
-	 * 
-	 * @param component
-	 * @return never null, will be "N/A" if any null condition exists
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#getDebugId(net.fortuna.ical4j.model.Component)
 	 */
-	public static String nullSafeGetDebugId(Component component) {
+	@Override
+	public String getDebugId(Component component) {
+		return staticGetDebugId(component);
+	}
+
+	/**
+	 * Statically callable implementation of {@link #getDebugId(Component)}.
+	 * 
+	 * @see #getDebugId(Component)
+	 * @param component
+	 * @return
+	 */
+	public static String staticGetDebugId(Component component) {
 		if(component == null) {
 			return "N/A";
 		}
@@ -360,17 +373,12 @@ public final class CalendarDataUtils {
 		}
 		return uidValue + "/" +recurrenceId.getValue();
 	}
-
-	/**
-	 * Mutative method.
-	 * Implements the "breakRecurrence" algorithm:
-	 * Scan each VEVENT in the calendar argument. If the event
-	 * has a RECURRENCE-ID property, remove it and append it to the
-	 * UID property.
-	 * 
-	 * @param original
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#breakRecurrence(net.fortuna.ical4j.model.Calendar)
 	 */
-	public static void breakRecurrence(final Calendar original) {
+	@Override
+	public void breakRecurrence(final Calendar original) {
 		for (Iterator<?> i = original.getComponents(Component.VEVENT).iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
@@ -379,19 +387,13 @@ public final class CalendarDataUtils {
 			}  
 		}
 	}
-	/**
-	 * Mutative method.
-	 * Implements the "no recurrence" algorithm.
-	 * Expand recurrence for all events in the calendar and remove all recurrence properties.
-	 * 
-	 * @see PreferRecurrenceComponentComparator
-	 * @param calendar
-	 * @param start
-	 * @param end
-	 * @param preserveParticipants
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#noRecurrence(net.fortuna.ical4j.model.Calendar, java.util.Date, java.util.Date, boolean)
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	public static void noRecurrence(final Calendar calendar, Date start, Date end, boolean preserveParticipants) {
+	public void noRecurrence(final Calendar calendar, Date start, Date end, boolean preserveParticipants) {
 		Collections.sort(calendar.getComponents(), new PreferRecurrenceComponentComparator());
 		
 		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
@@ -401,12 +403,12 @@ public final class CalendarDataUtils {
 			if(VEvent.VEVENT.equals(component.getName()) ){
 				VEvent event = (VEvent) component;
 				if(CalendarDataUtils.isEventRecurring(event)) {
-					PeriodList recurringPeriods = CalendarDataUtils.calculateRecurrence(event, start, end);
+					PeriodList recurringPeriods = calculateRecurrence(event, start, end);
 					
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						//VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
-						VEvent recurrenceInstance = CalendarDataUtils.cheapRecurrenceCopy(event, period, preserveParticipants);
+						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants);
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
@@ -440,6 +442,193 @@ public final class CalendarDataUtils {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#organizerOnly(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public void organizerOnly(Calendar calendar, ICalendarAccount calendarAccount) {
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				EventParticipation participation = getEventParticipation(event, calendarAccount);
+				if(!participation.equals(EventParticipation.ORGANIZER)) {
+					i.remove();
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("organizerOnly: removed " + getDebugId(component) + ", " + participation + " from agenda for " + calendarAccount);
+					}
+				}
+			}
+		}
+	}
+	EventParticipation getEventParticipation(VEvent event, ICalendarAccount calendarAccount) {
+		Organizer organizer = event.getOrganizer();
+		PropertyList attendees = event.getProperties(Attendee.ATTENDEE);
+		if(null == organizer && attendees.size() == 0) {
+			return EventParticipation.PERSONAL_EVENT;
+		}
+		
+		if(!organizer.getValue().equalsIgnoreCase(mailto(calendarAccount.getEmailAddress()))) {
+			return EventParticipation.ORGANIZER;
+		}
+		
+		for(Object o: attendees) {
+			Attendee attendee = (Attendee) o;
+			if(attendee.getValue().equals(mailto(calendarAccount.getEmailAddress()))) {
+				return EventParticipation.ATTENDEE;
+			}
+		}
+		
+		return EventParticipation.NOT_INVOLVED;
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#attendeeOnly(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public void attendeeOnly(Calendar calendar, ICalendarAccount calendarAccount) {
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				EventParticipation participation = getEventParticipation(event, calendarAccount);
+				if(!participation.equals(EventParticipation.ATTENDEE)) {
+					i.remove();
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("attendeeOnly: removed " + getDebugId(component) + ", " + participation + " from agenda for " + calendarAccount);
+					}
+				}
+			}
+		}
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#personalOnly(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public void personalOnly(Calendar calendar, ICalendarAccount calendarAccount) {
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				EventParticipation participation = getEventParticipation(event, calendarAccount);
+				if(participation.equals(EventParticipation.PERSONAL_EVENT)) {
+					i.remove();
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("personalOnly: removed " + getDebugId(component) + ", " + participation + " from agenda for " + calendarAccount);
+					}
+				}
+			}
+		}
+	}
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#simplify(net.fortuna.ical4j.model.Calendar)
+	 */
+	@Override
+	public edu.wisc.wisccal.shareurl.domain.simple.Calendar simplify(
+			Calendar calendar) {
+		if(calendar == null) {
+			return null;
+		}
+		edu.wisc.wisccal.shareurl.domain.simple.Calendar result = new edu.wisc.wisccal.shareurl.domain.simple.Calendar();
+		result.setProductId(nullSafePropertyValue(calendar.getProductId()));
+		result.setVersion(nullSafePropertyValue(calendar.getVersion()));
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				Event event = convert((VEvent) component);
+				result.getEntries().add(event);
+			} else if (VFreeBusy.VFREEBUSY.equals(component.getName())) {
+				List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> freeBusy = convert((VFreeBusy) component);
+				result.getEntries().addAll(freeBusy);
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @param vfreebusy
+	 * @return
+	 */
+	public List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> convert(VFreeBusy vfreebusy) {
+		List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> result = new ArrayList<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy>();
+		String uid = nullSafePropertyValue(vfreebusy.getUid());
+		PropertyList freebusy = vfreebusy.getProperties(FreeBusy.FREEBUSY);
+		for(Object o : freebusy) {
+			FreeBusy fb = (FreeBusy) o;
+			FreeBusyStatus status = FreeBusyStatus.BUSY;
+			FbType type = (FbType) fb.getParameter(FbType.FBTYPE);
+			if(type != null && type.getValue().startsWith("FREE")) {
+				status = FreeBusyStatus.FREE;
+			}
+			PeriodList periods = fb.getPeriods();
+			for(Object p: periods) {
+				Period period = (Period) p;
+				edu.wisc.wisccal.shareurl.domain.simple.FreeBusy instance = new edu.wisc.wisccal.shareurl.domain.simple.FreeBusy();
+				instance.setStartTime(period.getRangeStart());
+				instance.setEndTime(period.getRangeEnd());
+				instance.setStatus(status);
+				instance.setUid(uid);
+				result.add(instance);
+			}
+		}
+		return result;
+	}
+	/**
+	 * 
+	 * @param vevent
+	 * @return
+	 */
+	public Event convert(VEvent vevent) {
+		Event event = new Event();
+		event.setUid(nullSafePropertyValue(vevent.getUid()));
+		event.setStartTime(vevent.getStartDate().getDate());
+		event.setEndTime(vevent.getEndDate(true).getDate());
+		event.setTimezone(nullSafeParameterValue(vevent.getStartDate().getParameter(TzId.TZID)));
+		event.setSummary(nullSafePropertyValue(vevent.getSummary()));
+		event.setDescription(nullSafePropertyValue(vevent.getDescription()));
+		event.setPrivacy(nullSafePropertyValue(vevent.getClassification()));
+		event.setLocation(nullSafePropertyValue(vevent.getLocation()));
+		net.fortuna.ical4j.model.property.Organizer organizer = vevent.getOrganizer();
+		if(organizer != null) {
+			edu.wisc.wisccal.shareurl.domain.simple.Organizer o = new edu.wisc.wisccal.shareurl.domain.simple.Organizer();
+			o.setDisplayName(nullSafeParameterValue(organizer.getParameter(Cn.CN)));
+			o.setEmailAddress(removeMailto(organizer.getValue()));
+			o.setDesignateOrganizer(nullSafeParameterValue(organizer.getParameter(SentBy.SENT_BY)));
+			event.setOrganizer(o);
+		}
+		PropertyList attendees = vevent.getProperties(Attendee.ATTENDEE);
+		for(Object o: attendees) {
+			Attendee attendee = (Attendee) o;
+			
+			edu.wisc.wisccal.shareurl.domain.simple.Attendee a = new edu.wisc.wisccal.shareurl.domain.simple.Attendee();
+			a.setDisplayName(nullSafeParameterValue(attendee.getParameter(Cn.CN)));
+			a.setEmailAddress(removeMailto(attendee.getValue()));
+			a.setParticipationStatus(nullSafeParameterValue(attendee.getParameter(PartStat.PARTSTAT)));
+			
+			event.getAttendees().add(a);
+		}
+		event.setRecurrenceId(nullSafePropertyValue(vevent.getRecurrenceId()));
+		event.setRecurring(isEventRecurring(vevent));
+		return event;
+	}
+
+	String nullSafePropertyValue(Property property) {
+		if(property == null) {
+			return null;
+		}
+		
+		return property.getValue();
+	}
+	String nullSafeParameterValue(Parameter parameter) {
+		if(parameter == null) { 
+			return null;
+		}
+		
+		return parameter.getValue();
+	}
 	/**
 	 * 
 	 * @param event
@@ -474,103 +663,17 @@ public final class CalendarDataUtils {
 		
 		return (endL - startL) / MILLISECS_PER_DAY;
 	}
+	
 	/**
-	 * Class to represnt the combination id for an event: UID and RECURRENCE-ID.
 	 * 
-	 * @author Nicholas Blair
+	 * @param emailAddress
+	 * @return
 	 */
-	protected static class EventCombinationId {
-		
-		private String uid;
-		private String recurrenceId;
-		/**
-		 * 
-		 * @param event
-		 */
-		protected EventCombinationId(VEvent event) {
-			this.uid = event.getUid().getValue();
-			this.recurrenceId = event.getRecurrenceId().getValue();
-		}
-		/**
-		 * @return the uid
-		 */
-		public String getUid() {
-			return uid;
-		}
-		/**
-		 * @param uid the uid to set
-		 */
-		public void setUid(String uid) {
-			this.uid = uid;
-		}
-		/**
-		 * @return the recurrenceId
-		 */
-		public String getRecurrenceId() {
-			return recurrenceId;
-		}
-		/**
-		 * @param recurrenceId the recurrenceId to set
-		 */
-		public void setRecurrenceId(String recurrenceId) {
-			this.recurrenceId = recurrenceId;
-		}
-		/* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result
-					+ ((recurrenceId == null) ? 0 : recurrenceId.hashCode());
-			result = prime * result + ((uid == null) ? 0 : uid.hashCode());
-			return result;
-		}
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (!(obj instanceof EventCombinationId)) {
-				return false;
-			}
-			EventCombinationId other = (EventCombinationId) obj;
-			if (recurrenceId == null) {
-				if (other.recurrenceId != null) {
-					return false;
-				}
-			} else if (!recurrenceId.equals(other.recurrenceId)) {
-				return false;
-			}
-			if (uid == null) {
-				if (other.uid != null) {
-					return false;
-				}
-			} else if (!uid.equals(other.uid)) {
-				return false;
-			}
-			return true;
-		}
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			StringBuilder builder = new StringBuilder();
-			builder.append("EventCombinationId [uid=");
-			builder.append(uid);
-			builder.append(", recurrenceId=");
-			builder.append(recurrenceId);
-			builder.append("]");
-			return builder.toString();
-		}
-		
+	static String mailto(String emailAddress) {
+		return "mailto:" + emailAddress;
+	}
+
+	static String removeMailto(String mailto) {
+		return StringUtils.remove(mailto, "mailto:");
 	}
 }

@@ -33,6 +33,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ModelMap;
 
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
+import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
 import edu.wisc.wisccal.shareurl.web.ShareRequestDetails.Client;
 import edu.wisc.wisccal.shareurl.web.ShareRequestDetails.PathData;
 
@@ -49,6 +50,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelControl() {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		Calendar emptyCalendar = new Calendar();
@@ -76,6 +78,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelHTMLViewWithRecurringEvent() {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		Calendar calendar = new Calendar();
@@ -114,6 +117,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelICalendar() {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		Calendar emptyCalendar = new Calendar();
@@ -136,6 +140,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelICalendarTriggerBreakRecurrence() {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		Calendar calendar = new Calendar();
@@ -170,6 +175,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelRecurrenceExample1() throws IOException, ParserException, ParseException {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		
@@ -205,6 +211,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelRecurrenceExample2() throws IOException, ParserException, ParseException {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		
@@ -250,6 +257,7 @@ public class SharedCalendarControllerTest {
 	@Test
 	public void testPrepareModelRecurrenceExample3() throws IOException, ParserException, ParseException {
 		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
 		
 		ModelMap model = new ModelMap();
 		

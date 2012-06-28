@@ -11,6 +11,7 @@ public enum ShareDisplayFormat {
 	RSS ("rss"),
 	ICAL ("ical"),
 	ICAL_ASTEXT("ical+asText"),
+	JSON("json"),
 	DEBUG("debug");
 
 	private String displayType;
