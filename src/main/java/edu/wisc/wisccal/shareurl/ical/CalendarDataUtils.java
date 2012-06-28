@@ -60,6 +60,7 @@ import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
+import net.fortuna.ical4j.model.property.XProperty;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
@@ -79,6 +80,8 @@ import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
  */
 @Service
 public final class CalendarDataUtils implements CalendarDataProcessor {
+
+	protected static final String X_UW_OLD_RECURRENCE_ID = "X-UW-OLD-RECUR-ID";
 
 	private static final long MILLISECS_PER_DAY = 24*60*60*1000;
 	
@@ -218,7 +221,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * @return
 	 */
 	public static boolean isEventRecurring(VEvent event) {
-		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0;
+		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0 || event.getProperties(X_UW_OLD_RECURRENCE_ID).size() > 0;
 	}
 
 	/*
@@ -612,6 +615,9 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 		event.setRecurrenceId(nullSafePropertyValue(vevent.getRecurrenceId()));
 		event.setRecurring(isEventRecurring(vevent));
+		if(Transp.TRANSPARENT.equals(vevent.getProperty(Transp.TRANSP))) {
+			event.setStatus(FreeBusyStatus.FREE);
+		}
 		return event;
 	}
 
@@ -641,6 +647,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			newUid.append(UW_SEPARATOR);
 			newUid.append(event.getRecurrenceId().getValue());
 			event.getUid().setValue(newUid.toString());
+			event.getProperties().add(new XProperty(X_UW_OLD_RECURRENCE_ID, event.getRecurrenceId().getValue()));
 			event.getProperties().remove(event.getRecurrenceId());
 		}
 	}

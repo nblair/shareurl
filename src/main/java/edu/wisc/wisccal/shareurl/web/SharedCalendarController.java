@@ -223,11 +223,15 @@ public class SharedCalendarController {
 
 			Collections.sort(allEvents, new VEventComparator());
 
-			model.put("allEvents", allEvents);
-			model.put("startDate", requestDetails.getStartDate());
-			model.put("endDate", requestDetails.getEndDate());
-			model.put("shareId", requestDetails.getShareKey());
-			model.put("datePhrase", requestDetails.getDatePhrase());	
+			if(ShareDisplayFormat.JSON.equals(display)) {
+				model.put("calendar", calendarDataProcessor.simplify(agenda));
+			} else {
+				model.put("allEvents", allEvents);
+				model.put("startDate", requestDetails.getStartDate());
+				model.put("endDate", requestDetails.getEndDate());
+				model.put("shareId", requestDetails.getShareKey());
+				model.put("datePhrase", requestDetails.getDatePhrase());	
+			}
 		} else {
 			// we are targeting a data format output (JSON or iCalendar)
 			// - remove participants if necessary
@@ -248,11 +252,7 @@ public class SharedCalendarController {
 				calendarDataProcessor.convertClassPublic(agenda);
 			}
 			
-			if(ShareDisplayFormat.JSON.equals(display)) {
-				model.put("calendar", calendarDataProcessor.simplify(agenda));
-			} else {
-				model.put("ical", agenda.toString());
-			}
+			model.put("ical", agenda.toString());
 		}
 	}
 	/**

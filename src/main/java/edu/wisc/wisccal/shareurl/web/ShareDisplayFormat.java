@@ -35,9 +35,9 @@ public enum ShareDisplayFormat {
 	}
 
 	/**
-	 * @return true if this.equals(HTML) or this.equals(RSS)
+	 * @return true if this.equals(HTML) or this.equals(RSS) or JSON
 	 */
 	public boolean isMarkupLanguage() {
-		return this.equals(HTML) || this.equals(RSS);
+		return this.equals(HTML) || this.equals(RSS) || this.equals(JSON);
 	}
 }
