@@ -617,6 +617,14 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			event.getAttendees().add(a);
 		}
 		event.setRecurrenceId(nullSafePropertyValue(vevent.getRecurrenceId()));
+		if(event.getRecurrenceId() == null) {
+			// try the X-UW version
+			event.setRecurrenceId(nullSafePropertyValue(vevent.getProperty(X_UW_OLD_RECURRENCE_ID)));
+			if(event.getRecurrenceId() != null) {
+				// restore original UID
+				event.setUid(StringUtils.substringBefore(event.getUid(), UW_SEPARATOR));
+			}
+		}
 		event.setRecurring(isEventRecurring(vevent));
 		if(Transp.TRANSPARENT.equals(vevent.getProperty(Transp.TRANSP))) {
 			event.setStatus(FreeBusyStatus.FREE);
