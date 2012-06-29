@@ -81,18 +81,15 @@ import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
 @Service
 public final class CalendarDataUtils implements CalendarDataProcessor {
 
-	protected static final String X_UW_OLD_RECURRENCE_ID = "X-UW-OLD-RECUR-ID";
+	protected static final String X_SHAREURL_RECURRENCE_EXPAND = "X-SHAREURL-RECURRENCE-EXPAND";
+
+	protected static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
 
 	private static final long MILLISECS_PER_DAY = 24*60*60*1000;
 
 	private static final String UW_SEPARATOR = "_UW_";
 
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
-
-	/**
-	 * The presence of this property with a value of TRUE indicates the event was created by the Scheduling Assistant.
-	 */
-	public static final String UW_AVAILABLE_APPOINTMENT = "X-UW-AVAILABLE-APPOINTMENT";
 
 	private static final Log LOG = LogFactory.getLog(CalendarDataUtils.class);
 	/**
@@ -221,7 +218,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * @return
 	 */
 	public static boolean isEventRecurring(VEvent event) {
-		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0 || event.getProperties(X_UW_OLD_RECURRENCE_ID).size() > 0;
+		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0 
+				|| event.getProperties(X_SHAREURL_OLD_RECURRENCE_ID).size() > 0 || event.getProperties(X_SHAREURL_RECURRENCE_EXPAND).size() > 0;
 	}
 
 	/*
@@ -413,6 +411,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants);
+						recurrenceInstance.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 					}
@@ -674,7 +673,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		event.setRecurrenceId(nullSafePropertyValue(vevent.getRecurrenceId()));
 		if(event.getRecurrenceId() == null) {
 			// try the X-UW version
-			event.setRecurrenceId(nullSafePropertyValue(vevent.getProperty(X_UW_OLD_RECURRENCE_ID)));
+			event.setRecurrenceId(nullSafePropertyValue(vevent.getProperty(X_SHAREURL_OLD_RECURRENCE_ID)));
 			if(event.getRecurrenceId() != null) {
 				// restore original UID
 				event.setUid(StringUtils.substringBefore(event.getUid(), UW_SEPARATOR));
@@ -713,7 +712,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			newUid.append(UW_SEPARATOR);
 			newUid.append(event.getRecurrenceId().getValue());
 			event.getUid().setValue(newUid.toString());
-			event.getProperties().add(new XProperty(X_UW_OLD_RECURRENCE_ID, event.getRecurrenceId().getValue()));
+			event.getProperties().add(new XProperty(X_SHAREURL_OLD_RECURRENCE_ID, event.getRecurrenceId().getValue()));
 			event.getProperties().remove(event.getRecurrenceId());
 		}
 	}
