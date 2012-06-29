@@ -15,16 +15,19 @@
 *******************************************************************************/
 package edu.wisc.wisccal.shareurl.ical;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Version;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
 
 import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -86,5 +89,29 @@ public class EventFilterImplTest {
 		Assert.assertEquals(1, result.getComponents().size());
 		Assert.assertEquals(Version.VERSION_2_0, result.getVersion());
 		Assert.assertEquals(new ProdId(CalendarDataUtils.SHAREURL_PROD_ID), result.getProductId());
+	}
+	
+	/**
+	 * Verify that VTIMEZONEs are kept when the filter is triggered by preferences.
+	 * @throws Exception
+	 */
+	@Test
+	public void testTimezonesRetained() throws Exception {
+		ClassPathResource resource = new ClassPathResource("example-data/events-with-timezone.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		Assert.assertEquals(2, calendar.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(1, calendar.getComponents(VTimeZone.VTIMEZONE).size());
+		
+		SharePreferences preferences = new SharePreferences();
+		preferences.addPreference(new PropertyMatchPreference(Summary.SUMMARY, "individual"));
+		
+		EventFilterImpl filter = new EventFilterImpl();
+		Calendar result = filter.filterEvents(calendar, preferences);
+		Assert.assertNotNull(result);
+		
+		Assert.assertEquals(1, result.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(1, result.getComponents(VTimeZone.VTIMEZONE).size());
+		
 	}
 }

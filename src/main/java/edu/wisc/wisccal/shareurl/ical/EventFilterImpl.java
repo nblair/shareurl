@@ -15,10 +15,16 @@
  *******************************************************************************/
 package edu.wisc.wisccal.shareurl.ical;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.property.ProdId;
+import net.fortuna.ical4j.model.property.TzId;
 import net.fortuna.ical4j.model.property.Version;
 
 import org.apache.commons.logging.Log;
@@ -66,30 +72,40 @@ public class EventFilterImpl implements IEventFilter {
 		}
 
 		// otherwise, share has property matches, only return elements that match
-		ComponentList components = original.getComponents(VEvent.VEVENT);
 		ComponentList resultComponents = new ComponentList();
+		Map<String, VTimeZone> timezones = new HashMap<String, VTimeZone>();
 
-		for(Object c : components) {
-			VEvent event = (VEvent) c;
-			boolean kept = false;
-			ISharePreference keeper = null;
-			for(ISharePreference pref : preferences.getPreferences()) {
-				if(pref.matches(event)) {
-					kept = resultComponents.add(event);
-					break;
+		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext(); ) {
+			net.fortuna.ical4j.model.Component component = (net.fortuna.ical4j.model.Component) i.next();
+			if(VTimeZone.VTIMEZONE.equals(component.getName())) {
+				VTimeZone tz = (VTimeZone) component;
+				TzId tzid = tz.getTimeZoneId();
+				if(tzid != null) {
+					timezones.put(tzid.getValue(), tz);
 				}
-			}
-			if(log.isDebugEnabled()) {
-				if(kept) {
-					log.debug(keeper + " retained " + calendarDataProcessor.getDebugId(event));
-				} else {
-					log.debug("dropping " + calendarDataProcessor.getDebugId(event));
+			} else if (VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				boolean kept = false;
+				ISharePreference keeper = null;
+				for(ISharePreference pref : preferences.getPreferences()) {
+					if(pref.matches(event)) {
+						kept = resultComponents.add(event);
+						break;
+					}
+				}
+				if(log.isDebugEnabled()) {
+					if(kept) {
+						log.debug(keeper + " retained " + calendarDataProcessor.getDebugId(event));
+					} else {
+						log.debug("dropping " + calendarDataProcessor.getDebugId(event));
+					}
 				}
 			}
 		}
 
 		preferences.disposeAll();
 		Calendar result = new Calendar(resultComponents);
+		result.getComponents().addAll(timezones.values());
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId("-//ShareURL//WiscCal//EN"));
 		return result;
