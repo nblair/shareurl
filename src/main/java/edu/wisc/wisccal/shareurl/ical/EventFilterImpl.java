@@ -64,6 +64,7 @@ public class EventFilterImpl implements IEventFilter {
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.ical.IEventFilter#filterEvents(net.fortuna.ical4j.model.Calendar, edu.wisc.wisccal.calendarkey.SharePreferences)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public Calendar filterEvents(final Calendar original, final SharePreferences preferences) {
 		if(preferences.getPreferences().size() == 0 || preferences.isFreeBusyOnly()) {

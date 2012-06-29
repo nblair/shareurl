@@ -57,6 +57,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final String CONVERT_CLASS = "cc";
 	public static final String NO_RECURRENCE = "nr";
 	
+	static final String UW_SUPPORT_RDATE = "uw-support-rdate";
+	
 	public static final String CLIENT_PARAM = "client";
 
 	public static final String GOOGLEBOT_REGEX = ".*googlebot.*";
@@ -101,6 +103,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	private boolean organizerOnly = false;
 	private boolean attendeeOnly = false;
 	private boolean personalOnly = false;
+	private boolean requiresProblemRecurringPreference = false;
 
 	/**
 	 * 
@@ -158,6 +161,10 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 			this.personalOnly = true;
 		}
 		
+		if(request.getParameter(UW_SUPPORT_RDATE) != null) {
+			this.requiresProblemRecurringPreference = true;
+		}
+		
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(this);
 		}
@@ -181,17 +188,23 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	}
 	
 	/**
+	 * 
 	 * @param pathData
 	 * @param client
 	 * @param displayFormat
 	 * @param overrideBreakRecurrence
 	 * @param overrideConvertClass
 	 * @param requestNoRecurrence
+	 * @param organizerOnly
+	 * @param attendeeOnly
+	 * @param personalOnly
+	 * @param requiresProblemRecurringPreference
 	 */
 	ShareRequestDetails(PathData pathData, Client client,
 			ShareDisplayFormat displayFormat, boolean overrideBreakRecurrence,
 			boolean overrideConvertClass, boolean requestNoRecurrence,
-			boolean organizerOnly, boolean attendeeOnly) {
+			boolean organizerOnly, boolean attendeeOnly, boolean personalOnly,
+			boolean requiresProblemRecurringPreference) {
 		this.pathData = pathData;
 		this.client = client;
 		this.displayFormat = displayFormat;
@@ -200,6 +213,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		this.requestNoRecurrence = requestNoRecurrence;
 		this.organizerOnly = organizerOnly;
 		this.attendeeOnly = attendeeOnly;
+		this.personalOnly = personalOnly;
+		this.requiresProblemRecurringPreference = requiresProblemRecurringPreference;
 	}
 
 
@@ -269,6 +284,13 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	public boolean requiresConvertClass() {
 		return overrideConvertClass || Client.GOOGLE.equals(client);
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean requiresProblemRecurringPreference() {
+		return requiresProblemRecurringPreference;
 	}
 	
 	/**

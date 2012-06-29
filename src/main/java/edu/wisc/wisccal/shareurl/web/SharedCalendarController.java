@@ -105,8 +105,6 @@ import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreferenc
 @Controller
 public class SharedCalendarController {
 
-	static final String UW_SUPPORT_RDATE = "uw-support-rdate";
-
 	private static final String JSON_CONTENT_TYPE = "application/json";
 
 	//private static final String TEXT_HTML = "text/html";
@@ -296,10 +294,10 @@ public class SharedCalendarController {
 				LOG.trace("begin processing " + requestDetails + "; " + account + " has raw agenda " + agenda);
 			}
 			SharePreferences preferences = share.getSharePreferences();
-			if(request.getParameter(UW_SUPPORT_RDATE) != null) {
+			if(requestDetails.requiresProblemRecurringPreference()) {
 				ProblematicRecurringEventSharePreference pref = new ProblematicRecurringEventSharePreference();
 				preferences.addPreference(pref);
-				LOG.info(UW_SUPPORT_RDATE + " paramted detected, added " + pref + " to " + requestDetails);
+				LOG.info(ShareRequestDetails.UW_SUPPORT_RDATE + " parameter detected, added " + pref + " to " + requestDetails);
 			}
 			agenda = eventFilter.filterEvents(agenda, preferences);
 			

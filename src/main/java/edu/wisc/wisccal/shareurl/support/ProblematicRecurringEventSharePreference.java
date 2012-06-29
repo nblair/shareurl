@@ -78,7 +78,10 @@ public class ProblematicRecurringEventSharePreference extends
 		return PROBLEM_RECURRENCE_SUPPORT;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * This implementation is sensitive to ordering!
+	 * 
+	 *  (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#matches(net.fortuna.ical4j.model.component.VEvent)
 	 */
 	@Override
@@ -99,7 +102,8 @@ public class ProblematicRecurringEventSharePreference extends
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @see RecurringEventUidTracker#dispose()
 	 * @see edu.wisc.wisccal.shareurl.domain.AbstractSharePreference#dispose()
 	 */
 	@Override
@@ -108,6 +112,8 @@ public class ProblematicRecurringEventSharePreference extends
 	}
 
 	/**
+	 * Tracker class that uses a {@link ThreadLocal} to remember which Uids
+	 * have been visited in this thread of execution.
 	 * 
 	 * @author Nicholas Blair
 	 */
