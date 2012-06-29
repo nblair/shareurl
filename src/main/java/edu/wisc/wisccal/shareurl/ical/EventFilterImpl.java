@@ -88,6 +88,7 @@ public class EventFilterImpl implements IEventFilter {
 			}
 		}
 
+		preferences.disposeAll();
 		Calendar result = new Calendar(resultComponents);
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId("-//ShareURL//WiscCal//EN"));

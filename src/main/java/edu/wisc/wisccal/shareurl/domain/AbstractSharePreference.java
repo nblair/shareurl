@@ -75,7 +75,14 @@ public abstract class AbstractSharePreference implements ISharePreference, Seria
 		builder.append("value", this.getValue());
 		return builder.toString();
 	}
-	
-	
+
+	/**
+	 * Default implementation does nothing.
+	 * 
+	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#dispose()
+	 */
+	@Override
+	public void dispose() {
+	}
 	
 }

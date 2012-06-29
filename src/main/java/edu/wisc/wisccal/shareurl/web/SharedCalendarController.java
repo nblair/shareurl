@@ -51,6 +51,7 @@ import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor;
 import edu.wisc.wisccal.shareurl.ical.IEventFilter;
 import edu.wisc.wisccal.shareurl.ical.VEventComparator;
+import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreference;
 
 /**
  * Controller for displaying "shared" calendars.
@@ -103,6 +104,8 @@ import edu.wisc.wisccal.shareurl.ical.VEventComparator;
  */
 @Controller
 public class SharedCalendarController {
+
+	static final String UW_SUPPORT_RDATE = "uw-support-rdate";
 
 	private static final String JSON_CONTENT_TYPE = "application/json";
 
@@ -292,7 +295,14 @@ public class SharedCalendarController {
 			if(LOG.isTraceEnabled()) {
 				LOG.trace("begin processing " + requestDetails + "; " + account + " has raw agenda " + agenda);
 			}
-			agenda = eventFilter.filterEvents(agenda, share.getSharePreferences());
+			SharePreferences preferences = share.getSharePreferences();
+			if(request.getParameter(UW_SUPPORT_RDATE) != null) {
+				ProblematicRecurringEventSharePreference pref = new ProblematicRecurringEventSharePreference();
+				preferences.addPreference(pref);
+				LOG.info(UW_SUPPORT_RDATE + " paramted detected, added " + pref + " to " + requestDetails);
+			}
+			agenda = eventFilter.filterEvents(agenda, preferences);
+			
 			if(LOG.isDebugEnabled()) {
 				List<String> eventUids = eventDebugIds(agenda);
 				LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());

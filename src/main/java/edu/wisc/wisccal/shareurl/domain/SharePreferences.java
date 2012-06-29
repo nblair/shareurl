@@ -161,5 +161,13 @@ public class SharePreferences implements Serializable {
 		return builder.toString();
 	}
 	
+	/**
+	 * Invoke {@link ISharePreference#dispose()} on all preferences.
+	 */
+	public void disposeAll() {
+		for(ISharePreference p: preferences) {
+			p.dispose();
+		}
+	}
 	
 }

@@ -58,4 +58,9 @@ public interface ISharePreference {
 	 * @return true if the event matches the criteria for this preference
 	 */
 	boolean matches(VEvent event);
+	
+	/**
+	 * Callback to cleanup and resources retained by instances.
+	 */
+	void dispose();
 }
