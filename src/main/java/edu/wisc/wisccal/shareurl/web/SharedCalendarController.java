@@ -268,6 +268,9 @@ public class SharedCalendarController {
 		model.put("requestDetails", requestDetails);
 		// controller
 		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(requestDetails + " shareDao#retrieveByKey returns " + share);
+		}
 		if(null != share) {
 			//controller
 			ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
