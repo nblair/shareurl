@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.jasig.schedassist.model.CommonDateOperations;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -428,6 +429,92 @@ public class ShareRequestDetailsTest {
 		assertNull(details.getEventId());
 		assertEquals("someshareid", details.getShareKey());
 	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testStartParameterNoEndParameter() throws Exception {
+		// adding a query String to the second argument for this constructor does not seem to set the parameter accordingly
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.setParameter("start", "2012-01-01");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		
+		Date expectedStart = CommonDateOperations.parseDatePhrase("20120101");
+		Date expectedEnd = CommonDateOperations.endOfDay(expectedStart);
+		assertEquals(expectedStart, details.getStartDate());
+		assertEquals(expectedEnd, details.getEndDate());
+		assertEquals("dr(0,0)", details.getDatePhrase());
+		
+		assertNull(details.getEventId());
+		assertEquals("someshareid", details.getShareKey());
+	}	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testStartParameterAlternateFormat() throws Exception {
+		// adding a query String to the second argument for this constructor does not seem to set the parameter accordingly
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.setParameter("start", "20120101");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		
+		Date expectedStart = CommonDateOperations.parseDatePhrase("20120101");
+		Date expectedEnd = CommonDateOperations.endOfDay(expectedStart);
+		assertEquals(expectedStart, details.getStartDate());
+		assertEquals(expectedEnd, details.getEndDate());
+		assertEquals("dr(0,0)", details.getDatePhrase());
+		
+		assertNull(details.getEventId());
+		assertEquals("someshareid", details.getShareKey());
+	}	
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testStartAndEndParameter() throws Exception {
+		// adding a query String to the second argument for this constructor does not seem to set the parameter accordingly
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.setParameter("start", "2012-01-01");
+		request.setParameter("end", "2012-01-09");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		
+		Date expectedStart = CommonDateOperations.parseDatePhrase("20120101");
+		Date expectedEnd = CommonDateOperations.endOfDay(CommonDateOperations.parseDatePhrase("20120109"));
+		assertEquals(expectedStart, details.getStartDate());
+		assertEquals(expectedEnd, details.getEndDate());
+		assertEquals("dr(0,0)", details.getDatePhrase());
+		
+		assertNull(details.getEventId());
+		assertEquals("someshareid", details.getShareKey());
+	}	
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testStartAndInvalidEndParameter() throws Exception {
+		// adding a query String to the second argument for this constructor does not seem to set the parameter accordingly
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.setParameter("start", "2012-01-01");
+		request.setParameter("end", "2012-0109");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		
+		Date expectedStart = CommonDateOperations.parseDatePhrase("20120101");
+		// since end parameter is invalid, should see end of day start
+		Date expectedEnd = CommonDateOperations.endOfDay(expectedStart);
+		assertEquals(expectedStart, details.getStartDate());
+		assertEquals(expectedEnd, details.getEndDate());
+		assertEquals("dr(0,0)", details.getDatePhrase());
+		
+		assertNull(details.getEventId());
+		assertEquals("someshareid", details.getShareKey());
+	}	
 	
 	/**
 	 * 

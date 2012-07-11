@@ -15,6 +15,8 @@
  *******************************************************************************/
 package edu.wisc.wisccal.shareurl.web;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -27,6 +29,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.model.CommonDateOperations;
 import org.springframework.web.util.UrlPathHelper;
 
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -40,6 +43,8 @@ import edu.wisc.wisccal.shareurl.domain.Share;
  */
 public final class ShareRequestDetails implements IShareRequestDetails {
 
+	public static final String START = "start";
+	public static final String END = "end";
 	public static final String PERSONAL = "personal";
 	public static final String ATTENDING = "attending";
 	public static final String ORGANIZING = "organizing";
@@ -56,9 +61,9 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final String BREAK_RECURRENCE = "br";
 	public static final String CONVERT_CLASS = "cc";
 	public static final String NO_RECURRENCE = "nr";
-	
+
 	static final String UW_SUPPORT_RDATE = "uw-support-rdate";
-	
+
 	public static final String CLIENT_PARAM = "client";
 
 	public static final String GOOGLEBOT_REGEX = ".*googlebot.*";
@@ -68,16 +73,16 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final String APPLE_ICAL_REGEX = ".*iCal\\/.*Mac OS X\\/10.*";
 	private static final Pattern APPLE_ICAL_PATTERN = Pattern.compile(APPLE_ICAL_REGEX, Pattern.CASE_INSENSITIVE);
 	private static final String APPLE_CLIENT = "apple";
-	
+
 	public static final String APPLE_IPOD_REGEX = "^DataAccess\\/1.0\\s\\(.*\\)$";
 	private static final Pattern APPLE_IPOD_PATTERN = Pattern.compile(APPLE_IPOD_REGEX, Pattern.CASE_INSENSITIVE);
 
 	public static final String APPLE_IOS5_REGEX = "^iOS\\/\\d\\.\\d.*";
 	private static final Pattern APPLE_IOS5_PATTERN = Pattern.compile(APPLE_IOS5_REGEX, Pattern.CASE_INSENSITIVE);
-	
+
 	public static final String APPLE_IOS_SAFARI_REGEX = "^.*iPhone OS.*Mac OS X.*";
 	private static final Pattern APPLE_IOS_SAFARI_PATTERN = Pattern.compile(APPLE_IOS_SAFARI_REGEX, Pattern.CASE_INSENSITIVE);
-	
+
 	public static final String MOZILLA_REGEX = "^Mozilla.*(Sunbird|Lightning|Thunderbird)+.*";
 	private static final Pattern MOZILLA_PATTERN = Pattern.compile(MOZILLA_REGEX);
 	private static final String MOZILLA_CLIENT = "mozilla";
@@ -93,6 +98,11 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final int MAX_RANGE = 180;
 	public static final String DR_REGEX = "^dr\\((-?)(\\d+),(-?)(\\d+)\\)$";
 	private static final Pattern DR_PATTERN = Pattern.compile(DR_REGEX);
+
+	public static final String DATE_REGEX_1 = "\\d{4}-\\d{2}-\\d{2}";
+	public static final String DATE_REGEX_2 = "\\d{8}";
+	private static final Pattern DATE_PATTERN_1 = Pattern.compile(DATE_REGEX_1);
+	private static final Pattern DATE_PATTERN_2 = Pattern.compile(DATE_REGEX_2);
 
 	private final PathData pathData;
 	private Client client;
@@ -118,7 +128,29 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 
 		// sharekey[, eventId, daterange]
 		this.pathData = extractPathData(requestPath);
-
+		// if dr == 0,0, check for start/end query parameters 
+		if(DEFAULT_DATE_PHRASE.equals(getDatePhrase())) {
+			String startValue = request.getParameter(START);
+			DateFormat possibleFormat = getDateFormat(startValue);
+			if(possibleFormat != null) {
+				Date startDate = safeParse(possibleFormat.getSimpleDateFormat(), startValue);
+				if(startDate != null) {
+					this.pathData.setStartDate(CommonDateOperations.beginningOfDay(startDate));
+					String endValue = request.getParameter(END);
+					possibleFormat = getDateFormat(endValue);
+					if(possibleFormat == null) {
+						this.pathData.setEndDate(CommonDateOperations.endOfDay(startDate));
+					} else {
+						Date endDate = safeParse(possibleFormat.getSimpleDateFormat(), endValue);
+						if(endDate != null) {
+							this.pathData.setEndDate(CommonDateOperations.endOfDay(endDate));
+						} else {
+							this.pathData.setEndDate(CommonDateOperations.endOfDay(startDate));
+						}
+					}
+				}
+			}
+		}
 		// identify displayFormat
 		this.displayFormat = determineDisplayFormat(request);
 
@@ -127,7 +159,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 			// sniff user-agent to predict client
 			String userAgent = request.getHeader(USER_AGENT);
 			this.client = predictClientFromUserAgent(userAgent);
-			
+
 			// examine request parameters to override
 			String [] compatValues = request.getParameterValues(COMPATIBILITY_PARAM);
 			if(null != compatValues) {
@@ -152,7 +184,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 				}
 			}
 		}
-		
+
 		if(request.getParameter(ORGANIZING) != null) {
 			this.organizerOnly = true;
 		} else if (request.getParameter(ATTENDING) != null) {
@@ -160,11 +192,11 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		} else if (request.getParameter(PERSONAL) != null) {
 			this.personalOnly = true;
 		}
-		
+
 		if(request.getParameter(UW_SUPPORT_RDATE) != null) {
 			this.requiresProblemRecurringPreference = true;
 		}
-		
+
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(this);
 		}
@@ -186,7 +218,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		this.overrideBreakRecurrence = overrideBreakRecurrence;
 		this.overrideConvertClass = overrideConvertClass;
 	}
-	
+
 	/**
 	 * 
 	 * @param pathData
@@ -292,7 +324,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public boolean requiresProblemRecurringPreference() {
 		return requiresProblemRecurringPreference;
 	}
-	
+
 	/**
 	 * @return the organizerOnly
 	 */
@@ -336,7 +368,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		if(!(obj instanceof ShareRequestDetails)) {
 			return false;
 		}
-				
+
 		ShareRequestDetails rhs = (ShareRequestDetails) obj;
 		EqualsBuilder builder = new EqualsBuilder();
 		builder.append(this.pathData, rhs.pathData);
@@ -355,14 +387,50 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public int hashCode() {
 		HashCodeBuilder builder = new HashCodeBuilder();
 		return builder.append(this.pathData)
-			.append(displayFormat)
-			.append(client)
-			.append(overrideBreakRecurrence)
-			.append(overrideConvertClass)
-			.toHashCode();
+				.append(displayFormat)
+				.append(client)
+				.append(overrideBreakRecurrence)
+				.append(overrideConvertClass)
+				.toHashCode();
 	}
 
+	/**
+	 * 
+	 * @param value
+	 * @return
+	 */
+	protected DateFormat getDateFormat(String value) {
+		if(StringUtils.isBlank(value)) {
+			return null;
+		}
 
+		Matcher m = DATE_PATTERN_1.matcher(value);
+		if(m.matches()) {
+			return DateFormat.PATTERN_1;
+		}
+
+		m = DATE_PATTERN_2.matcher(value);
+		if(m.matches()) {
+			return DateFormat.PATTERN_2;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Tries to return the result of {@link SimpleDateFormat#parse(String)}, returning
+	 * null if a {@link ParseException} is thrown.
+	 * @param df
+	 * @param value
+	 * @return the result of {@link SimpleDateFormat#parse(String)}, or null
+	 */
+	private Date safeParse(SimpleDateFormat df, String value) {
+		try {
+			return df.parse(value);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
 	/**
 	 * 
 	 * @param userAgent
@@ -403,7 +471,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 				}
 				return Client.APPLE;
 			}
-			
+
 			Matcher apple = APPLE_ICAL_PATTERN.matcher(userAgent);
 			if(apple.matches()) {
 				if(LOG.isDebugEnabled()) {
@@ -439,7 +507,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 
 		String datePhraseCandidate = "";
 
-		
+
 		if(tokens.length == 4) {
 			datePhraseCandidate = tokens[1];
 			pathData.setEventId(tokens[2]);
@@ -602,6 +670,38 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		OTHER;
 	}
 
+	/**
+	 * 
+	 * @author Nicholas Blair
+	 */
+	protected static enum DateFormat {
+
+		PATTERN_1("yyyy-MM-dd"),
+		PATTERN_2("yyyyMMdd");
+
+		private String format;
+
+		/**
+		 * @param format
+		 */
+		private DateFormat(String format) {
+			this.format = format;
+		}
+
+		/**
+		 * @return the format
+		 */
+		public String getFormat() {
+			return format;
+		}
+		/**
+		 * 
+		 * @return a new {@link SimpleDateFormat} instance for this format
+		 */
+		public SimpleDateFormat getSimpleDateFormat() {
+			return new SimpleDateFormat(format);
+		}
+	}
 	/**
 	 * 
 	 *
@@ -796,7 +896,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 					+ endDate + ", startDateIndex=" + startDateIndex
 					+ ", endDateIndex=" + endDateIndex + "]";
 		}
-		
-		
+
+
 	}
 }
