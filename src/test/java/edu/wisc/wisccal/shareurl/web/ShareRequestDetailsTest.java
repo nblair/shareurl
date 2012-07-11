@@ -635,6 +635,41 @@ public class ShareRequestDetailsTest {
 		assertEquals(Client.GOOGLE, ShareRequestDetails.predictClientFromUserAgent(userAgent));
 	}
 	
+	@Test
+	public void testCompatEmpty() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertFalse(details.requiresBreakRecurrence());
+		assertFalse(details.requiresNoRecurrence());
+		assertFalse(details.requiresConvertClass());
+	}
+	
+	@Test
+	public void testCompatNr() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "nr");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertFalse(details.requiresBreakRecurrence());
+		assertTrue(details.requiresNoRecurrence());
+		assertFalse(details.requiresConvertClass());
+	}
+	
+	@Test
+	public void testMultiValueCompat() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "nr");
+		request.addParameter("compat", "cc");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertFalse(details.requiresBreakRecurrence());
+		assertTrue(details.requiresNoRecurrence());
+		assertTrue(details.requiresConvertClass());
+	}
+	
+	
 	/**
 	 * Convenience method to calculate expected {@link Date} objects.
 	 * @param first
