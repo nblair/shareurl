@@ -78,7 +78,11 @@ public class AccessClassificationMatchPreference extends AbstractSharePreference
 		Validate.notNull(event, "VEvent argument must not be null");
 		// otherwise look at CLASS property (PUBLIC and CONFIDENTIAL)
 		Property p = event.getProperty(Clazz.CLASS);
-		if(null != p && StringUtils.equalsIgnoreCase(this.access.getClassValue(), p.getValue())) {
+		if(p == null) {
+			// per RFC 2445, the default value for Classification is "PUBLIC"
+			p = Clazz.PUBLIC;
+		}
+		if(StringUtils.equalsIgnoreCase(this.access.getClassValue(), p.getValue())) {
 			return true;
 		}
 		

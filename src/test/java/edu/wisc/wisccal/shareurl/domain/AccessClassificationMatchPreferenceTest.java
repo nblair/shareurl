@@ -41,8 +41,9 @@ public class AccessClassificationMatchPreferenceTest {
 		Assert.assertEquals(Clazz.CLASS, p.getKey());
 		Assert.assertEquals(Clazz.PUBLIC.getValue(), p.getValue());
 		
+		// an event with no CLASS property defaults to CLASS:PUBLIC
 		VEvent eventNoClass = new VEvent(new DateTime(makeDateTime("20100208-1000")), new DateTime(makeDateTime("20100208-1030")), "soccer game");
-		Assert.assertFalse(p.matches(eventNoClass));
+		Assert.assertTrue(p.matches(eventNoClass));
 		
 		VEvent eventMatch1 = new VEvent(new DateTime(makeDateTime("20100208-1000")), new DateTime(makeDateTime("20100208-1030")), "soccer game");
 		eventMatch1.getProperties().add(Clazz.PUBLIC);
