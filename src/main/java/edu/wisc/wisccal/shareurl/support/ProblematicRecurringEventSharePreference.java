@@ -78,6 +78,14 @@ public class ProblematicRecurringEventSharePreference extends
 		return PROBLEM_RECURRENCE_SUPPORT;
 	}
 
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#participatesInFiltering()
+	 */
+	@Override
+	public boolean participatesInFiltering() {
+		return true;
+	}
+
 	/**
 	 * This implementation is sensitive to ordering!
 	 * 
