@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
+import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
 import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 
@@ -81,6 +82,33 @@ public class EventFilterImplTest {
 		
 		SharePreferences preferences = new SharePreferences();
 		preferences.addPreference(new PropertyMatchPreference(Summary.SUMMARY, "soccer"));
+		
+		EventFilterImpl filter = new EventFilterImpl();
+		Calendar result = filter.filterEvents(calendar, preferences);
+		Assert.assertNotNull(result);
+		Assert.assertNotSame(calendar, result);
+		Assert.assertEquals(1, result.getComponents().size());
+		Assert.assertEquals(Version.VERSION_2_0, result.getVersion());
+		Assert.assertEquals(new ProdId(CalendarDataUtils.SHAREURL_PROD_ID), result.getProductId());
+	}
+	
+	/**
+	 * Make sure an IncludeParticipantsPreference doesn't affect the result.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testIncludeParticipantsFilter() throws Exception {
+		VEvent soccerEvent = new VEvent(new Date("20091125"), new Date("20091126"), "soccer against team A");
+		VEvent footballEvent = new VEvent(new Date("20091125"), new Date("20091126"), "football against team A");
+		ComponentList components = new ComponentList();
+		components.add(soccerEvent);
+		components.add(footballEvent);
+		Calendar calendar = new Calendar(components);
+		
+		SharePreferences preferences = new SharePreferences();
+		preferences.addPreference(new PropertyMatchPreference(Summary.SUMMARY, "soccer"));
+		preferences.addPreference(new IncludeParticipantsPreference(true));
 		
 		EventFilterImpl filter = new EventFilterImpl();
 		Calendar result = filter.filterEvents(calendar, preferences);
