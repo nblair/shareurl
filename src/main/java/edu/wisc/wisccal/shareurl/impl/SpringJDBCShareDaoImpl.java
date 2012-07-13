@@ -29,13 +29,10 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareDao;
-import edu.wisc.wisccal.shareurl.domain.AccessClassification;
-import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
-import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
+import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
-import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
-import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 
@@ -83,24 +80,73 @@ IShareDao {
 			newKey = RandomStringUtils.randomAlphanumeric(SHARE_ID_LENGTH);
 		}
 		final String ownerUniqueId = account.getCalendarUniqueId();
+		return storeNewShare(newKey, ownerUniqueId, preferences);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.IShareDao#generateGuessableShare(org.jasig.schedassist.model.ICalendarAccount, edu.wisc.wisccal.shareurl.domain.SharePreferences)
+	 */
+	@Override
+	public Share generateGuessableShare(ICalendarAccount account,
+			SharePreferences preferences)  throws GuessableShareAlreadyExistsException {
+		String key = account.getEmailAddress();
+		Share existing = internalRetrieveByKey(key);
+		if(null != existing) {
+			if(existing.isValid()) {
+				throw new GuessableShareAlreadyExistsException();
+			} else {
+				//reset existing!
+				Share reset = resetGuessableShare(existing, preferences);
+				return reset;
+			}
+		} else {
+			preferences.addPreference(new GuessableSharePreference());
+			final String ownerUniqueId = account.getCalendarUniqueId();
+			return storeNewShare(key, ownerUniqueId, preferences);
+		}
+	}
+	
+	/**
+	 * Insert a new record in the shares table, and persist
+	 * the {@link SharePreferences}
+	 * 
+	 * @see #storePreference(String, ISharePreference)
+	 * @param key
+	 * @param ownerId
+	 * @param preferences
+	 * @return the share
+	 */
+	protected Share storeNewShare(String key, String ownerId, SharePreferences preferences) {
 		this.getSimpleJdbcTemplate().update(
 				"insert into shares (name, owner, valid) values (?, ?, ?)", 
-				newKey,
-				ownerUniqueId,
+				key,
+				ownerId,
 				VALID);
 
 		for(ISharePreference pref : preferences.getPreferences()) {
-			storePreference(newKey, pref);
+			storePreference(key, pref);
 		}
 		
 		Share share = new Share();
-		share.setKey(newKey);
-		share.setOwnerCalendarUniqueId(ownerUniqueId);
+		share.setKey(key);
+		share.setOwnerCalendarUniqueId(ownerId);
 		share.setSharePreferences(preferences);
 		LOG.info("generated new share: " + share);
 		return share;
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.IShareDao#retrieveGuessableShare(org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public Share retrieveGuessableShare(ICalendarAccount account) {
+		Share share = internalRetrieveByKey(account.getEmailAddress(), VALID);
+		if(share != null && !share.getSharePreferences().isGuessable()) {
+			throw new IllegalStateException("found " + share + " with key matching email address (" + account + ") that is missing GuessableSharePreference");
+		}
+		return share;
+	}
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.IShareDao#retreiveByKey(java.lang.String)
 	 */
@@ -134,6 +180,72 @@ IShareDao {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.IShareDao#addSharePreference(edu.wisc.wisccal.shareurl.domain.Share, edu.wisc.wisccal.shareurl.domain.ISharePreference)
+	 */
+	@Override
+	public Share addSharePreference(Share share,
+			ISharePreference sharePreference) {
+		storePreference(share.getKey(), sharePreference);
+		share.getSharePreferences().addPreference(sharePreference);
+		return share;
+	}
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.IShareDao#removeSharePreference(edu.wisc.wisccal.shareurl.domain.Share, edu.wisc.wisccal.shareurl.domain.ISharePreference)
+	 */
+	@Override
+	public Share removeSharePreference(Share share,
+			ISharePreference sharePreference) {
+		int rows = this.getSimpleJdbcTemplate().update(
+				"delete from share_preferences where sharekey=? and preference_type=? and preference_key=? and preference_value=?",
+				share.getKey(),
+				sharePreference.getType(),
+				sharePreference.getKey(),
+				sharePreference.getValue());
+		if(rows == 1) {
+			share.getSharePreferences().removePreference(sharePreference);
+			LOG.info("successfully removed " + sharePreference + " from " + share);
+		}
+		
+		return share;
+	}
+	/**
+	 * Called if and only if:
+	 * <ol>
+	 * <li>Account owner previously created guessable share.</li>
+	 * <li>Account owner previously revoked guessable share.</li>
+	 * </ol>
+	 * Steps 1 and 2 can be repeated any number of times; this method should only be run
+	 * on guessable shares that are invalid.
+	 * 
+	 * Performs the following:
+	 * <ol>
+	 * <li>Removes the old share preferences.</li>
+	 * <li>Stores the new share preferences from the argument.</li>
+	 * <li>Set share valid column to 'Y'.
+	 * 
+	 * @param share
+	 * @param preferences
+	 */
+	protected Share resetGuessableShare(Share share, SharePreferences preferences) {
+		// step 1: delete old preferences
+		this.simpleJdbcTemplate.update("delete from share_preferences where sharekey=?", share.getKey());
+		// step 2: store new preferences:
+		preferences.addPreference(new GuessableSharePreference());
+		for(ISharePreference pref : preferences.getPreferences()) {
+			storePreference(share.getKey(), pref);
+		}
+		// step 3: mark share as valid
+		this.simpleJdbcTemplate.update("update shares set valid='Y' where name=?", share.getKey());
+		
+		Share result = new Share();
+		result.setKey(share.getKey());
+		result.setOwnerCalendarUniqueId(share.getOwnerCalendarUniqueId());
+		result.setValid(true);
+		result.setSharePreferences(preferences);
+		LOG.info("reset guessable share complete; was: " + share + ", now: " + result);
+		return result;
+	}
 	/**
 	 * 
 	 * @param shareKey
@@ -147,9 +259,7 @@ IShareDao {
 				preference.getKey(),
 				preference.getValue());
 		if(rows == 1) { 
-			if(LOG.isDebugEnabled()) {
-				LOG.debug("stored preference " + preference + " for key " + shareKey);
-			}
+			LOG.info("stored preference " + preference + " for key " + shareKey);
 		} else {
 			LOG.warn("unexpected result for storePreference: " + rows + " (preference: " + preference + ", key: " + shareKey + ")");
 		}
@@ -242,23 +352,11 @@ IShareDao {
 	}
 	
 	/**
-	 * 
+	 * @see SharePreferences#construct(String, String, String)
 	 * @param persistencePref
 	 * @return
 	 */
 	protected ISharePreference castAppropriately(final PersistenceSharePreference persistencePref) {
-		if(FreeBusyPreference.FREE_BUSY.equals(persistencePref.getPreferenceType())) {
-			return new FreeBusyPreference();
-		} else if(AccessClassificationMatchPreference.CLASS_ATTRIBUTE.equals(persistencePref.getPreferenceType())) {
-			AccessClassification access = AccessClassification.valueOf(persistencePref.getPreferenceValue());
-			return new AccessClassificationMatchPreference(access);
-		} else if(PropertyMatchPreference.PROPERTY_MATCH.equals(persistencePref.getPreferenceType())){
-			return new PropertyMatchPreference(persistencePref.getPreferenceKey(), persistencePref.getPreferenceValue());
-		} else if (IncludeParticipantsPreference.INCLUDE_PARTICIPANTS.equals(persistencePref.getPreferenceType())) {
-			return new IncludeParticipantsPreference(Boolean.parseBoolean(persistencePref.getPreferenceValue()));
-		} else {
-			LOG.warn("could not match any preference types for " + persistencePref + ", returning null");
-			return null;
-		}
+		return SharePreferences.construct(persistencePref.getPreferenceType(), persistencePref.getPreferenceKey(), persistencePref.getPreferenceValue());
 	}
 }

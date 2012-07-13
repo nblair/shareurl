@@ -22,6 +22,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean to represent the set of preferences associated with a {@link Share}.
@@ -33,7 +35,7 @@ public class SharePreferences implements Serializable {
 
 	
 	private static final String COMMA = ", ";
-
+	private static final Log LOG = LogFactory.getLog(SharePreferences.class);
 	/**
 	 * 
 	 */
@@ -63,7 +65,32 @@ public class SharePreferences implements Serializable {
 			this.preferences.add(pref);
 		}
 	}
+	/**
+	 * 
+	 * @param pref
+	 * @return true if the preference was successfully removed.
+	 */
+	public boolean removePreference(ISharePreference pref) {
+		if(null != pref) {
+			return this.preferences.remove(pref);
+		}
+		
+		return false;
+	}
 	
+	/**
+	 * 
+	 * @return the {@link Set} of {@link ISharePreference}s that return true for {@link ISharePreference#participatesInFiltering()}.
+	 */
+	public Set<ISharePreference> getFilterPreferences() {
+		Set<ISharePreference> results = new HashSet<ISharePreference>();
+		for(ISharePreference p:preferences) {
+			if(p.participatesInFiltering()) {
+				results.add(p);
+			}
+		}
+		return results;
+	}
 	public Set<ISharePreference> getPreferences() {
 		return new HashSet<ISharePreference>(preferences);
 	}
@@ -106,7 +133,14 @@ public class SharePreferences implements Serializable {
 		// preference not present, default is false
 		return false;
 	}
-	
+	/**
+	 * 
+	 * @return true if contains {@link GuessableSharePreference}
+	 */
+	public boolean isGuessable() {
+		Set<ISharePreference> prefs = getPreferencesByType(GuessableSharePreference.GUESSABLE);
+		return prefs.size() > 0;
+	}
 	/**
 	 * 
 	 * @return
@@ -169,5 +203,34 @@ public class SharePreferences implements Serializable {
 			p.dispose();
 		}
 	}
-	
+
+	/**
+	 * Construct a concrete {@link ISharePreference} from the 3 string arguments.
+	 * Will return null if the preferenceType is unknown, or if the key is an unsupported value.
+	 * 
+	 * @param preferenceType the value for {@link ISharePreference#getType()}
+	 * @param preferenceKey the value for {@link ISharePreference#getKey()}
+	 * @param preferenceValue the value for {@link ISharePreference#getValue()}
+	 * @return one of the {@link ISharePreference} implementations 
+	 */
+	public static ISharePreference construct(String preferenceType, String preferenceKey, String preferenceValue) {
+		if(FreeBusyPreference.FREE_BUSY.equals(preferenceType)) {
+			return new FreeBusyPreference();
+		} else if(GuessableSharePreference.GUESSABLE.equals(preferenceType)) {
+			return new GuessableSharePreference();
+		} else if(AccessClassificationMatchPreference.CLASS_ATTRIBUTE.equals(preferenceType)) {
+			AccessClassification access = AccessClassification.valueOf(preferenceValue);
+			if(access == null) {
+				return null;
+			}
+			return new AccessClassificationMatchPreference(access);
+		} else if(PropertyMatchPreference.PROPERTY_MATCH.equals(preferenceType)){
+			return new PropertyMatchPreference(preferenceKey, preferenceValue);
+		} else if (IncludeParticipantsPreference.INCLUDE_PARTICIPANTS.equals(preferenceType)) {
+			return new IncludeParticipantsPreference(Boolean.parseBoolean(preferenceValue));
+		} else {
+			LOG.warn("could not match any preference types for type=" + preferenceType + ", key=" + preferenceKey + ", value=" + preferenceValue + ", returning null");
+			return null;
+		}
+	}
 }

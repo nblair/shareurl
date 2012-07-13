@@ -94,7 +94,7 @@ public class Share implements Serializable {
 	}
 
 	/**
-	 * 
+	 * @see SharePreferences#isFreeBusyOnly()
 	 * @return true if this share is a "Free Busy Only" share
 	 */
 	public boolean isFreeBusyOnly() {
@@ -102,11 +102,18 @@ public class Share implements Serializable {
 	}
 	
 	/**
-	 * 
+	 * @see SharePreferences#isIncludeParticipants()
 	 * @return true if this share will include event participants
 	 */
 	public boolean isIncludeParticipants() {
 		return this.sharePreferences.isIncludeParticipants();
+	}
+	/**
+	 * @see SharePreferences#isGuessable()
+	 * @return {@link  SharePreferences#isGuessable()}
+	 */
+	public boolean isGuessable() {
+		return this.sharePreferences.isGuessable();
 	}
 	
 	/**

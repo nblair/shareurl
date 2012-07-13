@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.jasig.schedassist.model.ICalendarAccount;
 
+import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 
@@ -30,15 +31,28 @@ import edu.wisc.wisccal.shareurl.domain.SharePreferences;
  */
 public interface IShareDao {
 
+	
 	/**
 	 * Create a new {@link Share} for the specified {@link ICalendarAccount} with the 
 	 * {@link SharePreferences}.
 	 * 
 	 * @param account
 	 * @param preferences
-	 * @return the persisted {@link Share}
+	 * @return the persisted {@link Share}, with a randomly generated value for it's key field
 	 */
 	Share generateNewShare(ICalendarAccount account, SharePreferences preferences);
+	
+	/**
+	 * Create a new "guessable" {@link Share} for the specified {@link ICalendarAccount}
+	 * and {@link SharePreferences}.
+	 * 
+	 * @param account
+	 * @param preferences
+	 * @param shareKey
+	 * @return the new {@link Share}
+	 * @throws GuessableShareAlreadyExistsException if a valid guessable {@link Share} already exists
+	 */
+	Share generateGuessableShare(ICalendarAccount account, SharePreferences preferences) throws GuessableShareAlreadyExistsException;
 	
 	/**
 	 * Retrieve the VALID {@link Share}s for the {@link ICalendarAccount}.
@@ -48,6 +62,13 @@ public interface IShareDao {
 	 * @return
 	 */
 	List<Share> retrieveByOwner(ICalendarAccount account);
+	
+	/**
+	 * 
+	 * @param account
+	 * @return
+	 */
+	Share retrieveGuessableShare(ICalendarAccount account);
 	
 	/**
 	 * Retrieve a VALID {@link Share} with the specified key, if any.
@@ -64,4 +85,20 @@ public interface IShareDao {
 	 * @param share
 	 */
 	void revokeShare(Share share);
+	
+	/**
+	 * 
+	 * @param share
+	 * @param sharePreference
+	 * @return
+	 */
+	Share addSharePreference(Share share, ISharePreference sharePreference);
+	
+	/**
+	 * 
+	 * @param share
+	 * @param sharePreference
+	 * @return
+	 */
+	Share removeSharePreference(Share share, ISharePreference sharePreference);
 }
