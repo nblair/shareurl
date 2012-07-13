@@ -54,6 +54,14 @@ public interface ISharePreference {
 	
 	/**
 	 * 
+	 * @return true if this preference participants in event filtering.
+	 */
+	boolean participatesInFiltering();
+	
+	/**
+	 * This method is required if and only if {@link #participatesInFiltering()} returns
+	 * true.
+	 * 
 	 * @param event
 	 * @return true if the event matches the criteria for this preference
 	 */
