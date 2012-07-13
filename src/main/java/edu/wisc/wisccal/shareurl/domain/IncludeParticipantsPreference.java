@@ -19,7 +19,6 @@
 
 package edu.wisc.wisccal.shareurl.domain;
 
-import net.fortuna.ical4j.model.component.VEvent;
 
 /**
  * @author Nicholas Blair
@@ -77,11 +76,11 @@ public class IncludeParticipantsPreference extends AbstractSharePreference {
 	}
 
 	/* (non-Javadoc)
-	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#matches(net.fortuna.ical4j.model.component.VEvent)
+	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#participatesInFiltering()
 	 */
 	@Override
-	public boolean matches(VEvent event) {
-		return true;
+	public final boolean participatesInFiltering() {
+		return false;
 	}
 
 }

@@ -51,6 +51,14 @@ public class PropertyMatchPreference extends AbstractSharePreference {
 	 */
 	public static final String PROPERTY_MATCH =  "PROPERTY_MATCH";
 
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#participatesInFiltering()
+	 */
+	@Override
+	public boolean participatesInFiltering() {
+		return true;
+	}
+
 	/**
 	 * 
 	 * @param event

@@ -15,7 +15,6 @@
 *******************************************************************************/
 package edu.wisc.wisccal.shareurl.domain;
 
-import net.fortuna.ical4j.model.component.VEvent;
 
 /**
  * Subclass of {@link AbstractSharePreference} that
@@ -57,15 +56,12 @@ public final class FreeBusyPreference extends AbstractSharePreference {
 	public String getValue() {
 		return Boolean.TRUE.toString();
 	}
-
-	/**
-	 * This implementation does not participate in event filtering.
-	 * Always returns true.
-	 * @see edu.wisc.wisccal.calendarkey.ISharePreference#matches(net.fortuna.ical4j.model.component.VEvent)
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#participatesInFiltering()
 	 */
 	@Override
-	public boolean matches(VEvent event) {
-		return true;
+	public final boolean participatesInFiltering() {
+		return false;
 	}
 
 	/* (non-Javadoc)

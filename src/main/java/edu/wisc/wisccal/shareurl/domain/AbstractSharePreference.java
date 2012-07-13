@@ -17,6 +17,8 @@ package edu.wisc.wisccal.shareurl.domain;
 
 import java.io.Serializable;
 
+import net.fortuna.ical4j.model.component.VEvent;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -76,6 +78,16 @@ public abstract class AbstractSharePreference implements ISharePreference, Seria
 		return builder.toString();
 	}
 
+	/**
+	 * Default implementation is to throw an UnsupportedOperationException.
+	 * 
+	 * @see edu.wisc.wisccal.calendarkey.ISharePreference#matches(net.fortuna.ical4j.model.component.VEvent)
+	 */
+	@Override
+	public boolean matches(VEvent event) {
+		throw new UnsupportedOperationException(this + " does not participate in filtering");
+	}
+	
 	/**
 	 * Default implementation does nothing.
 	 * 

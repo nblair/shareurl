@@ -71,6 +71,14 @@ public class AccessClassificationMatchPreference extends AbstractSharePreference
 	}
 
 	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#participatesInFiltering()
+	 */
+	@Override
+	public boolean participatesInFiltering() {
+		return true;
+	}
+
+	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.domain.ISharePreference#matches(net.fortuna.ical4j.model.component.VEvent)
 	 */
 	@Override
