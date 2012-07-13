@@ -18,6 +18,7 @@ package edu.wisc.wisccal.shareurl.ical;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
@@ -67,7 +68,8 @@ public class EventFilterImpl implements IEventFilter {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Calendar filterEvents(final Calendar original, final SharePreferences preferences) {
-		if(preferences.getPreferences().size() == 0 || preferences.isFreeBusyOnly()) {
+		final Set<ISharePreference> filterPreferences = preferences.getFilterPreferences();
+		if(filterPreferences.size() == 0 || preferences.isFreeBusyOnly()) {
 			// return original unfiltered calendar if no preferences exist or is freebusy only
 			return original;
 		}
@@ -88,7 +90,7 @@ public class EventFilterImpl implements IEventFilter {
 				VEvent event = (VEvent) component;
 				boolean kept = false;
 				ISharePreference keeper = null;
-				for(ISharePreference pref : preferences.getPreferences()) {
+				for(ISharePreference pref : filterPreferences) {
 					if(pref.matches(event)) {
 						kept = resultComponents.add(event);
 						break;
