@@ -49,7 +49,7 @@ list-style-image: url(${helpIcon});
 }
 </style>
 
-<rs:resourceURL var="jqueryPath" value="/rs/jquery/1.3.2/jquery-1.3.2.min.js"/>
+<rs:resourceURL var="jqueryPath" value="/rs/jquery/1.4.1/jquery-1.4.1.min.js"/>
 
 <script type="text/javascript" src="${jqueryPath}"></script>
 <script type="text/javascript">
@@ -69,11 +69,10 @@ $(function() {
 <body>
 
 <%@ include file="/WEB-INF/jsp/theme/body-start.jsp" %>
+<%@ include file="/WEB-INF/jsp/login-info.jsp" %>
 
 <div id="content" class="main col">
-<p class="info">
-Logged in as:&nbsp;<security:authentication property="principal.activeDisplayName"/><br/>
-</p>
+
 <h2>ShareURL Details for <i>${share.key }</i></h2>
 
 <ul>

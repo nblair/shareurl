@@ -36,7 +36,10 @@ public final class SecurityConstants {
 	 * Role that grants access to the application.
 	 */
 	public static final GrantedAuthority CALENDAR_ELIGIBLE = new GrantedAuthorityImpl("ROLE_CALENDAR_ELIGIBLE");
-	
+	/**
+	 * Role given to "delegate" (resource) accounts.
+	 */
+	public static final GrantedAuthority DELEGATE_ACCOUNT = new GrantedAuthorityImpl("ROLE_DELEGATE_ACCOUNT");
 	/**
 	 * Role that grants access to the application administrative functions.
 	 */

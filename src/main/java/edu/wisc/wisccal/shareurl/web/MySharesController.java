@@ -15,8 +15,10 @@
 *******************************************************************************/
 package edu.wisc.wisccal.shareurl.web;
 
+import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -25,7 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
@@ -51,17 +55,39 @@ public class MySharesController  {
 		this.shareDao = shareDao;
 	}
 	
+	/**
+	 * 
+	 * @param model
+	 * @param format
+	 * @return
+	 */
 	@RequestMapping("/my-shares")
-	public String showView(ModelMap model) {
+	public String showView(ModelMap model, @RequestParam(required=false, defaultValue="") String format) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("displaying manage share form for " + activeAccount);
+			LOG.debug("displaying manage share form for " + activeAccount + ", format=" + format);
 		}
 		List<Share> shares = shareDao.retrieveByOwner(activeAccount);
+		Collections.sort(shares, new Comparator<Share>() {
+			@Override
+			public int compare(Share o1, Share o2) {
+				return new CompareToBuilder().append(!o1.isGuessable(), !o2.isGuessable()).append(o1.getKey(), o2.getKey()).toComparison();
+			}
+		});
 		boolean activeIsDelegate = currentUser.isDelegate();
 		model.put("activeIsDelegate", activeIsDelegate);
 		model.put("shares", shares);
+		for(Share share: shares) {
+			if(share.isGuessable()) {
+				model.put("hasGuessable", true);
+				break;
+			}
+		}
+		
+		if("json".equals(format)) {
+			return "jsonView";
+		}
 		return "my-shares";
 	}
 }

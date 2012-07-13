@@ -1,7 +1,10 @@
 <%@ taglib prefix="rs" uri="http://www.jasig.org/resource-server" %>
 <%-- this file should contain solely the stylesheet, meta tags, and javascript elements needed in the head --%>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<rs:resourceURL var="jQuery" value="/rs/jquery/1.4.2/jquery-1.4.2.min.js"/>
+<script type="text/javascript" src="${jQuery}"></script>
 <rs:resourceURL var="mozillaStyle" value="/themes/uw-2011/css/mozilla2.css"/>
+<%-- 
 <script type="text/javascript">
 <!--
 if ($.browser.mozilla && (parseFloat($.browser.version) < 1.9)) {
@@ -9,6 +12,7 @@ if ($.browser.mozilla && (parseFloat($.browser.version) < 1.9)) {
 }
 // -->
 </script>
+--%>
 <rs:resourceURL var="mainStyle" value="/themes/uw-2011/css/main_one_column.css"/>
 <link rel="stylesheet" href="${mainStyle}" type="text/css" media="all" />
 <rs:resourceURL var="ie6" value="/themes/uw-2011/css/ie6.css"/>

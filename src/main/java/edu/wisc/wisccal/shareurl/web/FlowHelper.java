@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.webflow.execution.RequestContext;
 
+import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.AccessClassification;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
@@ -60,6 +61,11 @@ public class FlowHelper {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		return shareDao.generateNewShare(activeAccount, preferences);
+	}
+	public Share generateGuessableShare(SharePreferences preferences) throws GuessableShareAlreadyExistsException {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		return shareDao.generateGuessableShare(activeAccount, preferences);
 	}
 	
 	/**
@@ -111,5 +117,16 @@ public class FlowHelper {
 		} else {
 			return false;
 		}
+	}
+	
+	/**
+	 * 
+	 * @return true if the currently authenticated account has a valid "guessable" share
+	 */
+	public boolean hasGuessableShare() {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		Share share = shareDao.retrieveGuessableShare(activeAccount);
+		return share != null && share.isValid();
 	}
 }

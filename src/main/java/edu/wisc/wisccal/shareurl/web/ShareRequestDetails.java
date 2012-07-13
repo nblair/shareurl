@@ -343,7 +343,11 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public boolean isPersonalOnly() {
 		return personalOnly;
 	}
-
+	
+	/**
+	 * 
+	 * @return the number of days displayed (0 or greater)
+	 */
 	public int getNumberDaysDisplayed() {
 		return pathData.getEndDateIndex() - pathData.getStartDateIndex();
 	}

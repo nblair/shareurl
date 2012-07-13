@@ -262,17 +262,14 @@ public class SharedCalendarController {
 	 */
 	@RequestMapping("/u/**")
 	public String getShareUrl(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
-		// controller
 		final ShareRequestDetails requestDetails = new ShareRequestDetails(request);
-		// controller
 		model.put("requestDetails", requestDetails);
-		// controller
+
 		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(requestDetails + " shareDao#retrieveByKey returns " + share);
 		}
 		if(null != share) {
-			//controller
 			ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 			if(null == account) {
 				// account not found for share, revoke and 404
@@ -283,10 +280,9 @@ public class SharedCalendarController {
 				response.setStatus(404);
 				return "share-not-found";
 			}
-
-			//controller
 			response.setCharacterEncoding(UTF_8);	
 			ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
+			// TODO short-circuit if requestDetails indicates HTML and weekor month view
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(LOG.isDebugEnabled()) {

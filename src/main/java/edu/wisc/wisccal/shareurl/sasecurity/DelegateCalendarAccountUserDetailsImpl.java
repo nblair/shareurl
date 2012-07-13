@@ -62,6 +62,7 @@ public class DelegateCalendarAccountUserDetailsImpl implements CalendarAccountUs
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		if(null != this.delegateCalendarAccount && this.delegateCalendarAccount.isEligible()) {
 			authorities.add(SecurityConstants.CALENDAR_ELIGIBLE);
+			authorities.add(SecurityConstants.DELEGATE_ACCOUNT);
 		}
 		
 		return Collections.unmodifiableList(authorities);
