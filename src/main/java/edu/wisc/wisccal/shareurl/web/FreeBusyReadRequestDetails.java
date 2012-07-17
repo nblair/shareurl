@@ -30,6 +30,7 @@ import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.Period;
 
 import org.apache.commons.lang.StringUtils;
+import org.jasig.schedassist.model.CommonDateOperations;
 import org.springframework.web.util.UrlPathHelper;
 
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
@@ -215,9 +216,9 @@ public class FreeBusyReadRequestDetails implements IShareRequestDetails {
 		Date now = new Date();
 		StringBuilder result = new StringBuilder();
 		result.append("dr(");
-		result.append(CalendarDataUtils.approximateDifference(now, startDate));
+		result.append(CommonDateOperations.approximateDifference(now, startDate));
 		result.append(",");
-		result.append(CalendarDataUtils.approximateDifference(endDate, now));
+		result.append(CommonDateOperations.approximateDifference(endDate, now));
 		result.append(")");
 		return result.toString();
 	}

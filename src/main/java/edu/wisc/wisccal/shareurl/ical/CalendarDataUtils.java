@@ -84,8 +84,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	protected static final String X_SHAREURL_RECURRENCE_EXPAND = "X-SHAREURL-RECURRENCE-EXPAND";
 
 	protected static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
-
-	private static final long MILLISECS_PER_DAY = 24*60*60*1000;
+	
+	public static final long MILLISECS_PER_MINUTE = 60*1000;
 
 	private static final String UW_SEPARATOR = "_UW_";
 
@@ -647,7 +647,11 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		event.setTimezone(nullSafeParameterValue(vevent.getStartDate().getParameter(TzId.TZID)));
 		event.setSummary(nullSafePropertyValue(vevent.getSummary()));
 		event.setDescription(nullSafePropertyValue(vevent.getDescription()));
-		event.setPrivacy(nullSafePropertyValue(vevent.getClassification()));
+		Clazz clazz = vevent.getClassification();
+		if(clazz == null) {
+			clazz = Clazz.PUBLIC;
+		}
+		event.setPrivacy(nullSafePropertyValue(clazz));
 		event.setLocation(nullSafePropertyValue(vevent.getLocation()));
 		if(includeParticipants) {
 			net.fortuna.ical4j.model.property.Organizer organizer = vevent.getOrganizer();
@@ -716,15 +720,15 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			event.getProperties().remove(event.getRecurrenceId());
 		}
 	}
-
+	
 	/**
-	 * Returns the approximate difference in DAYS between start and end.
+	 * Returns the approximate difference in Minutes between start and end.
 	 * 
 	 * @param start
 	 * @param end
-	 * @return the approximate number of days between the 2 dates
+	 * @return the approximate number of minutes between the 2 dates
 	 */
-	public static long approximateDifference(Date start, Date end) {
+	public static long approximateDifferenceInMinutes(Date start, Date end) {
 		java.util.Calendar s = java.util.Calendar.getInstance();
 		s.setTime(start);
 		java.util.Calendar e = java.util.Calendar.getInstance();
@@ -733,7 +737,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		long endL   =  e.getTimeInMillis() +  e.getTimeZone().getOffset(e.getTimeInMillis());
 		long startL = s.getTimeInMillis() + s.getTimeZone().getOffset(s.getTimeInMillis());
 
-		return (endL - startL) / MILLISECS_PER_DAY;
+		return (endL - startL) / MILLISECS_PER_MINUTE;
 	}
 
 	/**

@@ -23,6 +23,8 @@ import java.util.Date;
 
 import org.apache.commons.lang.time.DateUtils;
 
+import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
+
 
 /**
  * Generic entry in a calendar.
@@ -99,13 +101,26 @@ public class CalendarEntry {
 		this.status = status;
 	}
 	/**
+	 * Derived; if {@link #getStartTime()} and {@link #getEndTime()}
+	 * return timestamps that equal the truncated self, this returns true.
 	 * @return the allDay
 	 */
 	public boolean isAllDay() {
 		assert(startTime != null);
-		Date truncated = DateUtils.truncate(getStartTime(), java.util.Calendar.DATE);
-		return startTime.equals(truncated);
+		Date start = getStartTime();
+		Date end = getEndTime();
+		Date startTruncated = DateUtils.truncate(start, java.util.Calendar.DATE);
+		Date endTruncated = DateUtils.truncate(end, java.util.Calendar.DATE);
+		return start.equals(startTruncated) && end.equals(endTruncated);
 	}
+	/**
+	 * Derived; return the difference between start and end times in minutes.
+	 * @return
+	 */
+	public long getDurationInMinutes() {
+		return CalendarDataUtils.approximateDifferenceInMinutes(getStartTime(), getEndTime());
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
