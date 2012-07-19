@@ -15,8 +15,8 @@
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <rs:resourceURL var="keyImg" value="/rs/famfamfam/silk/1.3/key.png"/>
@@ -25,7 +25,7 @@
 color:green;
 }
 .large {
-font-size:130%;
+font-size:120%;
 }
 li.share {
 list-style-image: url(${keyImg});
@@ -46,19 +46,16 @@ margin: 0 1em 0 1em;
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(function() {
-	//$(':submit').lockSubmit();
-	/*
+	$(':submit').lockSubmit();
 	$('#createpublic').submit(function(event) {
-		alert('submit');
 		event.preventDefault();
 		postCreatePublic();		
 	});
-	*/
 	
-	refreshMyShares();
+	refreshMyShares(false);
 });
 
-function refreshMyShares() {
+function refreshMyShares(fadeIn) {
 	//showChangeInProgress("#schedulechangestatus", '<spring:message code="updating.availability.schedule"/>');
 	$.get('<c:url value="/my-shares"><c:param name="format" value="json"/></c:url>', 
 			{ },
@@ -75,8 +72,17 @@ function refreshMyShares() {
 						for(var i = 0; i < data.shares.length; i++) {
 							var share = data.shares[i];
 							if(share.freeBusyOnly) {
-								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">' + share.key + 
-										'</span></a>:&nbsp;<span class="details">Free Busy only.</span></li>').appendTo(ul);
+								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">' + share.key;
+								if(share.guessable) {
+									liText += ' (Public ShareURL)';
+								}
+								liText += '</span></a>:&nbsp;<span class="details">Free Busy only.</span></li>';
+								var li = $(liText);
+								if(fadeIn) {
+									li.appendTo(ul).fadeIn();
+								} else {
+									li.appendTo(ul);
+								}
 							} else if (share.eventFilterCount == 0) {
 								var details = 'All Calendar Data';
 								if(share.includeParticipants) {
@@ -108,9 +114,8 @@ function postCreatePublic() {
 			{ },
 			function(data) {
 				if(data.success) {
-					//showChangeSuccess("#schedulechangestatus", '<spring:message code="schedule.successfully.updated.for"/> ' + startTime);
-					refreshMyShares();
-					//$('.publicshareform').hide();
+					refreshMyShares(true);
+					$('#guessableInner').fadeOut();
 				} else {
 					alert('failed to create public share');
 				}
@@ -126,30 +131,26 @@ function postCreatePublic() {
 <%@ include file="/WEB-INF/jsp/login-info.jsp" %>
 
 <div id="content" class="main col">
-
 <div id="controls" class="info">
-<p>A ShareURL is a special link to your WiscCal account that returns your calendar event data in a number of different formats. There are 2 types:</p>
-<ol>
-<li><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: These URLs include a randomly generated string of letters and numbers. 
+<p><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: These URLs use a randomly generated string of letters and numbers to identify your account. 
 These are more intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
-traditional ShareURLs with different options.</li>
-<li>Public ShareURLs (new!) work just like traditional ShareURLs, however the link include your email address instead of a random alpha-numeric string.
-<c:choose>
-<c:when test="${hasGuessable}">
-</c:when>
-<c:otherwise>
+traditional ShareURLs with different options.</p>
+
+<c:if test="${not hasGuessable}">
+<div id="guessableInner">
+<hr/>
+<p><span class="large">Public ShareURLs</span> (new!) work just like traditional ShareURLs, however the link include your email address instead of a random alpha-numeric string.</p>
 <div class="publicshareform">
 <form action="<c:url value="/create-public"/>" method="post" id="createpublic">
 <fieldset>
-<input type="submit" value="Create my Public ShareURL"/>&nbsp;<span class="inprogressplaceholder"/>
+<input type="submit" value="Create my Public ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
 </fieldset>
 </form>
 </div>
-</c:otherwise>
-</c:choose>
-</li>
-</ol>
 </div>
+</c:if>
+
+</div> <!-- end id=controls -->
 
 <h2>My ShareURLs</h2>
 <div id="myshares">
