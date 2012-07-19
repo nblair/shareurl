@@ -27,6 +27,7 @@ import net.fortuna.ical4j.model.property.Version;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 
 import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
@@ -84,6 +85,9 @@ public class EventFilterImplTest {
 		preferences.addPreference(new PropertyMatchPreference(Summary.SUMMARY, "soccer"));
 		
 		EventFilterImpl filter = new EventFilterImpl();
+		CalendarDataProcessor p = Mockito.mock(CalendarDataProcessor.class);
+		filter.setCalendarDataProcessor(p);
+		
 		Calendar result = filter.filterEvents(calendar, preferences);
 		Assert.assertNotNull(result);
 		Assert.assertNotSame(calendar, result);
@@ -111,6 +115,9 @@ public class EventFilterImplTest {
 		preferences.addPreference(new IncludeParticipantsPreference(true));
 		
 		EventFilterImpl filter = new EventFilterImpl();
+		CalendarDataProcessor p = Mockito.mock(CalendarDataProcessor.class);
+		filter.setCalendarDataProcessor(p);
+		
 		Calendar result = filter.filterEvents(calendar, preferences);
 		Assert.assertNotNull(result);
 		Assert.assertNotSame(calendar, result);
@@ -135,6 +142,9 @@ public class EventFilterImplTest {
 		preferences.addPreference(new PropertyMatchPreference(Summary.SUMMARY, "individual"));
 		
 		EventFilterImpl filter = new EventFilterImpl();
+		CalendarDataProcessor p = Mockito.mock(CalendarDataProcessor.class);
+		filter.setCalendarDataProcessor(p);
+		
 		Calendar result = filter.filterEvents(calendar, preferences);
 		Assert.assertNotNull(result);
 		
