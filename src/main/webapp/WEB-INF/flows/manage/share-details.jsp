@@ -48,10 +48,6 @@ list-style-image: url(${fbIcon});
 list-style-image: url(${helpIcon});
 }
 </style>
-
-<rs:resourceURL var="jqueryPath" value="/rs/jquery/1.4.1/jquery-1.4.1.min.js"/>
-
-<script type="text/javascript" src="${jqueryPath}"></script>
 <script type="text/javascript">
 $(function() {
 	$('.revokeform').submit(function(e) {
