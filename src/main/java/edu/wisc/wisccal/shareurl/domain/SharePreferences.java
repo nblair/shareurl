@@ -106,6 +106,24 @@ public class SharePreferences implements Serializable {
 	}
 	
 	/**
+	 * Return the {@link ISharePreference} from this set of the specified
+	 * type if and only if 1 instance of that type exists.
+	 * 
+	 * Returns null if 0 or more than 1 preference of the specified type exists.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public ISharePreference getPreferenceByType(String type) {
+		Set<ISharePreference> typeSet = getPreferencesByType(type);
+		if(typeSet.size() == 1) {
+			return typeSet.iterator().next();
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Short cut to determine if this object
 	 * has the FreeBusy preference.
 	 * @return
