@@ -15,10 +15,15 @@
 *******************************************************************************/
 package edu.wisc.wisccal.shareurl.web;
 
+import java.util.Iterator;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import edu.wisc.wisccal.shareurl.domain.ContentFilter;
 
 /**
  * Helper class intended for providing methods that can be exposed in the viewhelper tag library.
@@ -68,5 +73,28 @@ public class ViewHelper {
 			virtualServer.append(port);
 		}
 		return virtualServer.toString();
+	}
+	
+	/**
+	 * 
+	 * @param contentFilters
+	 * @return as JSON formatted String representing the list
+	 */
+	public static String filtersToJson(List<ContentFilter> contentFilters) {
+		StringBuilder result = new StringBuilder();
+		result.append("{ ");
+		for(Iterator<ContentFilter> i = contentFilters.iterator(); i.hasNext();) {
+			ContentFilter f = i.next();
+			result.append("'");
+			result.append(f.getPropertyName());
+			result.append("': '");
+			result.append(f.getMatchValue());
+			result.append("'");
+			if(i.hasNext()) {
+				result.append(", ");
+			}
+		}
+		result.append(" }");
+		return result.toString();
 	}
 }

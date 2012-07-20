@@ -20,8 +20,15 @@
 package edu.wisc.wisccal.shareurl.web;
 
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.Description;
+import net.fortuna.ical4j.model.property.Location;
+import net.fortuna.ical4j.model.property.Summary;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -36,9 +43,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.wisc.wisccal.shareurl.IShareDao;
+import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
+import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
@@ -55,6 +64,8 @@ public class EditSharePreferencesController {
 
 	private final Log log = LogFactory.getLog(this.getClass());
 
+	private final List<String> allowedContentFilterPropertyNames = Collections.unmodifiableList(Arrays.asList(new String[] { Location.LOCATION, Summary.SUMMARY, Description.DESCRIPTION }));
+	private final List<String> allowedPrivacyFilterValues = Collections.unmodifiableList(Arrays.asList(new String[] { Clazz.PRIVATE.getValue(), Clazz.CONFIDENTIAL.getValue(), Clazz.PUBLIC.getValue()} ));
 	private IShareDao shareDao;
 	/**
 	 * @return the shareDao
@@ -182,85 +193,67 @@ public class EditSharePreferencesController {
 	/**
 	 * 
 	 * @param shareKey
-	 * @param preferenceType
-	 * @param preferenceKey
-	 * @param preferenceValue
+	 * @param privacyValue
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(value="/addPreference", method=RequestMethod.POST)
-	public String addPreference(@RequestParam String shareKey, @RequestParam String preferenceType, 
-			@RequestParam String preferenceKey, @RequestParam String preferenceValue, ModelMap model) {
+	@RequestMapping(value="/addPrivacyFilter", method=RequestMethod.POST)
+	public String addPrivacyFilter(@RequestParam String shareKey, @RequestParam String privacyValue, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling addPreference request for " + activeAccount);
+			log.debug("handling addPrivacyFilter request for " + activeAccount);
 		}
 		
 		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate == null) {
-			model.addAttribute("message", "Share not found");
-			model.addAttribute("success", false);
-			return JSON_VIEW;
+		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, Clazz.CLASS, privacyValue)) {
+			ISharePreference sharePreference = SharePreferences.construct(AccessClassificationMatchPreference.CLASS_ATTRIBUTE, Clazz.CLASS, privacyValue);
+			candidate = shareDao.addSharePreference(candidate, sharePreference);
+			model.addAttribute("share", candidate);
 		}
-		ISharePreference sharePreference = SharePreferences.construct(preferenceType, preferenceKey, preferenceValue);
-		if(sharePreference == null) {
-			model.addAttribute("message", "Invalid Share Preference");
-			model.addAttribute("success", false);
-			return JSON_VIEW;
-		}
-		for(ISharePreference existing: candidate.getSharePreferences().getPreferencesByType(sharePreference.getType())) {
-			if(sharePreference.equals(existing)) {
-				model.addAttribute("message", "Duplicate Share Preference already exists");
-				model.addAttribute("success", false);
-				return JSON_VIEW;
-			}
-		}
-
-		// passed validation
-		Share updated = shareDao.addSharePreference(candidate, sharePreference);
-		model.addAttribute("share", updated);
-		model.addAttribute("success", true);
-		return JSON_VIEW;
-	}
-
-	/**
-	 * 
-	 * @param shareKey
-	 * @param preferenceType
-	 * @param preferenceKey
-	 * @param preferenceValue
-	 * @param model
-	 * @return
-	 */
-	@RequestMapping(value="/removePreference", method=RequestMethod.POST)
-	public String removePreference(@RequestParam String shareKey, @RequestParam String preferenceType, 
-			@RequestParam String preferenceKey, @RequestParam String preferenceValue, ModelMap model) {
-		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
-		if(log.isDebugEnabled()) {
-			log.debug("handling removePreference request for " + activeAccount);
-		}
-
-		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate == null) {
-			model.addAttribute("message", "Share not found");
-			model.addAttribute("success", false);
-			return JSON_VIEW;
-		}
-		ISharePreference sharePreference = SharePreferences.construct(preferenceType, preferenceKey, preferenceValue);
-		if(sharePreference == null) {
-			model.addAttribute("message", "Invalid Share Preference");
-			model.addAttribute("success", false);
-			return JSON_VIEW;
-		}
-		// passed validation
-		Share updated = shareDao.removeSharePreference(candidate, sharePreference);
-		model.addAttribute("share", updated);
-		model.addAttribute("success", true);
 		return JSON_VIEW;
 	}
 	
+	/**
+	 * 
+	 * @param shareKey
+	 * @param propertyName
+	 * @param propertyValue
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/addContentFilter", method=RequestMethod.POST)
+	public String addContentFilter(@RequestParam String shareKey, @RequestParam String propertyName, @RequestParam String propertyValue, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling addContentFilter request for " + activeAccount);
+		}
+		
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, propertyName, propertyValue)) {
+			ISharePreference sharePreference = SharePreferences.construct(PropertyMatchPreference.PROPERTY_MATCH, propertyName, propertyValue);
+			candidate = shareDao.addSharePreference(candidate, sharePreference);
+			model.addAttribute("share", candidate);
+		}
+		return JSON_VIEW;
+	}
+	
+	/**
+	 * 
+	 * @param candidate
+	 * @param propertyName
+	 * @param propertyValue
+	 * @return
+	 */
+	protected boolean validatePropertyFilter(Share candidate, String propertyName, String propertyValue) {
+		if(Clazz.CLASS.equals(propertyName)) {
+			return allowedPrivacyFilterValues.contains(propertyValue);
+		}
+		
+		return allowedContentFilterPropertyNames.contains(propertyName);
+	}
+		
 	/**
 	 * Locate the {@link Share} from the key in the request.
 	 * Returns null if the specified {@link ICalendarAccount} does not have a matching share.

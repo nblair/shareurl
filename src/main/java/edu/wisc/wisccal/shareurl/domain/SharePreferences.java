@@ -16,8 +16,10 @@
 package edu.wisc.wisccal.shareurl.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -203,6 +205,18 @@ public class SharePreferences implements Serializable {
 		return display.toString();
 		
 	}
+	/**
+	 * 
+	 * @return
+	 */
+	public List<ContentFilter> getContentFilters() {
+		List<ContentFilter> results = new ArrayList<ContentFilter>();
+		Set<ISharePreference> filterPreferences = getFilterPreferences();
+		for(final ISharePreference pref: filterPreferences) {
+			results.add(new ContentFilterImpl(pref));
+		}
+		return results;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -249,6 +263,33 @@ public class SharePreferences implements Serializable {
 		} else {
 			LOG.warn("could not match any preference types for type=" + preferenceType + ", key=" + preferenceKey + ", value=" + preferenceValue + ", returning null");
 			return null;
+		}
+	}
+	
+	static class ContentFilterImpl implements ContentFilter {
+		private final ISharePreference preference;
+
+		/**
+		 * @param preference
+		 */
+		ContentFilterImpl(ISharePreference preference) {
+			this.preference = preference;
+		}
+		/*
+		 * (non-Javadoc)
+		 * @see edu.wisc.wisccal.shareurl.domain.ContentFilter#getPropertyName()
+		 */
+		@Override
+		public String getPropertyName() {
+			return preference.getKey();
+		}
+		/*
+		 * (non-Javadoc)
+		 * @see edu.wisc.wisccal.shareurl.domain.ContentFilter#getMatchValue()
+		 */
+		@Override
+		public String getMatchValue() {
+			return preference.getValue();
 		}
 	}
 }

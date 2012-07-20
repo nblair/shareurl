@@ -40,7 +40,7 @@ font-style:italic;
 }
 #footnotewarning {
 font-size:65%;
-margin: 0 1em 0 1em;
+margin: 0 3em 0 3em;
 }
 </style>
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>

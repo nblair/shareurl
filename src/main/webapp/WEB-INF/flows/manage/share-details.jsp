@@ -29,6 +29,12 @@
 <rs:resourceURL var="helpIcon" value="/rs/famfamfam/silk/1.3/arrow_right.png"/>
 <rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
 <style type="text/css">
+.key {
+color:green;
+}
+.large {
+font-size:120%;
+}
 .examples li {
 padding-bottom: 1em;
 }
@@ -47,7 +53,9 @@ list-style-image: url(${fbIcon});
 .examples li.help {
 list-style-image: url(${helpIcon});
 }
-.margin3scHelp { margin: 3px; }
+.margin3 { margin: 3px; }
+.padding1 { padding: 1em; }
+.padding2 { padding: 2em; }
 .bordered { border: 1px solid black; }
 .clear { clear:both; }
 .scBox { float: left; position: relative; width: 26%; margin: 3px; border: 1px solid gray; padding: 2em;}
@@ -74,12 +82,32 @@ $(function() {
 		}
 	});
 	
-	applySubmitHandlerIfPresent('#toac', '<c:url value="toac"/>');
-	applySubmitHandlerIfPresent('#tofb', '<c:url value="tofb"/>');
-	applySubmitHandlerIfPresent('#includeP', '<c:url value="includeP"/>');
-	applySubmitHandlerIfPresent('#excludeP', '<c:url value="excludeP"/>');
+	var initShare = { freeBusyOnly: ${share.freeBusyOnly}, includeParticipants: ${share.includeParticipants}, contentFilters: ${viewhelper:filtersToJSON(share.contentFilters)} };
+	
+	renderShareControls(initShare, false);
+
+	// BEGIN build scFilters forms
+	// TODO the options available in the select tag should adapt to the existing filters
+	$('<form action="" method="post" id="privacyFilter"><fieldset><label for="privacyValue">Include:&nbsp;</label><select id="privacyOptions" name="privacyValue"></select><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
+	var options = getAvailablePrivacyFilters(initShare);
+	
+	applySubmitHandlerIfPresent('#privacyFilter', '<c:url value="addPrivacyFilter"/>');
+	$('<hr/>').appendTo('#scFilters');
+	$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
+	applySubmitHandlerIfPresent('#contentFilter', '<c:url value="addContentFilter"/>');
+	// END build scFiltersForms
 });
 
+function getAvailablePrivacyFilters(share) {
+	var options = { 'PUBLIC': 'Public', 'CONFIDENTIAL': 'Show Date and Time Only', 'PRIVATE': 'Private' };
+	for(var filter in share.contentFilters) {
+		if(filter.propertyName == 'CLASS') {
+			delete options[filter.matchValue];
+			//alert('presence of ' + filter + ' indicates we remove ' + allOptions[filter.propertyName]);
+		}
+	}
+	return options;
+}
 function applySubmitHandlerIfPresent(element, url) {
 	var el = $(element);
 	if(el) {
@@ -89,9 +117,37 @@ function applySubmitHandlerIfPresent(element, url) {
 		});
 	}
 };
-function renderShareControls(share) {
-	$('#shareControls').empty();
-	
+function renderShareControls(share, fade) {
+	$('#scCalendarData').empty();
+	if(share.freeBusyOnly) {
+		if(fade) {
+			$('#scFilters').fadeOut();
+			$('#scIncludeParticipants').fadeOut();
+		} else {
+			$('#scFilters').hide();
+			$('#scIncludeParticipants').hide();
+		}
+		$('<form action="${toac }" method="post" id="toac"><fieldset><input type="submit" value="Convert to All Calendar"/></fieldset></form>').appendTo('#scCalendarData');
+		applySubmitHandlerIfPresent('#toac', '<c:url value="toac"/>');
+	} else {
+		$('#scIncludeParticipants').empty();
+		if(share.includeParticipants) {
+			$('<form action="${excludeP }" method="post" id="excludeP"><fieldset><input type="submit" value="Exclude Participants"/></fieldset></form>').appendTo('#scIncludeParticipants');
+			applySubmitHandlerIfPresent('#excludeP', '<c:url value="excludeP"/>');
+		} else {
+			$('<form action="${includeP }" method="post" id="includeP"><fieldset><input type="submit" value="Include Participants"/></fieldset></form>').appendTo('#scIncludeParticipants');
+			applySubmitHandlerIfPresent('#includeP', '<c:url value="includeP"/>');
+		}
+		if(fade) {
+			$('#scFilters').fadeIn();
+			$('#scIncludeParticipants').fadeIn();
+		} else {
+			$('#scFilters').show();
+			$('#scIncludeParticipants').show();
+		}
+		$('<form action="${tofb }" method="post" id="tofb"><fieldset><input type="submit" value="Convert to Free Busy"/></fieldset></form>').appendTo('#scCalendarData');
+		applySubmitHandlerIfPresent('#tofb', '<c:url value="tofb"/>');
+	}
 };
 function renderSharePreferences(share, fadeIn) {
 	$('#shareDetails').empty();
@@ -101,11 +157,12 @@ function renderSharePreferences(share, fadeIn) {
 	}
 	if(share.freeBusyOnly) {
 		$('<li>Free Busy only.</li>').appendTo(ul);
-	}
-	if(share.eventFilterCount == 0) {
-		$('<li>All Calendar Data</li>').appendTo(ul);
 	} else {
-		$('<li>' + share.sharePreferences.filterDisplay + '</li>').appendTo(ul);
+		if(share.eventFilterCount == 0) {
+			$('<li>All Calendar Data</li>').appendTo(ul);
+		} else {
+			$('<li>' + share.sharePreferences.filterDisplay + '</li>').appendTo(ul);
+		}
 	}
 	if(fadeIn) {
 		ul.appendTo('#shareDetails').fadeIn();
@@ -123,13 +180,14 @@ function refreshDetails(fadeIn) {
 			},
 			"json");
 };
-
 function postAndRenderPreferences(url) {
 	$.post(url,
 			{ shareKey: '${share.key}'},
 			function(data) {
 				if(data.share) {
 					renderSharePreferences(data.share, true);
+					renderShareControls(data.share, true);
+					getAvailablePrivacyFilters(data.share)
 				}
 			},
 			"json");
@@ -144,7 +202,7 @@ function postAndRenderPreferences(url) {
 
 <div id="content" class="main col">
 
-<h2>ShareURL Details for <i>${share.key }</i></h2>
+<h2>Options for ShareURL <span class="key large">${share.key }</span></h2>
 <div id="shareDetails">
 <ul>
 <c:if test="${share.includeParticipants}">
@@ -167,13 +225,18 @@ function postAndRenderPreferences(url) {
 </c:choose>
 </ul>
 </div>
-<div id="revoke" class="bordered margin3">
+<div id="revoke" class="bordered margin3 padding2">
 <form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
 <input type="submit" class="revokebutton" value="Revoke this ShareURL"/>
 </form:form>
 </div>
 
-<div id="shareControls" class="bordered">
+<h2>Change Options for this ShareURL</h2>
+<div id="shareControls" class="bordered padding2">
+<div id="scCalendarData" class="scBox"></div>
+<div id="scFilters" class="scBox"></div>
+<div id="scIncludeParticipants" class="scBox"></div>
+<div class="clear"></div>
 <%-- 
 
 shareControls div should be completely rendered via javascript
@@ -181,7 +244,7 @@ shareControls div should be completely rendered via javascript
 <div id="scHelp" class="info margin3"><p>Use the controls below to change the settings for this ShareURL:</p></div>
 <c:choose>
 <c:when test="${share.freeBusyOnly}">
-<div class="scBox">
+<div id="scCalendarData" class="scBox">
 <form action="${toac }" method="post" id="toac">
 <fieldset>
 <input type="submit" value="Convert to All Calendar"/>
@@ -191,7 +254,7 @@ shareControls div should be completely rendered via javascript
 </c:when>
 <c:otherwise>
 
-<div id="scFreeBusy" class="scBox">
+<div id="scCalendarData" class="scBox">
 <form action="${tofb }" method="post" id="tofb">
 <fieldset>
 <input type="submit" value="Convert to Free Busy only"/>
@@ -223,7 +286,6 @@ shareControls div should be completely rendered via javascript
 <option value="DESCRIPTION">Description</option>
 </select>
 <label for="fieldValue">&nbsp;contains&nbsp;</label><input type="text" name="fieldValue"/>
-
 </fieldset>
 </form>
 </div>
@@ -249,11 +311,11 @@ shareControls div should be completely rendered via javascript
 
 </c:otherwise>
 </c:choose>
-<div class="clear"></div>
+
 --%>
 </div> <!--  end id=shareControls -->
 
-<h2>Example Share URLs</h2>
+<h2>Example Uses</h2>
 <ul class="examples">
 <li class="html">Your calendar for "today" in HTML:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}"/></a></li>
 <c:if test="${share.freeBusyOnly == false}">
