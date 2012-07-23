@@ -38,13 +38,13 @@ public class ViewHelperTest {
 		Assert.assertEquals("{  }", ViewHelper.filtersToJson(list));
 		
 		list.add(new ContentFilterImpl("CLASS", "PUBLIC"));
-		Assert.assertEquals("{ 'CLASS': 'PUBLIC' }", ViewHelper.filtersToJson(list));
+		Assert.assertEquals("{ \"CLASS\": \"PUBLIC\" }", ViewHelper.filtersToJson(list));
 		
 		list.add(new ContentFilterImpl("CLASS", "PRIVATE"));
-		Assert.assertEquals("{ 'CLASS': 'PUBLIC', 'CLASS': 'PRIVATE' }", ViewHelper.filtersToJson(list));
+		Assert.assertEquals("{ \"CLASS\": \"PUBLIC\", \"CLASS\": \"PRIVATE\" }", ViewHelper.filtersToJson(list));
 		
 		list.add(new ContentFilterImpl("LOCATION", "test"));
-		Assert.assertEquals("{ 'CLASS': 'PUBLIC', 'CLASS': 'PRIVATE', 'LOCATION': 'test' }", ViewHelper.filtersToJson(list));
+		Assert.assertEquals("{ \"CLASS\": \"PUBLIC\", \"CLASS\": \"PRIVATE\", \"LOCATION\": \"test\" }", ViewHelper.filtersToJson(list));
 		
 	}
 	

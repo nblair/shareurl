@@ -85,11 +85,11 @@ public class ViewHelper {
 		result.append("{ ");
 		for(Iterator<ContentFilter> i = contentFilters.iterator(); i.hasNext();) {
 			ContentFilter f = i.next();
-			result.append("'");
+			result.append("\"");
 			result.append(f.getPropertyName());
-			result.append("': '");
+			result.append("\": \"");
 			result.append(f.getMatchValue());
-			result.append("'");
+			result.append("\"");
 			if(i.hasNext()) {
 				result.append(", ");
 			}
