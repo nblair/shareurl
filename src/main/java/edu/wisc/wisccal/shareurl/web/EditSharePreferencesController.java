@@ -22,6 +22,7 @@ package edu.wisc.wisccal.shareurl.web;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -208,12 +209,47 @@ public class EditSharePreferencesController {
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, Clazz.CLASS, privacyValue)) {
 			ISharePreference sharePreference = SharePreferences.construct(AccessClassificationMatchPreference.CLASS_ATTRIBUTE, Clazz.CLASS, privacyValue);
-			candidate = shareDao.addSharePreference(candidate, sharePreference);
+			if(newPrivacyFilterWouldCompleteTheSet(candidate, sharePreference)) {
+				// customer has requested this share include PUBLIC, CONFIDENTIAL, and PRIVATE
+				// do them a favor and remove those preferences
+				Set<ISharePreference> classPrefs = candidate.getSharePreferences().getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
+				for(ISharePreference classPref: classPrefs) {
+					shareDao.removeSharePreference(candidate, classPref);
+				}
+			} else {
+				candidate = shareDao.addSharePreference(candidate, sharePreference);
+			}
+			
 			model.addAttribute("share", candidate);
 		}
 		return JSON_VIEW;
 	}
 	
+	/**
+	 * 
+	 * @param share
+	 * @param preference
+	 * @return
+	 */
+	protected boolean newPrivacyFilterWouldCompleteTheSet(Share share, ISharePreference preference) {
+		Set<ISharePreference> classPrefs = share.getSharePreferences().getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
+		if(classPrefs.size() != 2) {
+			return false;
+		}
+		
+		Set<String> currentValues = new HashSet<String>();
+		for(ISharePreference classPref : classPrefs) {
+			currentValues.add(classPref.getValue());
+		}
+		
+		currentValues.add(preference.getValue());
+		
+		if(currentValues.equals(new HashSet<String>(allowedPrivacyFilterValues))) {
+			return true;
+		}
+		
+		return false;
+	}
 	/**
 	 * 
 	 * @param shareKey
@@ -235,6 +271,36 @@ public class EditSharePreferencesController {
 			ISharePreference sharePreference = SharePreferences.construct(PropertyMatchPreference.PROPERTY_MATCH, propertyName, propertyValue);
 			candidate = shareDao.addSharePreference(candidate, sharePreference);
 			model.addAttribute("share", candidate);
+		}
+		return JSON_VIEW;
+	}
+	
+	/**
+	 * 
+	 * @param shareKey
+	 * @param propertyType
+	 * @param propertyName
+	 * @param propertyValue
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/removeFilter", method=RequestMethod.POST)
+	public String removeFilter(@RequestParam String shareKey, @RequestParam String propertyType, @RequestParam String propertyName, @RequestParam String propertyValue, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling addContentFilter request for " + activeAccount);
+		}
+		
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, propertyName, propertyValue)) {
+			for(ISharePreference pref : candidate.getSharePreferences().getFilterPreferences()) {
+				if(pref.getType().equals(propertyType) && pref.getKey().equals(propertyName) && pref.getValue().equals(propertyValue)) {
+					candidate = shareDao.removeSharePreference(candidate, pref);
+					model.addAttribute("share", candidate);
+					break;
+				}
+			}
 		}
 		return JSON_VIEW;
 	}
