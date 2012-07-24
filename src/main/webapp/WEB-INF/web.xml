@@ -37,6 +37,16 @@
 		<servlet-name>shareurl</servlet-name>
 		<url-pattern>*.html</url-pattern>
 		<url-pattern>/generate</url-pattern>
+		<url-pattern>/generate-guessable</url-pattern>
+		<url-pattern>/shareDetails</url-pattern>
+		<url-pattern>/toac</url-pattern>
+		<url-pattern>/tofb</url-pattern>
+		<url-pattern>/includeP</url-pattern>
+		<url-pattern>/excludeP</url-pattern>
+		<url-pattern>/addPrivacyFilter</url-pattern>
+		<url-pattern>/addContentFilter</url-pattern>
+		<url-pattern>/removePreference</url-pattern>
+		<url-pattern>/create-public</url-pattern>
 		<url-pattern>/u/*</url-pattern>
 		<url-pattern>/freebusy/*</url-pattern>
 		<url-pattern>/my-shares</url-pattern>
