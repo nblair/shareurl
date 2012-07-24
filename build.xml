@@ -114,15 +114,6 @@
 		</java>
 	</target>
 
-	<target name="create-default-configuration" description="Creates default configuration (if not present)">
-		<copy file="build-SAMPLE.properties" tofile="build.properties" />
-		<copy file="src/main/resources/database-SAMPLE.xml" tofile="src/main/resources/database.xml" />
-		<copy file="src/main/resources/log4j-SAMPLE.properties" tofile="src/main/resources/log4j.properties" />
-		<copy file="src/main/webapp/META-INF/context-SAMPLE.xml" tofile="src/main/webapp/META-INF/context.xml" />
-		<copy file="src/main/webapp/WEB-INF/applicationContext-SAMPLE.xml" tofile="src/main/webapp/WEB-INF/applicationContext.xml" />
-		<copy file="src/main/webapp/WEB-INF/security-SAMPLE.xml" tofile="src/main/webapp/WEB-INF/security.xml" />
-	</target>
-
 	<!-- This target removes the web application from the tomcat installation
 			you defined in build.properties -->
 	<target name="clean-webapp" description="Removes the war file and expanded directory from the Tomcat webapps directory">
@@ -133,50 +124,13 @@
 	<!-- this target copies the war file you built (using mvn package) to the
 			tomcat installation you defined in build.properties -->
 	<target name="deploy-war" description="Copies the war file into the Tomcat webapps directory">
-		<copy file="target/share.war" todir="${tomcat.home}/webapps" />
+		<copy file="${basedir}/target/share.war" todir="${tomcat.home}/webapps" />
 	</target>
 
 	<target name="clean-deploy" description="Calls 'clean-webapp' and 'deploy-war' targets">
 		<antcall target="clean-webapp" />
 		<antcall target="deploy-war" />
 	</target>
-
-	<target name="clean-webapp-2" description="Removes the war file and expanded directory from the secondary Tomcat instance's webapps directory" depends="check-tomcat-2-home-property">
-		<if>
-			<equals arg1="${tomcat-2.defined}" arg2="true" />
-			<then>
-				<delete file="${tomcat-2.home}/webapps/share.war" />
-				<delete dir="${tomcat-2.home}/webapps/share" />
-			</then>
-			<else>
-				<echo>'tomcat-2.home' property not defined.</echo>
-			</else>
-		</if>
-	</target>
-	<target name="deploy-war-2" description="Copies the war file into the secondary Tomcat instance's  webapps directory" depends="check-tomcat-2-home-property">
-		<if>
-			<equals arg1="${tomcat-2.defined}" arg2="true" />
-			<then>
-				<copy file="target/share.war" todir="${tomcat-2.home}/webapps" />
-			</then>
-			<else>
-				<echo>'tomcat-2.home' property not defined.</echo>
-			</else>
-		</if>
-	</target>
-	<target name="clean-deploy-2" description="Calls 'clean-webapp-2' and 'deploy-war-2' targets" depends="check-tomcat-2-home-property">
-		<if>
-			<equals arg1="${tomcat-2.defined}" arg2="true" />
-			<then>
-				<antcall target="clean-webapp-2" />
-				<antcall target="deploy-war-2" />
-			</then>
-			<else>
-				<echo>'tomcat-2.home' property not defined.</echo>
-			</else>
-		</if>
-	</target>
-
 
 	<path id="integration-test.classpath">
 		<path refid="junit.classpath" />
