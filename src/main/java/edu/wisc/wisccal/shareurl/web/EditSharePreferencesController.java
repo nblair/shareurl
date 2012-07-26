@@ -125,6 +125,7 @@ public class EditSharePreferencesController {
 	}
 	
 	/**
+	 * Convert the share to "Free Busy Only".
 	 * 
 	 * @param shareKey
 	 * @param model
@@ -152,6 +153,7 @@ public class EditSharePreferencesController {
 	}
 	
 	/**
+	 * Add the {@link IncludeParticipantsPreference}, if not present.
 	 * 
 	 * @param shareKey
 	 * @param model
@@ -173,6 +175,7 @@ public class EditSharePreferencesController {
 	}
 	
 	/**
+	 * Remove the {@link IncludeParticipantsPreference}, if set.
 	 * 
 	 * @param shareKey
 	 * @param model
@@ -195,7 +198,9 @@ public class EditSharePreferencesController {
 	}
 	
 	/**
+	 * Add a "privacy" filter.
 	 * 
+	 * @see AccessClassificationMatchPreference
 	 * @param shareKey
 	 * @param privacyValue
 	 * @param model
@@ -232,7 +237,7 @@ public class EditSharePreferencesController {
 	 * 
 	 * @param share
 	 * @param preference
-	 * @return
+	 * @return true if adding the {@link ISharePreference} would result in the share having all 3 values for CLASS property.
 	 */
 	protected boolean newPrivacyFilterWouldCompleteTheSet(Share share, ISharePreference preference) {
 		Set<ISharePreference> classPrefs = share.getSharePreferences().getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
@@ -254,7 +259,9 @@ public class EditSharePreferencesController {
 		return false;
 	}
 	/**
+	 * Add a "content" filter
 	 * 
+	 * @see PropertyMatchPreference
 	 * @param shareKey
 	 * @param propertyName
 	 * @param propertyValue
@@ -279,30 +286,31 @@ public class EditSharePreferencesController {
 	}
 	
 	/**
+	 * Remove all {@link ISharePreference} that return true for {@link ISharePreference#participatesInFiltering()}.
 	 * 
 	 * @param shareKey
-	 * @param propertyType
-	 * @param propertyName
-	 * @param propertyValue
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(value="/removeFilter", method=RequestMethod.POST)
-	public String removeFilter(@RequestParam String shareKey, @RequestParam String propertyType, @RequestParam String propertyName, @RequestParam String propertyValue, ModelMap model) {
+	@RequestMapping(value="/resetFilters", method=RequestMethod.POST)
+	public String resetContentFilters(@RequestParam String shareKey, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling addContentFilter request for " + activeAccount);
+			log.debug("handling resetFilters request for " + activeAccount);
 		}
 		
 		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, propertyName, propertyValue)) {
+		if(candidate != null && !candidate.isFreeBusyOnly()) {
+			boolean removed = false;
 			for(ISharePreference pref : candidate.getSharePreferences().getFilterPreferences()) {
-				if(pref.getType().equals(propertyType) && pref.getKey().equals(propertyName) && pref.getValue().equals(propertyValue)) {
+				if(pref.participatesInFiltering()) {
 					candidate = shareDao.removeSharePreference(candidate, pref);
-					model.addAttribute("share", candidate);
-					break;
+					removed = true;
 				}
+			}
+			if(removed) {
+				model.addAttribute("share", candidate);
 			}
 		}
 		return JSON_VIEW;
