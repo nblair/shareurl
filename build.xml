@@ -132,30 +132,45 @@
 		<antcall target="deploy-war" />
 	</target>
 
+	<target name="view-calendars" description="Runs the main method in 'edu.wisc.wisccal.shareurl.support.Calendars', which outputs a list of calendars for a target account and date range.">
+		<java classname="edu.wisc.wisccal.shareurl.support.Calendars" fork="true" dir=".">
+			<jvmarg value="-Dedu.wisc.wisccal.shareurl.support.Calendars.CONFIG=${cli.config}" />
+			<jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+			<jvmarg value="-Dlog4j.configuration=cli-log4j.properties"/>
+			<classpath>
+				<path refid="mavenproject.classpath" />
+				<pathelement location="${basedir}/target/classes" />
+				<path refid="hsql.classpath" />
+				<pathelement location="${oracle.jdbc.jar}" />
+				<pathelement location="bootstrap" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="view-calendars-with-keystore">
+		<java classname="edu.wisc.wisccal.shareurl.support.Calendars" fork="true" dir=".">
+			<jvmarg value="-Dedu.wisc.wisccal.shareurl.support.Calendars.CONFIG=${cli.config}" />
+			<jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+                        <jvmarg value="-Dlog4j.configuration=cli-log4j.properties"/>
+			<jvmarg value="-Djavax.net.ssl.keyStore=${keystore.file}" />
+			<jvmarg value="-Djavax.net.ssl.trustStore=${keystore.file}" />
+			<jvmarg value="-Djavax.net.ssl.keyStorePassword=${keystore.pass}" />
+			<jvmarg value="-Djavax.net.ssl.trustStorePassword=${keystore.pass}" />
+			<classpath>
+				<path refid="mavenproject.classpath" />
+				<pathelement location="${basedir}/target/classes" />
+				<path refid="hsql.classpath" />
+				<pathelement location="${oracle.jdbc.jar}" />
+				<pathelement location="bootstrap" />
+			</classpath>
+		</java>
+	</target>
+	
 	<path id="integration-test.classpath">
 		<path refid="junit.classpath" />
 		<path refid="mavenproject.classpath" />
 		<pathelement location="${basedir}/target/classes" />
 		<pathelement location="${basedir}/target/test-classes" />
 	</path>
-	<target name="test-single-account" description="Runs integration test to fetch agenda and parse for a single account">
-		<junit fork="yes" haltonfailure="yes">
-			<sysproperty key="accountUsername" value="${accountUsername}" />
-			<classpath refid="integration-test.classpath" />
-			<test name="edu.wisc.wisccal.shareurl.integration.SingleAccountIntegrationTest" />
-			<formatter type="plain" usefile="false" />
-		</junit>
-	</target>
-	<target name="test-single-account-ldaps">
-		<junit fork="yes" haltonfailure="yes">
-			<sysproperty key="javax.net.ssl.keyStore" value="/home/nblair/wisccal/keystore/ldap-client.jks" />
-			<sysproperty key="javax.net.ssl.keyStorePassword" value="wisccal" />
-			<sysproperty key="javax.net.ssl.trustStore" value="/home/nblair/wisccal/keystore/ldap-client.jks" />
-			<sysproperty key="javax.net.ssl.trustStorePassword" value="wisccal" />
-			<sysproperty key="accountUsername" value="${accountUsername}" />
-			<classpath refid="integration-test.classpath" />
-			<test name="edu.wisc.wisccal.shareurl.integration.SingleAccountIntegrationTest" />
-			<formatter type="plain" usefile="false" />
-		</junit>
-	</target>
+	
 </project>

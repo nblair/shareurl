@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       					http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       					http://www.springframework.org/schema/tx 
+       					http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       					http://www.springframework.org/schema/context
+       					http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       					http://www.springframework.org/schema/util 
+       					http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+       	
+	<import resource="classpath:contexts/applicationContext.xml"/>
+	<import resource="classpath:contexts/calendarAccounts-ldap.xml"/>
+	<util:list id="propertyFileList">
+		<value>classpath:integration.properties</value>
+		<value>classpath:support.properties</value>
+	</util:list>
+	
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
+		<property name="driverClassName" value="${support.database.driverClassName}"/>
+		<property name="username" value="${support.database.username}"/>
+		<property name="password" value="${support.database.password}"/>
+		<property name="url" value="${support.database.url}"/>
+	</bean>
+	
+	<bean id="caldavCalendarDataDao" class="edu.wisc.wisccal.shareurl.support.SupportCaldavCalendarDataDaoImpl"/>
+	
+	<bean id="calendars" class="edu.wisc.wisccal.shareurl.support.Calendars"/>		
+</beans>
