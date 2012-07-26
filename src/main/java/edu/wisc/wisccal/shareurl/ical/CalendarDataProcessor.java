@@ -51,8 +51,17 @@ public interface CalendarDataProcessor {
 	 * @param end must not be null
 	 * @return a never null calendar that contains a freebusy representation of the original
 	 */
-	Calendar convertToFreeBusy(final Calendar original, final java.util.Date start, final java.util.Date end);
+	Calendar convertToFreeBusy(Calendar original, java.util.Date start, final java.util.Date end);
 	
+	/**
+	 * Mutative method.
+	 * Similar to {@link #convertToFreeBusy(Calendar, java.util.Date, java.util.Date)}, this method 
+	 * will strip all details from the {@link VEvent} components in the {@link Calendar}, leaving behind
+	 * simply critical fields (DTSTART, DTEND, UID, etc) and setting the SUMMARY to "Busy".
+	 * 
+	 * @param original
+	 */
+	void stripEventDetails(final Calendar original);
 	/**
 	 * Mutative method. Convert the {@link Clazz} property of all
 	 * {@link VEvent} components in the calendar to {@link Clazz#PUBLIC}.

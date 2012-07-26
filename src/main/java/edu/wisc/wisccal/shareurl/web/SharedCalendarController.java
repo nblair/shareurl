@@ -114,7 +114,7 @@ public class SharedCalendarController {
 	private Log LOG = LogFactory.getLog(this.getClass());
 
 	private static final String ICS = ".ics";
-	private static final String IFB = ".ifb";
+	private static final String VFB = ".vfb";
 
 	private IShareDao shareDao;
 	private ICalendarDataDao calendarDataDao;
@@ -282,7 +282,6 @@ public class SharedCalendarController {
 			}
 			response.setCharacterEncoding(UTF_8);	
 			ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
-			// TODO short-circuit if requestDetails indicates HTML and weekor month view
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(LOG.isDebugEnabled()) {
@@ -444,8 +443,9 @@ public class SharedCalendarController {
 		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 
-		Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+		
 		if(displayFormat.isMarkupLanguage()) {
+			Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
 				model.put("freebusy", calendarDataProcessor.simplify(freebusy, true));
 			} else {
@@ -466,8 +466,16 @@ public class SharedCalendarController {
 				model.put("datePhrase", requestDetails.getDatePhrase());
 			}
 		} else {	
-			// display format is iCalendar
-			model.put("ical", freebusy.toString());
+			if(ShareDisplayFormat.VFB_LEGACY.equals(displayFormat)) {
+				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+				model.put("ical", freebusy.toString());
+			} else {
+				// want iCalendar output with VEVENTs, but no details
+				calendarDataProcessor.stripEventDetails(agenda);
+				model.put("ical", agenda.toString());
+			}
+			
+			
 		} 
 		// determine the view
 		String viewName;
@@ -475,12 +483,16 @@ public class SharedCalendarController {
 		case HTML:
 			viewName = "fb/display";
 			break;
-		case ICAL:
+		case VFB_LEGACY:
 			viewName = "fb/display-ical";
-			HTTPHelper.addContentDispositionHeader(response, requestDetails.getShareKey() + IFB);
+			HTTPHelper.addContentDispositionHeader(response, requestDetails.getShareKey() + VFB);
+			break;
+		case ICAL:
+			viewName = "data/display-ical";
+			HTTPHelper.addContentDispositionHeader(response, requestDetails.getShareKey() + ICS);
 			break;
 		case ICAL_ASTEXT:
-			viewName = "fb/display-ical-astext";
+			viewName = "data/display-ical";
 			break;
 		case JSON:
 			viewName = "jsonView";

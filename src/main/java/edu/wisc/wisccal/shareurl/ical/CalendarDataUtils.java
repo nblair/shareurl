@@ -19,13 +19,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
@@ -48,15 +51,19 @@ import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.Created;
 import net.fortuna.ical4j.model.property.DtEnd;
+import net.fortuna.ical4j.model.property.DtStamp;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.FreeBusy;
+import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.model.property.Status;
+import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
@@ -84,7 +91,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	protected static final String X_SHAREURL_RECURRENCE_EXPAND = "X-SHAREURL-RECURRENCE-EXPAND";
 
 	protected static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
-	
+
 	public static final long MILLISECS_PER_MINUTE = 60*1000;
 
 	private static final String UW_SEPARATOR = "_UW_";
@@ -92,6 +99,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
 
 	private static final Log LOG = LogFactory.getLog(CalendarDataUtils.class);
+	
+	protected final Set<String> retainedPropertyNamesOnStripDetails = new HashSet<String>(
+			Arrays.asList(new String[] { Uid.UID, DtStart.DTSTART, DtEnd.DTEND, DtStamp.DTSTAMP, 
+					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED }));
 	/**
 	 * 
 	 * @param propertyName
@@ -158,6 +169,26 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
 		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#stripEventDetails(net.fortuna.ical4j.model.Calendar)
+	 */
+	@Override
+	public void stripEventDetails(final Calendar original) {
+		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				for(Iterator<?> j = component.getProperties().iterator(); j.hasNext();) {
+					Property property = (Property) j.next();
+					if(!retainedPropertyNamesOnStripDetails.contains(property.getName())){
+						j.remove();
+					}
+				}
+				component.getProperties().add(new Summary("Busy"));
+			}
+		}
 	}
 
 	/**
@@ -338,15 +369,27 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#removeParticipants(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void removeParticipants(Calendar calendar, ICalendarAccount account) {
 		for(Iterator<?> i = calendar.getComponents(VEvent.VEVENT).iterator(); i.hasNext();) {
 			VEvent event = (VEvent) i.next();
-			event.getProperties().removeAll(event.getProperties(Attendee.ATTENDEE));
-			event.getProperties().removeAll(event.getProperties(Organizer.ORGANIZER));
+			removeParticipants(event);
 			event.getAlarms().clear();
 		}
+	}
+
+	/**
+	 * Remove all ATTENDEE and ORGANIZER properties from the component.
+	 * 
+	 * @param component
+	 */
+	@SuppressWarnings("unchecked")
+	protected void removeParticipants(Component component) {
+		if(component == null) {
+			return;
+		}
+		component.getProperties().removeAll(component.getProperties(Attendee.ATTENDEE));
+		component.getProperties().removeAll(component.getProperties(Organizer.ORGANIZER));
 	}
 
 	/*
@@ -440,7 +483,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				}
 			});
 		}
-		
+
 	}
 
 	/*
@@ -720,7 +763,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			event.getProperties().remove(event.getRecurrenceId());
 		}
 	}
-	
+
 	/**
 	 * Returns the approximate difference in Minutes between start and end.
 	 * 
@@ -738,6 +781,41 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		long startL = s.getTimeInMillis() + s.getTimeZone().getOffset(s.getTimeInMillis());
 
 		return (endL - startL) / MILLISECS_PER_MINUTE;
+	}
+
+	/**
+	 * Round the date argument down to the nearest minute using the increment argument.
+	 * Examples:
+	 * <ul>
+	 * <li>date=08:37 AM, increment=30; result=08:30 AM</li>
+	 * <li>date=08:37 AM, increment=10; result=08:30 AM</li>
+	 * <li>date=08:37 AM, increment=5; result=08:35 AM</li>
+	 * <li>date=08:37 AM, increment=1; result=08:37 AM</li>
+	 * <li>date=08:59 AM, increment=58, result=08:58 AM</li>
+	 * <li>date=08:39 AM, increment=58, result=08:00 AM</li>
+	 * </ul>
+	 * @param date
+	 * @param increment
+	 * @return
+	 */
+	public static Date roundDownToNearestIncrement(Date date, int increment) {
+		if(increment <= 0) {
+			throw new IllegalArgumentException("increment argument must be positive");
+		}
+		if(increment == 1) {
+			return date;
+		}
+		java.util.Calendar cal = java.util.Calendar.getInstance();
+		cal.setTime(date);
+
+		int minutesField = cal.get(java.util.Calendar.MINUTE);
+		int toRemove = minutesField % increment;
+
+		if(toRemove != 0) {
+			cal.add(java.util.Calendar.MINUTE, -toRemove);
+		}
+
+		return cal.getTime();
 	}
 
 	/**

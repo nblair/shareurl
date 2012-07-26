@@ -11,6 +11,7 @@ public enum ShareDisplayFormat {
 	RSS ("rss"),
 	ICAL ("ical"),
 	ICAL_ASTEXT("ical+asText"),
+	VFB_LEGACY("vfb"),
 	JSON("json"),
 	DEBUG("debug");
 
@@ -31,7 +32,7 @@ public enum ShareDisplayFormat {
 	 * @return true if this.equals(ICAL) or this.equals(ICAL_ASTEXT)
 	 */
 	public boolean isIcalendar() {
-		return this.equals(ICAL) || this.equals(ICAL_ASTEXT);
+		return this.equals(ICAL) || this.equals(ICAL_ASTEXT) || this.equals(VFB_LEGACY);
 	}
 
 	/**

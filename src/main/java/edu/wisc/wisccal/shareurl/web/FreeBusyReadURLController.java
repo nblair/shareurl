@@ -148,7 +148,10 @@ public class FreeBusyReadURLController  {
 				}
 				ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 				Calendar calendar = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
+				
+				calendarDataProcessor.noRecurrence(calendar, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 				ShareHelper.filterAgendaForDateRange(calendar, requestDetails);
+				
 				Calendar freeBusy = calendarDataProcessor.convertToFreeBusy(calendar, requestDetails.getStartDate(), requestDetails.getEndDate());
 
 				model.put("startDate", requestDetails.getStartDate());

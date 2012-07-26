@@ -44,6 +44,7 @@ import edu.wisc.wisccal.shareurl.domain.Share;
  */
 public final class ShareRequestDetails implements IShareRequestDetails {
 
+	private static final String VFB = "vfb";
 	public static final String START = "start";
 	public static final String END = "end";
 	public static final String PERSONAL = "personal";
@@ -552,23 +553,27 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @return
 	 */
 	static ShareDisplayFormat determineDisplayFormat(final HttpServletRequest request) {
-		String jsonAttribute = (String) request.getParameter(JSON);
+		String jsonAttribute = request.getParameter(JSON);
 		if(null != jsonAttribute) {
 			return ShareDisplayFormat.JSON;
 		}
-		String rssViewAttribute = (String) request.getParameter(RSS);
+		String rssViewAttribute = request.getParameter(RSS);
 		if(null != rssViewAttribute) {
 			return ShareDisplayFormat.RSS;
 		}
-		String icalViewAttribute = (String) request.getParameter(ICAL);
+		String icalViewAttribute = request.getParameter(ICAL);
 		if(null != icalViewAttribute) {
-			String icalTextAttribute = (String) request.getParameter(ASTEXT);
+			String icalTextAttribute = request.getParameter(ASTEXT);
 			if(null != icalTextAttribute) {
 				return ShareDisplayFormat.ICAL_ASTEXT;
 			}
 			else {
 				return ShareDisplayFormat.ICAL;
 			}
+		}
+		String vfbLegacyViewAttribute = request.getParameter(VFB);
+		if(null != vfbLegacyViewAttribute) {
+			return ShareDisplayFormat.VFB_LEGACY;
 		}
 		// neither ical or rss present, return the HTML view
 		return ShareDisplayFormat.HTML;
