@@ -186,6 +186,11 @@ IShareDao {
 	@Override
 	public Share addSharePreference(Share share,
 			ISharePreference sharePreference) {
+		if(sharePreference instanceof GuessableSharePreference) {
+			// ignore
+			LOG.error("ignoring addSharePreference invocation to add GuessableSharePreference for " + share);
+			return share;
+		}
 		storePreference(share.getKey(), sharePreference);
 		share.getSharePreferences().addPreference(sharePreference);
 		return share;
@@ -196,6 +201,11 @@ IShareDao {
 	@Override
 	public Share removeSharePreference(Share share,
 			ISharePreference sharePreference) {
+		if(sharePreference instanceof GuessableSharePreference) {
+			// ignore
+			LOG.error("ignoring removeSharePreference invocation to add GuessableSharePreference for " + share);
+			return share;
+		}
 		int rows = this.getSimpleJdbcTemplate().update(
 				"delete from share_preferences where sharekey=? and preference_type=? and preference_key=? and preference_value=?",
 				share.getKey(),
