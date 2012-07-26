@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.CommonDateOperations;
@@ -148,6 +149,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 							this.pathData.setEndDate(CommonDateOperations.endOfDay(startDate));
 						}
 					}
+					
 				}
 			}
 		}
@@ -780,7 +782,12 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		 * @param endDate the endDate to set
 		 */
 		public void setEndDate(Date endDate) {
-			this.endDate = endDate;
+			long diff = CommonDateOperations.approximateDifference(this.startDate, endDate);
+			if(diff > MAX_RANGE) {
+				this.endDate = CommonDateOperations.endOfDay(DateUtils.addDays(this.startDate, 180));
+			} else {
+				this.endDate = endDate;
+			}
 		}
 		/**
 		 * @return the startDateIndex

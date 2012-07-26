@@ -498,6 +498,28 @@ public class ShareRequestDetailsTest {
 	 * @throws Exception
 	 */
 	@Test
+	public void testStartAndEndExceedsMaxRangeParameter() throws Exception {
+		// adding a query String to the second argument for this constructor does not seem to set the parameter accordingly
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.setParameter("start", "2012-01-01");
+		request.setParameter("end", "2013-01-01");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		
+		Date expectedStart = CommonDateOperations.parseDatePhrase("20120101");
+		Date expectedEnd = CommonDateOperations.endOfDay(CommonDateOperations.parseDatePhrase("20120629"));
+		assertEquals(expectedStart, details.getStartDate());
+		assertEquals(expectedEnd, details.getEndDate());
+		assertEquals("dr(0,0)", details.getDatePhrase());
+		
+		assertNull(details.getEventId());
+		assertEquals("someshareid", details.getShareKey());
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
 	public void testStartAndInvalidEndParameter() throws Exception {
 		// adding a query String to the second argument for this constructor does not seem to set the parameter accordingly
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
