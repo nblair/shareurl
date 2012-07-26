@@ -15,13 +15,11 @@
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <title>Share your WiscCal Calendar - Manage ShareURL</title>
-
-
 <rs:resourceURL var="feedIcon" value="/rs/famfamfam/silk/1.3/feed.png"/>
 <rs:resourceURL var="htmlIcon" value="/rs/famfamfam/silk/1.3/html.png"/>
 <rs:resourceURL var="icalIcon" value="/rs/famfamfam/silk/1.3/calendar.png"/>
@@ -61,7 +59,10 @@ list-style-image: url(${helpIcon});
 .scBox { float: left; position: relative; width: 26%; margin: 3px; border: 1px solid gray; padding: 2em;}
 .removable { border: 1px solid #C7CEF9; background-color: #E2E6FF;}
 .resetHandle {position:relative; top:3px;}
+.sharelink { border: 1px dotted #C7CEF9; background-color: #E2E6FF; padding: 0.5em 0.5em 0.5em 1em;}
+.sharelinktext { color: blue; font-size: 130%;}
 </style>
+<c:url value="/u/${share.key}" var="baseShareUrl"/>
 <c:url value="/shareDetails" var="shareDetails">
 <c:param name="shareKey" value="${share.key}"/>
 </c:url>
@@ -73,6 +74,10 @@ list-style-image: url(${helpIcon});
 </c:url>
 <c:url value="/tofb" var="tofb">
 </c:url>
+<rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
+<link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}" media="all"/>
+<rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
+<script type="text/javascript" src="${jqueryUiPath}"></script>
 <script type="text/javascript" src="<c:url value="/js/jquery.serializeObject.js"/>"></script>
 <script type="text/javascript">
 $(function() {
@@ -84,7 +89,14 @@ $(function() {
 			$('.revokeform').submit();
 		}
 	});
-	
+	$("#datex").datepicker({ dateFormat: 'yy-mm-dd' });
+	$("#datey").datepicker({ dateFormat: 'yy-mm-dd' });
+	$('#clientselect').change(function(e) { renderShareUrlExample(); });
+	$('#x').change(function(e) { renderShareUrlExample(); });
+	$('#negatex').change(function(e) { renderShareUrlExample(); });
+	$('#y').change(function(e) { renderShareUrlExample(); });
+	$('#datex').change(function(e) { renderShareUrlExample(); });
+	$('#datey').change(function(e) { renderShareUrlExample(); });
 	var initShare = { "freeBusyOnly": ${share.freeBusyOnly}, 
 			"includeParticipants": ${share.includeParticipants}, 
 			"sharePreferences": {
@@ -95,7 +107,6 @@ $(function() {
 	setupResetFiltersHandler();
 	renderShareControls(initShare, false);
 });
-
 function getAvailablePrivacyFilters(share) {
 	var options = { "PUBLIC": "Public", "CONFIDENTIAL": "Show Date and Time Only", "PRIVATE": "Private" };
 	if($.isEmptyObject(share.sharePreferences.classificationFilters)) {
@@ -206,6 +217,57 @@ function renderSharePreferences(share, fadeIn) {
 	} else {
 		ul.appendTo('#shareDetails');
 	}
+	renderShareUrlExample();
+};
+function renderShareUrlExample() {
+	var c = $("#clientselect option:selected").val();
+	if('native' == c || 'google' == c) {
+		$('#queryParameters').text('').fadeOut();
+		$('#queryParameters').text('?ical').fadeIn();
+	} else if ('browser' == c) {
+		$('#queryParameters').text('').fadeOut();
+	} else if ('news' == c) {
+		$('#queryParameters').text('').fadeOut();
+		$('#queryParameters').text('?rss').fadeIn();
+	} else if ('json' == c) {
+		$('#queryParameters').text('').fadeOut();
+		$('#queryParameters').text('?json').fadeIn();
+	} else if ('ics' == c) {
+		$('#queryParameters').text('').fadeOut();
+		$('#queryParameters').text('?ical').fadeIn();
+	}
+	var datex = $('#datex').val();
+	var datey = $('#datey').val();
+	if(datex != '' && datey != '') {
+		$('#x').val('');
+		$('#y').val('');
+		$('#dateRange').text('').fadeOut();
+		var qp = $('#queryParameters').text();
+		if(qp == ''){
+			qp = '?start=' + datex + '&end=' + datey;
+		} else {
+			qp += '&start=' + datex + '&end=' + datey;
+		}
+		$('#queryParameters').text('').fadeOut();
+		$('#queryParameters').text(qp).fadeIn();
+	} else {
+		var x = $('#x').val();
+		var y = $('#y').val();
+		if(x != '' && y != '') {
+			var negate = $("#negatex option:selected").val();
+			if(negate == 'negate') {
+				x = -x;
+			}
+			if(y - x > 180) {
+				y = x + 180;
+				$('#y').val(y);
+				alert("Your date range is greater than 180 days, which is the maximum allowed.");
+			}
+			var drtext = '/dr(' + x + ',' + y + ')';
+			$('#dateRange').text('').fadeOut();
+			$('#dateRange').text(drtext).fadeIn();
+		}
+	}
 };
 function refreshDetails(fadeIn) {
 	$.get('${shareDetails}',
@@ -278,6 +340,31 @@ function postAndRenderPreferences(url, form) {
 </form:form>
 </div>
 
+<div id="examples">
+<p>This ShareURL can be viewed with the following link:</p>
+<div class="sharelink">
+<span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span>
+</div>
+
+<p><label for="client">I want to view my ShareURL in </label>
+<select name="client" id="clientselect">
+<option value="native" selected="selected">a Desktop Client, like Outlook, Mozilla Thunderbird or Apple iCal</option>
+<option value="google">Google Calendar</option>
+<option value="browser">a Web Browser, like Firefox, Chrome, or Internet Explorer</option>
+<option value="ics">an ICS (iCalendar) file</option>
+<option value="news">a News Reader</option>
+<option value="json">Javascript Object Notation (JSON)</option>
+</select>
+</p>
+
+<p><label for="x">I would like to see data from </label><input id="x" type="number" name="x" value="14" min="-999" max="999"/> days <select id="negatex"><option value="negate" selected="selected">back</option><option value="">forward</option></select> <label for="y">through </label><input id="y" type="number" name="y" value="30"  min="-999" max="999"/> days forward.</p>
+<p>OR, <label for="datex">I would like to see data from specifically </label><input id="datex" type="text" name="datex"/><label for="datey"> through </label><input id="datey" type="text" name="datey"/></p>
+
+<p>I am a developer and I would like to see <a title="View ShareURL Options (Opens new window)" target="_new_help" href="http://kb.wisc.edu/wisccal/page.php?id=13322">all available options for ShareURLs&raquo;</a></p>
+
+</div>
+
+<%-- 
 <h2>Example Uses</h2>
 <ul class="examples">
 <li class="html">Your calendar for "today" in HTML:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}"/></a></li>
@@ -292,7 +379,7 @@ function postAndRenderPreferences(url, form) {
 </c:if>
 <li class="help">To see all other options, read the "Using a ShareURL" documentation in our <a href="http://kb.wisc.edu/wisccal/page.php?id=13322">Help Desk instructions&nbsp;&#187;</a></li>
 </ul>
-
+--%>
 </div> <!-- content -->
 <%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
 </body>
