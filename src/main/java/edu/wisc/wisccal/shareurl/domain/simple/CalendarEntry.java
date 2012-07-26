@@ -106,9 +106,9 @@ public class CalendarEntry {
 	 * @return the allDay
 	 */
 	public boolean isAllDay() {
-		assert(startTime != null);
 		Date start = getStartTime();
 		Date end = getEndTime();
+		assert(start != null && end != null);
 		Date startTruncated = DateUtils.truncate(start, java.util.Calendar.DATE);
 		Date endTruncated = DateUtils.truncate(end, java.util.Calendar.DATE);
 		return start.equals(startTruncated) && end.equals(endTruncated);
@@ -120,7 +120,6 @@ public class CalendarEntry {
 	public long getDurationInMinutes() {
 		return CalendarDataUtils.approximateDifferenceInMinutes(getStartTime(), getEndTime());
 	}
-	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
