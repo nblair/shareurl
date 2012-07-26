@@ -61,6 +61,7 @@ list-style-image: url(${helpIcon});
 .resetHandle {position:relative; top:3px;}
 .sharelink { border: 1px dotted #C7CEF9; background-color: #E2E6FF; padding: 0.5em 0.5em 0.5em 1em;}
 .sharelinktext { color: blue; font-size: 130%;}
+#sharelinktag { color: blue;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
 <c:url value="/shareDetails" var="shareDetails">
@@ -268,6 +269,7 @@ function renderShareUrlExample() {
 			$('#dateRange').text(drtext).fadeIn();
 		}
 	}
+	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#queryParameters').text());
 };
 function refreshDetails(fadeIn) {
 	$.get('${shareDetails}',
@@ -343,7 +345,7 @@ function postAndRenderPreferences(url, form) {
 <div id="examples">
 <p>This ShareURL can be viewed with the following link:</p>
 <div class="sharelink">
-<span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span>
+<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span></a>
 </div>
 
 <p><label for="client">I want to view my ShareURL in </label>
@@ -364,22 +366,6 @@ function postAndRenderPreferences(url, form) {
 
 </div>
 
-<%-- 
-<h2>Example Uses</h2>
-<ul class="examples">
-<li class="html">Your calendar for "today" in HTML:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}"/></a></li>
-<c:if test="${share.freeBusyOnly == false}">
-<li class="rss">Your calendar for "today" in <acronym title="Really Simple Syndication">RSS</acronym>:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}?rss"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}?rss"/></a></li>
-</c:if>
-<li class="ical">Your calendar for "today" in <acronym title="Internet Standard for Calendar data exchange - RFC2445">iCalendar</acronym>:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}?ical"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}?ical"/></a></li>
-<li class="ical">Your calendar for "tomorrow" in <acronym title="Internet Standard for Calendar data exchange - RFC2445">iCalendar</acronym>:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}/dr(1,1)?ical"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}/dr(1,1)?ical"/></a></li>
-<li class="ical">Your calendar for "14 days ago through 14 days ahead" in <acronym title="Internet Standard for Calendar data exchange - RFC2445">iCalendar</acronym>:<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}/dr(-14,14)?ical"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/u/${share.key}/dr(-14,14)?ical"/></a></li>
-<c:if test="${share.freeBusyOnly }">
-<li class="fb">Free/Busy Read URL (<a href="http://kb.wisc.edu/wisccal/page.php?id=13313">Learn how to use within Microsoft Outlook</a>):<br/><a href="<c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/freebusy/${share.key}"/>"><c:out value="${viewhelper:getVirtualServerAddress(pageContext.request)}"/><c:url value="/freebusy/${share.key}"/></a></li>
-</c:if>
-<li class="help">To see all other options, read the "Using a ShareURL" documentation in our <a href="http://kb.wisc.edu/wisccal/page.php?id=13322">Help Desk instructions&nbsp;&#187;</a></li>
-</ul>
---%>
 </div> <!-- content -->
 <%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
 </body>
