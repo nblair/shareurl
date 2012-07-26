@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
+import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
 import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
@@ -140,7 +141,9 @@ public class EditSharePreferencesController {
 		if(candidate != null && !candidate.isFreeBusyOnly()) {
 			Set<ISharePreference> prefs = candidate.getSharePreferences().getPreferences();
 			for(ISharePreference pref: prefs) {
-				candidate = shareDao.removeSharePreference(candidate, pref);
+				if(!GuessableSharePreference.GUESSABLE.equals(pref.getType())) {
+					candidate = shareDao.removeSharePreference(candidate, pref);
+				}		
 			}
 			candidate = shareDao.addSharePreference(candidate, new FreeBusyPreference());
 			model.addAttribute("share", candidate);

@@ -15,6 +15,7 @@
 *******************************************************************************/
 package edu.wisc.wisccal.shareurl.web;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -80,21 +81,45 @@ public class ViewHelper {
 	 * @param contentFilters
 	 * @return as JSON formatted String representing the list
 	 */
-	public static String filtersToJson(List<ContentFilter> contentFilters) {
+	public static String contentFiltersToJson(List<ContentFilter> contentFilters) {
 		StringBuilder result = new StringBuilder();
 		result.append("{ ");
 		for(Iterator<ContentFilter> i = contentFilters.iterator(); i.hasNext();) {
 			ContentFilter f = i.next();
 			result.append("\"");
 			result.append(f.getPropertyName());
-			result.append("\": \"");
-			result.append(f.getMatchValue());
-			result.append("\"");
+			result.append("\": ");
+			result.append(stringIteratorToJson(f.getMatchValues()));
 			if(i.hasNext()) {
 				result.append(", ");
 			}
 		}
 		result.append(" }");
+		return result.toString();
+	}
+	
+	/**
+	 * 
+	 * @param contentFilters
+	 * @return as JSON formatted String representing the list
+	 */
+	public static String classificationFiltersToJson(List<String> classificationFilters) {
+		return stringIteratorToJson(classificationFilters);
+	}
+	
+	protected static String stringIteratorToJson(Collection<String> values) {
+		StringBuilder result = new StringBuilder();
+		result.append("[ ");
+		for(Iterator<String> i = values.iterator(); i.hasNext();) {
+			String f = i.next();
+			result.append("\"");
+			result.append(f);
+			result.append("\"");
+			if(i.hasNext()) {
+				result.append(", ");
+			}
+		}
+		result.append(" ]");
 		return result.toString();
 	}
 }

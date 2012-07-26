@@ -20,6 +20,7 @@
 package edu.wisc.wisccal.shareurl.web;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -33,39 +34,51 @@ import edu.wisc.wisccal.shareurl.domain.ContentFilter;
 public class ViewHelperTest {
 
 	@Test
-	public void testFiltersToJson() {
+	public void testContentFiltersToJson() {
 		List<ContentFilter> list = new ArrayList<ContentFilter>();
-		Assert.assertEquals("{  }", ViewHelper.filtersToJson(list));
+		Assert.assertEquals("{  }", ViewHelper.contentFiltersToJson(list));
 		
-		list.add(new ContentFilterImpl("CLASS", "PUBLIC"));
-		Assert.assertEquals("{ \"CLASS\": \"PUBLIC\" }", ViewHelper.filtersToJson(list));
+		list.add(new ContentFilterImpl("LOCATION", new String [] {"test1"}));
+		Assert.assertEquals("{ \"LOCATION\": [ \"test1\" ] }", ViewHelper.contentFiltersToJson(list));
 		
-		list.add(new ContentFilterImpl("CLASS", "PRIVATE"));
-		Assert.assertEquals("{ \"CLASS\": \"PUBLIC\", \"CLASS\": \"PRIVATE\" }", ViewHelper.filtersToJson(list));
+		((ContentFilterImpl) list.get(0)).addMatchValue("test2");
+		Assert.assertEquals("{ \"LOCATION\": [ \"test1\", \"test2\" ] }", ViewHelper.contentFiltersToJson(list));
 		
-		list.add(new ContentFilterImpl("LOCATION", "test"));
-		Assert.assertEquals("{ \"CLASS\": \"PUBLIC\", \"CLASS\": \"PRIVATE\", \"LOCATION\": \"test\" }", ViewHelper.filtersToJson(list));
-		
+		list.add(new ContentFilterImpl("DESCRIPTION", new String [] {"blah"}));
+		Assert.assertEquals("{ \"LOCATION\": [ \"test1\", \"test2\" ], \"DESCRIPTION\": [ \"blah\" ] }", ViewHelper.contentFiltersToJson(list));
+	}
+	
+	@Test
+	public void testClassificationFiltersToJson() {
+		List<String> list = new ArrayList<String>();
+		Assert.assertEquals("[  ]", ViewHelper.classificationFiltersToJson(list));
+		list.add("PUBLIC");
+		Assert.assertEquals("[ \"PUBLIC\" ]", ViewHelper.classificationFiltersToJson(list));
+		list.add("PRIVATE");
+		Assert.assertEquals("[ \"PUBLIC\", \"PRIVATE\" ]", ViewHelper.classificationFiltersToJson(list));
 	}
 	
 	private static class ContentFilterImpl implements ContentFilter {
 		private final String propertyName;
-		private final String matchValue;		
+		private final List<String> matchValues;		
 		/**
 		 * @param propertyName
-		 * @param matchValue
+		 * @param matchValues
 		 */
-		private ContentFilterImpl(String propertyName, String matchValue) {
+		private ContentFilterImpl(String propertyName, String [] values) {
 			this.propertyName = propertyName;
-			this.matchValue = matchValue;
+			this.matchValues = new ArrayList<String>(Arrays.asList(values));
 		}
 		@Override
 		public String getPropertyName() {
 			return propertyName;
 		}
 		@Override
-		public String getMatchValue() {
-			return matchValue;
+		public List<String> getMatchValues() {
+			return matchValues;
+		}
+		public void addMatchValue(String value) {
+			matchValues.add(value);
 		}
 	}
 }

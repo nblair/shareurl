@@ -43,11 +43,21 @@
     
     <function>
         <description>Gets a JSON representation for a List of ContentFilters.</description>
-        <name>filtersToJSON</name>
+        <name>contentFiltersToJSON</name>
         <function-class>edu.wisc.wisccal.shareurl.web.ViewHelper</function-class>
-        <function-signature>String filtersToJson(java.util.List)</function-signature>
+        <function-signature>String contentFiltersToJson(java.util.List)</function-signature>
         <example>
-            &lt;c:out value="${viewhelper:filtersToJSON(list)}">
+            &lt;c:out value="${viewhelper:contentFiltersToJSON(list)}">
+        </example>
+    </function>
+    
+    <function>
+        <description>Gets a JSON representation for a List of classification values.</description>
+        <name>classificationFiltersToJSON</name>
+        <function-class>edu.wisc.wisccal.shareurl.web.ViewHelper</function-class>
+        <function-signature>String classificationFiltersToJson(java.util.List)</function-signature>
+        <example>
+            &lt;c:out value="${viewhelper:classificationFiltersToJSON(list)}">
         </example>
     </function>
     

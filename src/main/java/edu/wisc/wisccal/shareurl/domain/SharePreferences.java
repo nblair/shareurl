@@ -17,9 +17,11 @@ package edu.wisc.wisccal.shareurl.domain;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -209,13 +211,30 @@ public class SharePreferences implements Serializable {
 	 * 
 	 * @return
 	 */
-	public List<ContentFilter> getContentFilters() {
-		List<ContentFilter> results = new ArrayList<ContentFilter>();
-		Set<ISharePreference> filterPreferences = getFilterPreferences();
-		for(final ISharePreference pref: filterPreferences) {
-			results.add(new ContentFilterImpl(pref));
+	public List<String> getClassificationFilters() {
+		List<String> results = new ArrayList<String>();
+		Set<ISharePreference> preferences = getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
+		for(ISharePreference pref: preferences) {
+			results.add(pref.getValue());
 		}
 		return results;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public List<ContentFilter> getContentFilters() {
+		Map<String, ContentFilterImpl> map = new HashMap<String, ContentFilterImpl>();
+		Set<ISharePreference> filterPreferences = getPreferencesByType(PropertyMatchPreference.PROPERTY_MATCH);
+		for(final ISharePreference pref: filterPreferences) {
+			ContentFilterImpl filter = map.get(pref.getKey());
+			if(filter == null) {
+				map.put(pref.getKey(), new ContentFilterImpl(pref));
+			} else {
+				filter.addMatchValue(pref.getValue());
+			}
+		}
+		return new ArrayList<ContentFilter>(map.values());
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -268,12 +287,13 @@ public class SharePreferences implements Serializable {
 	
 	static class ContentFilterImpl implements ContentFilter {
 		private final ISharePreference preference;
-
+		private final List<String> matchValues = new ArrayList<String>();
 		/**
 		 * @param preference
 		 */
 		ContentFilterImpl(ISharePreference preference) {
 			this.preference = preference;
+			addMatchValue(preference.getValue());
 		}
 		/*
 		 * (non-Javadoc)
@@ -288,8 +308,17 @@ public class SharePreferences implements Serializable {
 		 * @see edu.wisc.wisccal.shareurl.domain.ContentFilter#getMatchValue()
 		 */
 		@Override
-		public String getMatchValue() {
-			return preference.getValue();
+		public List<String> getMatchValues() {
+			return matchValues;
+		}
+		
+		/**
+		 * 
+		 * @param value
+		 * @return
+		 */
+		public void addMatchValue(String value) {
+			matchValues.add(value);
 		}
 	}
 }

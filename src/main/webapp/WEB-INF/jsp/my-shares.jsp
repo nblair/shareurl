@@ -1,5 +1,5 @@
 <%-- 
-  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
+  Copyright 2007-2012 The Board of Regents of the University of Wisconsin System.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ $(function() {
 });
 
 function refreshMyShares(fadeIn) {
-	//showChangeInProgress("#schedulechangestatus", '<spring:message code="updating.availability.schedule"/>');
 	$.get('<c:url value="/my-shares"><c:param name="format" value="json"/></c:url>', 
 			{ },
 			function(data) {
@@ -109,13 +108,14 @@ function refreshMyShares(fadeIn) {
 };
 
 function postCreatePublic() {
-	//showChangeInProgress("#schedulechangestatus", '<spring:message code="updating.availability.schedule"/>');
 	$.post('<c:url value="/create-public"/>',
 			{ },
 			function(data) {
 				if(data.success) {
 					refreshMyShares(true);
-					$('#guessableInner').fadeOut();
+					$('#guessableInner').empty();
+					$('<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>')
+						.appendTo('#guessableInner').fadeIn();
 				} else {
 					alert('failed to create public share');
 				}
@@ -135,11 +135,11 @@ function postCreatePublic() {
 <p><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: These URLs use a randomly generated string of letters and numbers to identify your account. 
 These are more intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
 traditional ShareURLs with different options.</p>
-
-<c:if test="${not hasGuessable}">
-<div id="guessableInner">
 <hr/>
-<p><span class="large">Public ShareURLs</span> (new!) work just like traditional ShareURLs, however the link include your email address instead of a random alpha-numeric string.</p>
+<div id="guessableInner">
+<c:choose>
+<c:when test="${not hasGuessable}">
+<p><span class="large">Public ShareURLs</span> (new!) work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.</p>
 <div class="publicshareform">
 <form action="<c:url value="/create-public"/>" method="post" id="createpublic">
 <fieldset>
@@ -147,8 +147,12 @@ traditional ShareURLs with different options.</p>
 </fieldset>
 </form>
 </div>
-</div>
-</c:if>
+</c:when>
+<c:otherwise>
+<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>
+</c:otherwise>
+</c:choose>
+</div> <!-- end id=guessableInner -->
 
 </div> <!-- end id=controls -->
 

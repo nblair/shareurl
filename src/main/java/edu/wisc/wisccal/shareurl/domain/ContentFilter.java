@@ -4,6 +4,8 @@
 
 package edu.wisc.wisccal.shareurl.domain;
 
+import java.util.List;
+
 /**
  * Interface describing share preferences that filter content.
  * 
@@ -21,5 +23,5 @@ public interface ContentFilter {
 	 * 
 	 * @return the content that will result in a "match"
 	 */
-	String getMatchValue();
+	List<String> getMatchValues();
 }

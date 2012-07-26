@@ -71,6 +71,7 @@ list-style-image: url(${helpIcon});
 </c:url>
 <c:url value="/tofb" var="tofb">
 </c:url>
+<script type="text/javascript" src="<c:url value="/js/jquery.serializeObject.js"/>"></script>
 <script type="text/javascript">
 $(function() {
 	$('.revokeform').submit(function(e) {
@@ -82,30 +83,24 @@ $(function() {
 		}
 	});
 	
-	var initShare = { freeBusyOnly: ${share.freeBusyOnly}, includeParticipants: ${share.includeParticipants}, contentFilters: ${viewhelper:filtersToJSON(share.contentFilters)} };
+	var initShare = { "freeBusyOnly": ${share.freeBusyOnly}, 
+			"includeParticipants": ${share.includeParticipants}, 
+			"sharePreferences": {
+				"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
+				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
+			} };
 	
 	renderShareControls(initShare, false);
-
-	// BEGIN build scFilters forms
-	// TODO the options available in the select tag should adapt to the existing filters
-	$('<form action="" method="post" id="privacyFilter"><fieldset><label for="privacyValue">Include:&nbsp;</label><select id="privacyOptions" name="privacyValue"></select><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
-	var options = getAvailablePrivacyFilters(initShare);
-	
-	applySubmitHandlerIfPresent('#privacyFilter', '<c:url value="addPrivacyFilter"/>');
-	$('<hr/>').appendTo('#scFilters');
-	$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
-	applySubmitHandlerIfPresent('#contentFilter', '<c:url value="addContentFilter"/>');
-	// END build scFiltersForms
 });
 
 function getAvailablePrivacyFilters(share) {
-	var options = { 'PUBLIC': 'Public', 'CONFIDENTIAL': 'Show Date and Time Only', 'PRIVATE': 'Private' };
-	for(var filter in share.contentFilters) {
-		if(filter.propertyName == 'CLASS') {
-			delete options[filter.matchValue];
-			//alert('presence of ' + filter + ' indicates we remove ' + allOptions[filter.propertyName]);
-		}
+	var options = { "PUBLIC": "Public", "CONFIDENTIAL": "Show Date and Time Only", "PRIVATE": "Private" };
+	if($.isEmptyObject(share.sharePreferences.classificationFilters)) {
+		return options;
 	}
+	$.each(share.sharePreferences.classificationFilters, function() {
+		delete options[this];
+	});
 	return options;
 }
 function applySubmitHandlerIfPresent(element, url) {
@@ -113,7 +108,7 @@ function applySubmitHandlerIfPresent(element, url) {
 	if(el) {
 		el.submit(function(event) {
 			event.preventDefault();
-			postAndRenderPreferences(url);
+			postAndRenderPreferences(url, element);
 		});
 	}
 };
@@ -145,9 +140,27 @@ function renderShareControls(share, fade) {
 			$('#scFilters').show();
 			$('#scIncludeParticipants').show();
 		}
+		
+		$('#scFilters').empty();
 		$('<form action="${tofb }" method="post" id="tofb"><fieldset><input type="submit" value="Convert to Free Busy"/></fieldset></form>').appendTo('#scCalendarData');
 		applySubmitHandlerIfPresent('#tofb', '<c:url value="tofb"/>');
+		
+		var options = getAvailablePrivacyFilters(share);
+		$('<form action="" method="post" id="privacyFilter"><fieldset><label for="privacyValue">Include:&nbsp;</label><select id="privacyOptions" name="privacyValue"></select><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
+		
+		$.each(options, function(key, value) {
+			var o = $('<option></option>');
+			o.val(key);
+			o.html(value);
+			o.appendTo('#privacyOptions');
+		});
+		
+		applySubmitHandlerIfPresent('#privacyFilter', '<c:url value="addPrivacyFilter"/>');
+		$('<hr/>').appendTo('#scFilters');
+		$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
+		applySubmitHandlerIfPresent('#contentFilter', '<c:url value="addContentFilter"/>');
 	}
+	
 };
 function renderSharePreferences(share, fadeIn) {
 	$('#shareDetails').empty();
@@ -180,9 +193,11 @@ function refreshDetails(fadeIn) {
 			},
 			"json");
 };
-function postAndRenderPreferences(url) {
+function postAndRenderPreferences(url, form) {
+	var data = $(form).serializeObject();
+	data["shareKey"] = '${share.key}';
 	$.post(url,
-			{ shareKey: '${share.key}'},
+			data,
 			function(data) {
 				if(data.share) {
 					renderSharePreferences(data.share, true);
@@ -225,11 +240,6 @@ function postAndRenderPreferences(url) {
 </c:choose>
 </ul>
 </div>
-<div id="revoke" class="bordered margin3 padding2">
-<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
-<input type="submit" class="revokebutton" value="Revoke this ShareURL"/>
-</form:form>
-</div>
 
 <h2>Change Options for this ShareURL</h2>
 <div id="shareControls" class="bordered padding2">
@@ -237,83 +247,13 @@ function postAndRenderPreferences(url) {
 <div id="scFilters" class="scBox"></div>
 <div id="scIncludeParticipants" class="scBox"></div>
 <div class="clear"></div>
-<%-- 
-
-shareControls div should be completely rendered via javascript
-
-<div id="scHelp" class="info margin3"><p>Use the controls below to change the settings for this ShareURL:</p></div>
-<c:choose>
-<c:when test="${share.freeBusyOnly}">
-<div id="scCalendarData" class="scBox">
-<form action="${toac }" method="post" id="toac">
-<fieldset>
-<input type="submit" value="Convert to All Calendar"/>
-</fieldset>
-</form>
-</div>
-</c:when>
-<c:otherwise>
-
-<div id="scCalendarData" class="scBox">
-<form action="${tofb }" method="post" id="tofb">
-<fieldset>
-<input type="submit" value="Convert to Free Busy only"/>
-</fieldset>
-</form>
-
-</div>
-
-<div id="scFilters" class="scBox">
-<form action="" method="post" id="privacyFilter">
-<fieldset>
-<label for="privacy">Include:&nbsp;</label>
-<select name="privacy">
-<option value="PUBLIC">Public</option>
-<option value="CONFIDENTIAL">Show Date and Time Only</option>
-<option value="PRIVATE">Private</option>
-</select>
-</fieldset>
-</form>
-
-<hr/>
-
-<form action="" method="post" id="otherFilter">
-<fieldset>
-<label for="field">Include:&nbsp;</label>
-<select name="field">
-<option value="SUMMARY">Title</option>
-<option value="LOCATION">Location</option>
-<option value="DESCRIPTION">Description</option>
-</select>
-<label for="fieldValue">&nbsp;contains&nbsp;</label><input type="text" name="fieldValue"/>
-</fieldset>
-</form>
-</div>
-<div id="scIncludeParticipants" class="scBox">
-
-<c:choose>
-<c:when test="${share.includeParticipants }">
-<form action="${excludeP }" method="post" id="excludeP">
-<fieldset>
-<input type="submit" value="Exclude Participants"/>
-</fieldset>
-</form>
-</c:when>
-<c:otherwise>
-<form action="${includeP }" method="post" id="includeP">
-<fieldset>
-<input type="submit" value="Include Participants"/>
-</fieldset>
-</form>
-</c:otherwise>
-</c:choose>
-</div>
-
-</c:otherwise>
-</c:choose>
-
---%>
 </div> <!--  end id=shareControls -->
+
+<div id="revoke" class="bordered margin3 padding2">
+<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
+<input type="submit" class="revokebutton" value="Revoke this ShareURL"/>
+</form:form>
+</div>
 
 <h2>Example Uses</h2>
 <ul class="examples">
