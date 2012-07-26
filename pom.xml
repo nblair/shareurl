@@ -179,7 +179,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<!-- Use the Tomcat 6 JSP compiler -->
 				<dependencies>
 					<dependency>
 						<groupId>org.codehaus.mojo.jspc</groupId>
