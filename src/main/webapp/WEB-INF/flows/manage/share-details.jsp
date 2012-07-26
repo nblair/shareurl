@@ -59,6 +59,8 @@ list-style-image: url(${helpIcon});
 .bordered { border: 1px solid black; }
 .clear { clear:both; }
 .scBox { float: left; position: relative; width: 26%; margin: 3px; border: 1px solid gray; padding: 2em;}
+.removable { border: 1px solid #C7CEF9; background-color: #E2E6FF;}
+.resetHandle {position:relative; top:3px;}
 </style>
 <c:url value="/shareDetails" var="shareDetails">
 <c:param name="shareKey" value="${share.key}"/>
@@ -90,6 +92,7 @@ $(function() {
 				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
 			} };
 	
+	setupResetFiltersHandler();
 	renderShareControls(initShare, false);
 });
 
@@ -102,7 +105,7 @@ function getAvailablePrivacyFilters(share) {
 		delete options[this];
 	});
 	return options;
-}
+};
 function applySubmitHandlerIfPresent(element, url) {
 	var el = $(element);
 	if(el) {
@@ -162,11 +165,31 @@ function renderShareControls(share, fade) {
 	}
 	
 };
+function setupResetFiltersHandler() {
+	$('.resetHandle').unbind('click', resetFilters);
+	setTimeout(function() {
+		$('.resetHandle').bind('click', resetFilters);
+	}, 1000);
+};
+function resetFilters(event) {
+	var confirmed = confirm('Reset all Content Filters for this ShareURL?');
+	if(confirmed) {
+		$.post('<c:url value="resetFilters"/>',
+				{ "shareKey": "${share.key}"} ,
+				function(data) {
+					if(data.share) {
+						renderSharePreferences(data.share, true);
+						renderShareControls(data.share, true);
+					}
+				},
+				"json");
+	}
+};
 function renderSharePreferences(share, fadeIn) {
 	$('#shareDetails').empty();
 	var ul = $('<ul/>');
 	if(share.includeParticipants) {
-		$('<li>Include Event Participants.</li>').appendTo(ul);
+		$('<li><strong>Include Event Participants.</strong></li>').appendTo(ul);
 	}
 	if(share.freeBusyOnly) {
 		$('<li>Free Busy only.</li>').appendTo(ul);
@@ -174,7 +197,8 @@ function renderSharePreferences(share, fadeIn) {
 		if(share.eventFilterCount == 0) {
 			$('<li>All Calendar Data</li>').appendTo(ul);
 		} else {
-			$('<li>' + share.sharePreferences.filterDisplay + '</li>').appendTo(ul);
+			$('<li><span class="removable">' + share.sharePreferences.filterDisplay + ' <img src="${revokeIcon}" title="Reset content filters" alt="Reset content filters" class="resetHandle"/></span></li>').appendTo(ul);
+			setupResetFiltersHandler();
 		}
 	}
 	if(fadeIn) {
@@ -202,7 +226,6 @@ function postAndRenderPreferences(url, form) {
 				if(data.share) {
 					renderSharePreferences(data.share, true);
 					renderShareControls(data.share, true);
-					getAvailablePrivacyFilters(data.share)
 				}
 			},
 			"json");
@@ -233,7 +256,7 @@ function postAndRenderPreferences(url, form) {
 <li>All calendar data.</li>
 </c:when>
 <c:otherwise>
-<li>${share.sharePreferences.filterDisplay}</li>
+<li><span class="removable">${share.sharePreferences.filterDisplay}&nbsp;<img src="${revokeIcon}" title="Remove this attribute" alt="Remove this attribute" class="resetHandle"/></span></li>
 </c:otherwise>
 </c:choose>
 </c:otherwise>
