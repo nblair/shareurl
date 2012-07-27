@@ -25,6 +25,7 @@ import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
  * @author Nicholas Blair
  */
 @Controller
+@RequestMapping("/rest")
 public class ShareManagementController {
 
 	private final Log log = LogFactory.getLog(this.getClass());
@@ -44,7 +45,7 @@ public class ShareManagementController {
 		this.shareDao = shareDao;
 	}
 
-	@RequestMapping(value="/rest/create-public",method=RequestMethod.POST )
+	@RequestMapping(value="/create-public",method=RequestMethod.POST )
 	public String createPublic(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -65,12 +66,12 @@ public class ShareManagementController {
 		return "jsonView";
 	}
 
-	@RequestMapping(value="/rest/create-traditional",method=RequestMethod.POST )
+	@RequestMapping(value="/create-traditional",method=RequestMethod.POST )
 	public String createTraditional(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling createPublic request for " + activeAccount);
+			log.debug("handling createTraditional request for " + activeAccount);
 		}
 		SharePreferences preferences = new SharePreferences();
 		preferences.addPreference(new FreeBusyPreference());

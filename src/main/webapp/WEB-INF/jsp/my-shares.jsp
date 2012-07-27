@@ -46,13 +46,14 @@ margin: 0 3em 0 3em;
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(function() {
-	$(':submit').lockSubmit();
+	$('#createpublic').lockSubmit();
 	$('#createpublic').submit(function(event) {
 		event.preventDefault();
 		postCreatePublic();		
 	});
 	$('#createtraditional').submit(function(event) {
         event.preventDefault();
+        $('#createtraditional').lockSubmit();
         postCreateTraditional();     
     });
 	
@@ -129,6 +130,9 @@ function postCreateTraditional() {
             function(data) {
                 if(data.success) {
                     refreshMyShares(true);
+                    setTimeout(function() {
+                    	$('#createtraditional').lockSubmitReset();
+                    }, 10000);
                 } else {
                     alert('failed to create traditional share: ' + data.message);
                 }
@@ -187,17 +191,17 @@ traditional ShareURLs with different options.</p>
 </c:url>
 <c:choose>
 <c:when test="${share.freeBusyOnly == true}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${share.key }</span></a>:&nbsp;<span class="details">Free Busy only.</span> 
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">View and/or Edit Options for ${share.key }</span></a>:&nbsp;<span class="details">Free Busy only.</span> 
 </li>
 </c:when>
 <c:otherwise>
 <c:choose>
 <c:when test="${share.eventFilterCount == 0}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${share.key }</span></a>:&nbsp;<span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">View and/or Edit Options for ${share.key }</span></a>:&nbsp;<span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
 </li>
 </c:when>
 <c:otherwise>
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${share.key }</span></a>:&nbsp;<span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">View and/or Edit Options for ${share.key }</span></a>:&nbsp;<span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
 </li>
 </c:otherwise>
 </c:choose>
