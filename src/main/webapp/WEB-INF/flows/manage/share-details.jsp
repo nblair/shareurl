@@ -100,8 +100,8 @@ $(function() {
 	$('#y').change(function(e) { renderShareUrlExample(); });
 	$('#datex').change(function(e) { renderShareUrlExample(); });
 	$('#datey').change(function(e) { renderShareUrlExample(); });
-	var initShare = { "freeBusyOnly": "${share.freeBusyOnly}", 
-			"includeParticipants": "${share.includeParticipants}", 
+	var initShare = { "freeBusyOnly": ${share.freeBusyOnly}, 
+			"includeParticipants": ${share.includeParticipants}, 
 			"sharePreferences": {
 				"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
 				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
