@@ -51,6 +51,10 @@ $(function() {
 		event.preventDefault();
 		postCreatePublic();		
 	});
+	$('#createtraditional').submit(function(event) {
+        event.preventDefault();
+        postCreateTraditional();     
+    });
 	
 	refreshMyShares(false);
 });
@@ -59,9 +63,7 @@ function refreshMyShares(fadeIn) {
 	$.get('<c:url value="/my-shares"><c:param name="format" value="json"/></c:url>', 
 			{ },
 			function(data) {
-				if(!data.shares) {
-					alert('no shares set in response: ' + data);
-				} else {
+				if(data.shares) {
 					$('#myshares').empty();
 					var ul = $('<ul/>');
 					ul.addClass('sharelist');
@@ -71,7 +73,7 @@ function refreshMyShares(fadeIn) {
 						for(var i = 0; i < data.shares.length; i++) {
 							var share = data.shares[i];
 							if(share.freeBusyOnly) {
-								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">' + share.key;
+								var liText = '<li class="share"><a title="View Details and/or Edit Options for ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key;
 								if(share.guessable) {
 									liText += ' (Public ShareURL)';
 								}
@@ -88,7 +90,7 @@ function refreshMyShares(fadeIn) {
 									details += ', Include Participants';
 								}
 								details += '.';
-								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">' + share.key + 
+								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key + 
 								'</span></a>:&nbsp;<span class="details">' + details + '</span></li>').appendTo(ul);
 							} else {
 								var details = share.sharePreferences.filterDisplay;
@@ -96,7 +98,7 @@ function refreshMyShares(fadeIn) {
 									details += ', Include Participants';
 								}
 								details += '.';
-								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">' + share.key + 
+								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key + 
 								'</span></a>:&nbsp;<span class="details">' + details + '</span></li>').appendTo(ul);
 							}
 						}
@@ -117,9 +119,20 @@ function postCreatePublic() {
 					$('<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>')
 						.appendTo('#guessableInner').fadeIn();
 				} else {
-					alert('failed to create public share');
+					alert('failed to create public share: ' + data.message);
 				}
 			}, 'json');
+};
+function postCreateTraditional() {
+    $.post('<c:url value="/rest/create-traditional"/>',
+            { },
+            function(data) {
+                if(data.success) {
+                    refreshMyShares(true);
+                } else {
+                    alert('failed to create traditional share: ' + data.message);
+                }
+            }, 'json');
 };
 </script>
 <title>Share your WiscCal Calendar - My ShareURLs</title>
@@ -132,7 +145,14 @@ function postCreatePublic() {
 
 <div id="content" class="main col">
 <div id="controls" class="info">
-<p><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: These URLs use a randomly generated string of letters and numbers to identify your account. 
+<%-- <p><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: --%>
+<form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
+<fieldset>
+<input type="submit" value="Create a new Traditional ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
+</fieldset>
+</form>
+<p>
+These URLs use a randomly generated string of letters and numbers to identify your account. 
 These are more intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
 traditional ShareURLs with different options.</p>
 <hr/>

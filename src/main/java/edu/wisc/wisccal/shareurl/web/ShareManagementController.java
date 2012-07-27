@@ -25,7 +25,7 @@ import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
  * @author Nicholas Blair
  */
 @Controller
-public class GuessableShareManagementController {
+public class ShareManagementController {
 
 	private final Log log = LogFactory.getLog(this.getClass());
 	private IShareDao shareDao;
@@ -43,13 +43,13 @@ public class GuessableShareManagementController {
 	public void setShareDao(IShareDao shareDao) {
 		this.shareDao = shareDao;
 	}
-	
+
 	@RequestMapping(value="/rest/create-public",method=RequestMethod.POST )
-	public String createDefaultGuessable(ModelMap model) {
+	public String createPublic(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling createDefaultGuessable request for " + activeAccount);
+			log.debug("handling createPublic request for " + activeAccount);
 		}
 		SharePreferences preferences = new SharePreferences();
 		preferences.addPreference(new FreeBusyPreference());
@@ -61,8 +61,25 @@ public class GuessableShareManagementController {
 			model.addAttribute("success", false);
 			model.addAttribute("message", "Public ShareURL already exists.");
 		}
-		
+
 		return "jsonView";
 	}
-	
+
+	@RequestMapping(value="/rest/create-traditional",method=RequestMethod.POST )
+	public String createTraditional(ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling createPublic request for " + activeAccount);
+		}
+		SharePreferences preferences = new SharePreferences();
+		preferences.addPreference(new FreeBusyPreference());
+
+		Share share = shareDao.generateNewShare(activeAccount, preferences);
+		model.addAttribute("share", share);
+		model.addAttribute("success", true);
+
+		return "jsonView";
+	}
+
 }
