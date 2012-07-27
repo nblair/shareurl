@@ -150,10 +150,9 @@ function postCreateTraditional() {
 
 <div id="content" class="main col">
 <div id="controls" class="info">
-<%-- <p><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: --%>
 <p>
 <span class="large">Traditional ShareURLs</span> use a randomly generated string of letters and numbers to identify your account. 
-These are more intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
+These are intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
 traditional ShareURLs with different options.</p>
 <form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
 <fieldset>
