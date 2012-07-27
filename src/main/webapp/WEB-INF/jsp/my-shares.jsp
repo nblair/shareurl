@@ -47,13 +47,13 @@ margin: 0 3em 0 3em;
 <script type="text/javascript">
 $(function() {
 	$('#psubmit').lockSubmit();
+	$('#tsubmit').lockSubmit();
 	$('#createpublic').submit(function(event) {
 		event.preventDefault();
 		postCreatePublic();		
 	});
 	$('#createtraditional').submit(function(event) {
         event.preventDefault();
-        $('#tsubmit').lockSubmit();
         postCreateTraditional();     
     });
 	
@@ -135,6 +135,7 @@ function postCreateTraditional() {
                 }
                 setTimeout(function() {
                     $('#tsubmit').lockSubmitReset();
+                    $('#tsubmit').lockSubmit();
                 }, 30000);
             }, 'json');
 };
