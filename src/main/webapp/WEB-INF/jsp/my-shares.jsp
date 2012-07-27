@@ -46,14 +46,14 @@ margin: 0 3em 0 3em;
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(function() {
-	$('#createpublic').lockSubmit();
+	$('#psubmit').lockSubmit();
 	$('#createpublic').submit(function(event) {
 		event.preventDefault();
 		postCreatePublic();		
 	});
 	$('#createtraditional').submit(function(event) {
         event.preventDefault();
-        $('#createtraditional').lockSubmit();
+        $('#tsubmit').lockSubmit();
         postCreateTraditional();     
     });
 	
@@ -134,8 +134,8 @@ function postCreateTraditional() {
                     alert('failed to create traditional share: ' + data.message);
                 }
                 setTimeout(function() {
-                    $('#createtraditional').lockSubmitReset();
-                }, 10000);
+                    $('#tsubmit').lockSubmitReset();
+                }, 30000);
             }, 'json');
 };
 </script>
@@ -156,7 +156,7 @@ These are more intended for the privacy-conscious that don't like to or cannot a
 traditional ShareURLs with different options.</p>
 <form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
 <fieldset>
-<input type="submit" value="Create a new Traditional ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
+<input id="tsubmit" type="submit" value="Create a new Traditional ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
 </fieldset>
 </form>
 <hr/>
@@ -167,7 +167,7 @@ traditional ShareURLs with different options.</p>
 <div class="publicshareform">
 <form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
-<input type="submit" value="Create my Public ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
+<input id="psubmit" type="submit" value="Create my Public ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
 </fieldset>
 </form>
 </div>
