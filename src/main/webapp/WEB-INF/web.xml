@@ -36,7 +36,17 @@
     <servlet-mapping>
 		<servlet-name>shareurl</servlet-name>
 		<url-pattern>*.html</url-pattern>
-		<url-pattern>/generate</url-pattern>
+		<url-pattern>/u/*</url-pattern>
+        <url-pattern>/freebusy/*</url-pattern>
+        <!-- landing post-login -->
+        <url-pattern>/my-shares</url-pattern>
+        <!-- webflow to manage a share -->
+        <url-pattern>/manage</url-pattern>
+        <!-- old generate webflow -->
+        <url-pattern>/generate</url-pattern>
+		<url-pattern>/rest/*</url-pattern>
+	
+	    <!--  
 		<url-pattern>/shareDetails</url-pattern>
 		<url-pattern>/toac</url-pattern>
 		<url-pattern>/tofb</url-pattern>
@@ -46,18 +56,13 @@
 		<url-pattern>/addContentFilter</url-pattern>
 		<url-pattern>/resetFilters</url-pattern>
 		<url-pattern>/create-public</url-pattern>
-		<url-pattern>/u/*</url-pattern>
-		<url-pattern>/freebusy/*</url-pattern>
-		<url-pattern>/my-shares</url-pattern>
-		<url-pattern>/manage</url-pattern>
+		-->
+		
+		<!-- login controllers -->
 		<url-pattern>/security_check</url-pattern>
 		<url-pattern>/mailplus_security_check</url-pattern>
 		<url-pattern>/delegate_switch_user</url-pattern>
 		<url-pattern>/delegate_switch_exit</url-pattern>
-		<!--  
-		<url-pattern>/delegate-search.html</url-pattern>
-		<url-pattern>/delegate-login.html</url-pattern>
-		-->
 	</servlet-mapping>
 
 	<filter>
@@ -82,7 +87,7 @@
 		<location>/error-404.jsp</location>
 	</error-page>
 	<session-config>
-		<session-timeout>10</session-timeout>
+		<session-timeout>20</session-timeout>
 	</session-config>
 
 	<jsp-config>

@@ -54,27 +54,29 @@ list-style-image: url(${helpIcon});
 .margin3 { margin: 3px; }
 .padding1 { padding: 1em; }
 .padding2 { padding: 2em; }
-.bordered { border: 1px solid black; }
+.bordered { border: 1px solid #990000; }
 .clear { clear:both; }
-.scBox { float: left; position: relative; width: 26%; margin: 3px; border: 1px solid gray; padding: 2em;}
+.scBox { float: left; position: relative; width: 26%; margin: 0px 3px 0px 3px; border: 1px solid #666152; padding: 1.25em;}
 .removable { border: 1px solid #C7CEF9; background-color: #E2E6FF;}
 .resetHandle {position:relative; top:3px;}
 .sharelink { border: 1px dotted #C7CEF9; background-color: #E2E6FF; padding: 0.5em 0.5em 0.5em 1em;}
 .sharelinktext { color: blue; font-size: 130%;}
 #sharelinktag { color: blue;}
+#examples { line-height:200%;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
-<c:url value="/shareDetails" var="shareDetails">
+<c:url value="/rest/shareDetails" var="shareDetails">
 <c:param name="shareKey" value="${share.key}"/>
 </c:url>
-<c:url value="/includeP" var="includeP">
-</c:url>
-<c:url value="/excludeP" var="excludeP">
-</c:url>
-<c:url value="/toac" var="toac">
-</c:url>
-<c:url value="/tofb" var="tofb">
-</c:url>
+
+<c:url value="/rest/includeP" var="includeP"/>
+<c:url value="/rest/excludeP" var="excludeP"/>
+<c:url value="/rest/toac" var="toac"/>
+<c:url value="/rest/tofb" var="tofb"/>
+<c:url value="/rest/addPrivacyFilter" var="addPrivacyFilter"/>
+<c:url value="/rest/addContentFilter" var="addContentFilter"/>
+<c:url value="/rest/resetFilters" var="resetFilters"/>
+
 <rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
 <link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}" media="all"/>
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
@@ -98,8 +100,8 @@ $(function() {
 	$('#y').change(function(e) { renderShareUrlExample(); });
 	$('#datex').change(function(e) { renderShareUrlExample(); });
 	$('#datey').change(function(e) { renderShareUrlExample(); });
-	var initShare = { "freeBusyOnly": ${share.freeBusyOnly}, 
-			"includeParticipants": ${share.includeParticipants}, 
+	var initShare = { "freeBusyOnly": "${share.freeBusyOnly}", 
+			"includeParticipants": "${share.includeParticipants}", 
 			"sharePreferences": {
 				"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
 				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
@@ -138,15 +140,15 @@ function renderShareControls(share, fade) {
 			$('#scIncludeParticipants').hide();
 		}
 		$('<form action="${toac }" method="post" id="toac"><fieldset><input type="submit" value="Convert to All Calendar"/></fieldset></form>').appendTo('#scCalendarData');
-		applySubmitHandlerIfPresent('#toac', '<c:url value="toac"/>');
+		applySubmitHandlerIfPresent('#toac', '${toac}');
 	} else {
 		$('#scIncludeParticipants').empty();
 		if(share.includeParticipants) {
 			$('<form action="${excludeP }" method="post" id="excludeP"><fieldset><input type="submit" value="Exclude Participants"/></fieldset></form>').appendTo('#scIncludeParticipants');
-			applySubmitHandlerIfPresent('#excludeP', '<c:url value="excludeP"/>');
+			applySubmitHandlerIfPresent('#excludeP', '${excludeP}');
 		} else {
 			$('<form action="${includeP }" method="post" id="includeP"><fieldset><input type="submit" value="Include Participants"/></fieldset></form>').appendTo('#scIncludeParticipants');
-			applySubmitHandlerIfPresent('#includeP', '<c:url value="includeP"/>');
+			applySubmitHandlerIfPresent('#includeP', '${includeP}');
 		}
 		if(fade) {
 			$('#scFilters').fadeIn();
@@ -158,7 +160,7 @@ function renderShareControls(share, fade) {
 		
 		$('#scFilters').empty();
 		$('<form action="${tofb }" method="post" id="tofb"><fieldset><input type="submit" value="Convert to Free Busy"/></fieldset></form>').appendTo('#scCalendarData');
-		applySubmitHandlerIfPresent('#tofb', '<c:url value="tofb"/>');
+		applySubmitHandlerIfPresent('#tofb', '${tofb}');
 		
 		var options = getAvailablePrivacyFilters(share);
 		$('<form action="" method="post" id="privacyFilter"><fieldset><label for="privacyValue">Include:&nbsp;</label><select id="privacyOptions" name="privacyValue"></select><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
@@ -170,10 +172,10 @@ function renderShareControls(share, fade) {
 			o.appendTo('#privacyOptions');
 		});
 		
-		applySubmitHandlerIfPresent('#privacyFilter', '<c:url value="addPrivacyFilter"/>');
+		applySubmitHandlerIfPresent('#privacyFilter', '${addPrivacyFilter}');
 		$('<hr/>').appendTo('#scFilters');
 		$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
-		applySubmitHandlerIfPresent('#contentFilter', '<c:url value="addContentFilter"/>');
+		applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}');
 	}
 	
 };
@@ -186,7 +188,7 @@ function setupResetFiltersHandler() {
 function resetFilters(event) {
 	var confirmed = confirm('Reset all Content Filters for this ShareURL?');
 	if(confirmed) {
-		$.post('<c:url value="resetFilters"/>',
+		$.post('${resetFilters}',
 				{ "shareKey": "${share.key}"} ,
 				function(data) {
 					if(data.share) {
@@ -329,20 +331,20 @@ function postAndRenderPreferences(url, form) {
 </div>
 
 <h2>Change Options for this ShareURL</h2>
-<div id="shareControls" class="bordered padding2">
+<div id="shareControls" class="bordered margin3 padding1">
 <div id="scCalendarData" class="scBox"></div>
 <div id="scFilters" class="scBox"></div>
 <div id="scIncludeParticipants" class="scBox"></div>
 <div class="clear"></div>
 </div> <!--  end id=shareControls -->
 
-<div id="revoke" class="bordered margin3 padding2">
+<div id="revoke" class="bordered margin3 padding1">
 <form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
 <input type="submit" class="revokebutton" value="Revoke this ShareURL"/>
 </form:form>
 </div>
 
-<div id="examples">
+<div id="examples" class="margin3 padding1">
 <p>This ShareURL can be viewed with the following link:</p>
 <div class="sharelink">
 <a id="sharelinktag" href="${baseShareUrl }/dr(-14,30?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span></a>

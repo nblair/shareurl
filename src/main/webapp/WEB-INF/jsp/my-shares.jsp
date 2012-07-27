@@ -108,7 +108,7 @@ function refreshMyShares(fadeIn) {
 };
 
 function postCreatePublic() {
-	$.post('<c:url value="/create-public"/>',
+	$.post('<c:url value="/rest/create-public"/>',
 			{ },
 			function(data) {
 				if(data.success) {
@@ -141,7 +141,7 @@ traditional ShareURLs with different options.</p>
 <c:when test="${not hasGuessable}">
 <p><span class="large">Public ShareURLs</span> (new!) work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.</p>
 <div class="publicshareform">
-<form action="<c:url value="/create-public"/>" method="post" id="createpublic">
+<form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
 <input type="submit" value="Create my Public ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
 </fieldset>
