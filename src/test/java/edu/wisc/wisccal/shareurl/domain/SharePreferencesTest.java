@@ -51,15 +51,15 @@ public class SharePreferencesTest {
 		SharePreferences preferences = new SharePreferences();
 		preferences.addPreference(new AccessClassificationMatchPreference(AccessClassification.PUBLIC));
 		String display = preferences.getFilterDisplay();
-		Assert.assertEquals("Access matches 'Public'", display);
+		Assert.assertEquals("Privacy matches 'Public'", display);
 		
 		preferences.addPreference(new AccessClassificationMatchPreference(AccessClassification.PRIVATE));
 		display = preferences.getFilterDisplay();
-		Assert.assertEquals("Access matches 'Private', Access matches 'Public'", display);
+		Assert.assertEquals("Privacy matches 'Private', Privacy matches 'Public'", display);
 		preferences.addPreference(new AccessClassificationMatchPreference(AccessClassification.CONFIDENTIAL));
 		
 		display = preferences.getFilterDisplay();
-		Assert.assertEquals("Access matches 'Show Date and Time Only', Access matches 'Private', Access matches 'Public'", display);
+		Assert.assertEquals("Privacy matches 'Show Date and Time Only', Privacy matches 'Private', Privacy matches 'Public'", display);
 	}
 	
 	@Test
@@ -71,7 +71,7 @@ public class SharePreferencesTest {
 		
 		preferences.addPreference(new AccessClassificationMatchPreference(AccessClassification.PUBLIC));
 		display = preferences.getFilterDisplay();
-		Assert.assertEquals("Title contains soccer, Access matches 'Public'", display);
+		Assert.assertEquals("Title contains soccer, Privacy matches 'Public'", display);
 	}
 	
 	/**
@@ -87,6 +87,6 @@ public class SharePreferencesTest {
 		
 		preferences.addPreference(new AccessClassificationMatchPreference(AccessClassification.PUBLIC));
 		display = preferences.getFilterDisplay();
-		Assert.assertEquals("Title contains soccer, Access matches 'Public'", display);
+		Assert.assertEquals("Title contains soccer, Privacy matches 'Public'", display);
 	}
 }
