@@ -44,7 +44,7 @@ public class GuessableShareManagementController {
 		this.shareDao = shareDao;
 	}
 	
-	@RequestMapping(value="/api/create-public",method=RequestMethod.POST )
+	@RequestMapping(value="/rest/create-public",method=RequestMethod.POST )
 	public String createDefaultGuessable(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
