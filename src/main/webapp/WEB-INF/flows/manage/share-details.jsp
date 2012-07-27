@@ -264,11 +264,12 @@ function renderShareUrlExample() {
 			if(y - x > 180) {
 				y = x + 180;
 				$('#y').val(y);
-				alert("Your date range is greater than 180 days, which is the maximum allowed.");
+				alert("Your date range is greater than 180 days, which is the maximum allowed. It's been reset to " + y);
 			}
-			var drtext = '/dr(' + x + ',' + y + ')';
 			$('#dateRange').text('').fadeOut();
-			$('#dateRange').text(drtext).fadeIn();
+			if(x != 0 || y != 0) {
+				$('#dateRange').text('/dr(' + x + ',' + y + ')').fadeIn();
+			}
 		}
 	}
 	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#queryParameters').text());
