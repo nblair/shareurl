@@ -129,13 +129,13 @@ function postCreateTraditional() {
             { },
             function(data) {
                 if(data.success) {
-                    refreshMyShares(true);
-                    setTimeout(function() {
-                    	$('#createtraditional').lockSubmitReset();
-                    }, 10000);
+                    refreshMyShares(true);   
                 } else {
                     alert('failed to create traditional share: ' + data.message);
                 }
+                setTimeout(function() {
+                    $('#createtraditional').lockSubmitReset();
+                }, 10000);
             }, 'json');
 };
 </script>
@@ -150,15 +150,15 @@ function postCreateTraditional() {
 <div id="content" class="main col">
 <div id="controls" class="info">
 <%-- <p><a href="<c:url value="/generate"/>" class="large">Generate a traditional ShareURL</a>: --%>
-<form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
+<p>
+<span class="large">Traditional ShareURLs</span> use a randomly generated string of letters and numbers to identify your account. 
+These are more intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
+traditional ShareURLs with different options.</p>
+<form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
 <fieldset>
 <input type="submit" value="Create a new Traditional ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
 </fieldset>
 </form>
-<p>
-These URLs use a randomly generated string of letters and numbers to identify your account. 
-These are more intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
-traditional ShareURLs with different options.</p>
 <hr/>
 <div id="guessableInner">
 <c:choose>
