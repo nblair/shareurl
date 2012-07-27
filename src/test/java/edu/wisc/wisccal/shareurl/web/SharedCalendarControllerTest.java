@@ -159,6 +159,8 @@ public class SharedCalendarControllerTest {
 		MockHttpServletRequest httpRequest = new MockHttpServletRequest("GET", "/12345abcde/dr(0,1)");
 		httpRequest.addParameter("ical", "");
 		httpRequest.addParameter("compat", "br");
+		// break recurrence only triggered now when in conjunction with compat=kr
+		httpRequest.addParameter("compat", "kr");
 		ShareRequestDetails requestDetails = new ShareRequestDetails(httpRequest);
 		
 		SharePreferences sharePreferences = new SharePreferences();
@@ -190,7 +192,7 @@ public class SharedCalendarControllerTest {
 		pathData.setStartDate(startDate);
 		pathData.setEndDate(endDate);
 		pathData.setStartDate(startDate);
-		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
 		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
@@ -205,6 +207,76 @@ public class SharedCalendarControllerTest {
 				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
 			}
 		}
+	}
+	@Test
+	public void testPrepareModelRecurrenceExample1ical() throws IOException, ParserException, ParseException {
+		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
+		
+		ModelMap model = new ModelMap();
+		
+		ClassPathResource calendarData = new ClassPathResource("example-data/recurring-example-1.ics");
+		
+		Calendar calendar = new CalendarBuilder().build(calendarData.getInputStream());
+		
+		PathData pathData = new PathData();
+		pathData.setShareKey("12345abcde");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date startDate = df.parse("2012-06-15");
+		java.util.Date endDate = df.parse("2012-06-30");
+		pathData.setStartDate(startDate);
+		pathData.setEndDate(endDate);
+		pathData.setStartDate(startDate);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.ICAL, false, false, false);
+		
+		SharePreferences sharePreferences = new SharePreferences();
+		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
+		
+		Assert.assertEquals(5, calendar.getComponents(VEvent.VEVENT).size());
+		List<String> expectedStarts = Arrays.asList(new String[] {"20120618T083000", "20120619T083000","20120620T083000", "20120621T083000","20120622T083000"} );
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
+			}
+		}
+	}
+	/**
+	 * 
+	 * @throws IOException
+	 * @throws ParserException
+	 * @throws ParseException
+	 */
+	@Test
+	public void testPrepareModelRecurrenceExample1icalCompatKr() throws IOException, ParserException, ParseException {
+		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
+		
+		ModelMap model = new ModelMap();
+		
+		ClassPathResource calendarData = new ClassPathResource("example-data/recurring-example-1.ics");
+		
+		Calendar calendar = new CalendarBuilder().build(calendarData.getInputStream());
+		
+		PathData pathData = new PathData();
+		pathData.setShareKey("12345abcde");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date startDate = df.parse("2012-06-15");
+		java.util.Date endDate = df.parse("2012-06-30");
+		pathData.setStartDate(startDate);
+		pathData.setEndDate(endDate);
+		pathData.setStartDate(startDate);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.ICAL, true, false, false);
+		
+		SharePreferences sharePreferences = new SharePreferences();
+		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
+		
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+		VEvent event = (VEvent) calendar.getComponents(VEvent.VEVENT).get(0);
+		Assert.assertEquals("20120618T083000", event.getStartDate().getValue());
 	}
 	
 	@Test
@@ -226,7 +298,7 @@ public class SharedCalendarControllerTest {
 		pathData.setStartDate(startDate);
 		pathData.setEndDate(endDate);
 		pathData.setStartDate(startDate);
-		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
 		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
@@ -262,7 +334,7 @@ public class SharedCalendarControllerTest {
 		pathData.setStartDate(startDate);
 		pathData.setEndDate(endDate);
 		pathData.setStartDate(startDate);
-		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
 		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);

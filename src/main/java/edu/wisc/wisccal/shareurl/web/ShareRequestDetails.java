@@ -63,6 +63,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final String BREAK_RECURRENCE = "br";
 	public static final String CONVERT_CLASS = "cc";
 	public static final String NO_RECURRENCE = "nr";
+	public static final String KEEP_RECURRENCE = "kr";
+
 
 	static final String UW_SUPPORT_RDATE = "uw-support-rdate";
 
@@ -111,7 +113,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	private final ShareDisplayFormat displayFormat;
 	private boolean overrideBreakRecurrence = false;
 	private boolean overrideConvertClass = false;
-	private boolean requestNoRecurrence = false;
+	private boolean keepRecurrence = false;
 	private boolean organizerOnly = false;
 	private boolean attendeeOnly = false;
 	private boolean personalOnly = false;
@@ -171,8 +173,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 						overrideBreakRecurrence = true;
 					} else if(CONVERT_CLASS.equals(compatValue)) {
 						overrideConvertClass = true;
-					} else if (NO_RECURRENCE.equals(compatValue)) {
-						requestNoRecurrence = true;
+					} else if (KEEP_RECURRENCE.equals(compatValue)) {
+						keepRecurrence = true;
 					}
 				}
 			}
@@ -213,11 +215,12 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @param overrideConvertClass
 	 */
 	ShareRequestDetails(PathData pathData, Client client,
-			ShareDisplayFormat displayFormat, boolean overrideBreakRecurrence,
+			ShareDisplayFormat displayFormat, boolean keepRecurrence, boolean overrideBreakRecurrence,
 			boolean overrideConvertClass) {
 		this.pathData = pathData;
 		this.client = client;
 		this.displayFormat = displayFormat;
+		this.keepRecurrence = keepRecurrence;
 		this.overrideBreakRecurrence = overrideBreakRecurrence;
 		this.overrideConvertClass = overrideConvertClass;
 	}
@@ -229,7 +232,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @param displayFormat
 	 * @param overrideBreakRecurrence
 	 * @param overrideConvertClass
-	 * @param requestNoRecurrence
+	 * @param keepRecurrence
 	 * @param organizerOnly
 	 * @param attendeeOnly
 	 * @param personalOnly
@@ -237,7 +240,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	ShareRequestDetails(PathData pathData, Client client,
 			ShareDisplayFormat displayFormat, boolean overrideBreakRecurrence,
-			boolean overrideConvertClass, boolean requestNoRecurrence,
+			boolean overrideConvertClass, boolean keepRecurrence,
 			boolean organizerOnly, boolean attendeeOnly, boolean personalOnly,
 			boolean requiresProblemRecurringPreference) {
 		this.pathData = pathData;
@@ -245,7 +248,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		this.displayFormat = displayFormat;
 		this.overrideBreakRecurrence = overrideBreakRecurrence;
 		this.overrideConvertClass = overrideConvertClass;
-		this.requestNoRecurrence = requestNoRecurrence;
+		this.keepRecurrence = keepRecurrence;
 		this.organizerOnly = organizerOnly;
 		this.attendeeOnly = attendeeOnly;
 		this.personalOnly = personalOnly;
@@ -299,19 +302,15 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public ShareDisplayFormat getDisplayFormat() {
 		return this.displayFormat;
 	}
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean requiresNoRecurrence() {
-		return requestNoRecurrence;
+	public boolean isKeepRecurrence() {
+		return keepRecurrence;
 	}
 	/**
 	 * 
 	 * @return
 	 */
 	public boolean requiresBreakRecurrence() {
-		return overrideBreakRecurrence || Client.APPLE.equals(client) || Client.MOZILLA.equals(client);
+		return isKeepRecurrence() && overrideBreakRecurrence;
 	}
 	/**
 	 * 

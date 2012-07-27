@@ -93,7 +93,7 @@ public class ShareRequestDetailsTest {
 		assertEquals("dr(-10,140)", details.getDatePhrase());
 		assertNull(details.getEventId());
 		assertEquals("123456789", details.getShareKey());
-		assertTrue(details.requiresBreakRecurrence());
+		assertFalse(details.requiresBreakRecurrence());
 		assertFalse(details.requiresConvertClass());
 		assertEquals(ShareDisplayFormat.ICAL, details.getDisplayFormat());
 	}
@@ -114,7 +114,7 @@ public class ShareRequestDetailsTest {
 		assertEquals("dr(-10,140)", details.getDatePhrase());
 		assertNull(details.getEventId());
 		assertEquals("123456789", details.getShareKey());
-		assertTrue(details.requiresBreakRecurrence());
+		assertFalse(details.requiresBreakRecurrence());
 		assertFalse(details.requiresConvertClass());
 		assertEquals(ShareDisplayFormat.ICAL, details.getDisplayFormat());
 	}
@@ -131,7 +131,7 @@ public class ShareRequestDetailsTest {
 		assertEquals("dr(-10,140)", details.getDatePhrase());
 		assertNull(details.getEventId());
 		assertEquals("123456789", details.getShareKey());
-		assertTrue(details.requiresBreakRecurrence());
+		assertFalse(details.requiresBreakRecurrence());
 		assertFalse(details.requiresConvertClass());
 		assertEquals(ShareDisplayFormat.ICAL, details.getDisplayFormat());
 	}
@@ -154,6 +154,7 @@ public class ShareRequestDetailsTest {
 		assertEquals("", details.getShareKey());
 		assertFalse(details.requiresBreakRecurrence());
 		assertFalse(details.requiresConvertClass());
+		assertFalse(details.isKeepRecurrence());
 		assertEquals(ShareDisplayFormat.HTML, details.getDisplayFormat());
 	}
 	
@@ -664,18 +665,18 @@ public class ShareRequestDetailsTest {
 		request.addParameter("compat", "");
 		ShareRequestDetails details = new ShareRequestDetails(request);
 		assertFalse(details.requiresBreakRecurrence());
-		assertFalse(details.requiresNoRecurrence());
+		assertFalse(details.isKeepRecurrence());
 		assertFalse(details.requiresConvertClass());
 	}
 	
 	@Test
-	public void testCompatNr() throws Exception {
+	public void testCompatKr() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
 		request.addParameter("ical", "");
-		request.addParameter("compat", "nr");
+		request.addParameter("compat", "kr");
 		ShareRequestDetails details = new ShareRequestDetails(request);
 		assertFalse(details.requiresBreakRecurrence());
-		assertTrue(details.requiresNoRecurrence());
+		assertTrue(details.isKeepRecurrence());
 		assertFalse(details.requiresConvertClass());
 	}
 	
@@ -683,11 +684,11 @@ public class ShareRequestDetailsTest {
 	public void testMultiValueCompat() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
 		request.addParameter("ical", "");
-		request.addParameter("compat", "nr");
+		request.addParameter("compat", "kr");
 		request.addParameter("compat", "cc");
 		ShareRequestDetails details = new ShareRequestDetails(request);
 		assertFalse(details.requiresBreakRecurrence());
-		assertTrue(details.requiresNoRecurrence());
+		assertTrue(details.isKeepRecurrence());
 		assertTrue(details.requiresConvertClass());
 	}
 	

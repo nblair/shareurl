@@ -88,9 +88,10 @@ public interface CalendarDataProcessor {
 	 * @param original
 	 * @param period
 	 * @param preserveParticipants if false, ORGANIZER and ATTENDEE properties are not copied
+	 * @param setRecurrenceId if true, a RECURRENCE-ID property will be attached.
 	 * @return a copy of the event, less some properties
 	 */
-	VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants);
+	VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants, boolean setRecurrenceId);
 	
 	/**
 	 * Mutative method.

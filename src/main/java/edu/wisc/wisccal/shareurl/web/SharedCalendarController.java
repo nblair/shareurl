@@ -242,7 +242,7 @@ public class SharedCalendarController {
 			}
 
 			// - adjust recurrence if necessary
-			if(requestDetails.requiresNoRecurrence()) {
+			if(!requestDetails.isKeepRecurrence()) {
 				calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
 				ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 			} else if(requestDetails.requiresBreakRecurrence()) {

@@ -24,7 +24,7 @@ public class AccessClassificationMatchPreference extends AbstractSharePreference
 	private static final long serialVersionUID = -4168853507989696424L;
 	private final AccessClassification access;
 	public static final String CLASS_ATTRIBUTE = "CLASS_ATTRIBUTE";
-	protected static final String DISPLAY_NAME_PREFIX = "Access matches ";
+	protected static final String DISPLAY_NAME_PREFIX = "Privacy matches ";
 	/**
 	 * 
 	 * @param access
@@ -84,7 +84,6 @@ public class AccessClassificationMatchPreference extends AbstractSharePreference
 	@Override
 	public boolean matches(VEvent event) {
 		Validate.notNull(event, "VEvent argument must not be null");
-		// otherwise look at CLASS property (PUBLIC and CONFIDENTIAL)
 		Property p = event.getProperty(Clazz.CLASS);
 		if(p == null) {
 			// per RFC 2445, the default value for Classification is "PUBLIC"

@@ -1,6 +1,7 @@
 package edu.wisc.wisccal.shareurl.ical;
 
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 
 /**
  * Class to represnt the combination id for an event: UID and RECURRENCE-ID.
@@ -17,7 +18,10 @@ class EventCombinationId {
 	 */
 	protected EventCombinationId(VEvent event) {
 		this.uid = event.getUid().getValue();
-		this.recurrenceId = event.getRecurrenceId().getValue();
+		RecurrenceId recurrenceId = event.getRecurrenceId();
+		if(recurrenceId != null) {
+			this.recurrenceId = event.getRecurrenceId().getValue();
+		} 
 	}
 	/**
 	 * @return the uid

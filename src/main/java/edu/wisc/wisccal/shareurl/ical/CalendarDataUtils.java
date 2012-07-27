@@ -299,15 +299,23 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants) {
+	public VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants, boolean setRecurrenceId) {
 
 		VEvent copy = new VEvent();
 		copy.getProperties().add(new DtStart(period.getStart()));
 		copy.getProperties().add(new DtEnd(period.getEnd()));
-		copy.getProperties().add(new RecurrenceId(period.getStart()));
-		if(original.getUid() != null) {
+		if(setRecurrenceId) {
 			copy.getProperties().add(propertyCopy(original.getUid()));
+			copy.getProperties().add(new RecurrenceId(period.getStart()));
+		} else {
+			// UID must be unique!
+			StringBuilder uid = new StringBuilder();
+			uid.append(original.getUid().getValue());
+			uid.append(UW_SEPARATOR);
+			uid.append(period.getStart().toString());
+			copy.getProperties().add(new Uid(uid.toString()));
 		}
+		
 		if(original.getSummary() != null) {
 			copy.getProperties().add(propertyCopy(original.getSummary()));
 		}
@@ -330,6 +338,18 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			copy.getProperties().addAll(original.getProperties(Attendee.ATTENDEE));
 		}
 		return copy;
+	}
+	
+	/**
+	 * Copy the value of the UID property from the original (argument 2) to the "copy" (argument 1).
+	 * If the original didn't have a UID, make one.
+	 * @param copy
+	 * @param original
+	 */
+	protected void copyOrGenerateUid(VEvent copy, VEvent original) {
+		if(original.getUid() != null) {
+			copy.getProperties().add(propertyCopy(original.getUid()));
+		}
 	}
 
 	/**
@@ -453,7 +473,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
-						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants);
+						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, true);
 						recurrenceInstance.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
@@ -506,8 +526,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
-						//VEvent recurrenceInstance = CalendarDataUtils.constructRecurrenceInstance(event, period);
-						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants);
+						
+						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, false);
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
