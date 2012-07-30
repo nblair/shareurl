@@ -241,15 +241,13 @@ public class SharedCalendarController {
 				calendarDataProcessor.removeParticipants(agenda, account);
 			}
 
-			// don't fire any recurrence changes if uw-support-rdate is present
-			if(!sharePreferences.containsProblemRecurringPreference()) {
-				// - adjust recurrence if necessary
-				if(!requestDetails.isKeepRecurrence()) {
-					calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
-					ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
-				} else if(requestDetails.requiresBreakRecurrence()) {
-					calendarDataProcessor.breakRecurrence(agenda);
-				}
+			
+			// - adjust recurrence if necessary
+			if(!requestDetails.isKeepRecurrence()) {
+				calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
+				ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+			} else if(requestDetails.requiresBreakRecurrence()) {
+				calendarDataProcessor.breakRecurrence(agenda);
 			}
 
 			// - convert class if necessary
