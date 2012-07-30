@@ -241,12 +241,15 @@ public class SharedCalendarController {
 				calendarDataProcessor.removeParticipants(agenda, account);
 			}
 
-			// - adjust recurrence if necessary
-			if(!requestDetails.isKeepRecurrence()) {
-				calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
-				ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
-			} else if(requestDetails.requiresBreakRecurrence()) {
-				calendarDataProcessor.breakRecurrence(agenda);
+			// don't fire any recurrence changes if uw-support-rdate is present
+			if(!sharePreferences.containsProblemRecurringPreference()) {
+				// - adjust recurrence if necessary
+				if(!requestDetails.isKeepRecurrence()) {
+					calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
+					ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+				} else if(requestDetails.requiresBreakRecurrence()) {
+					calendarDataProcessor.breakRecurrence(agenda);
+				}
 			}
 
 			// - convert class if necessary
@@ -298,7 +301,7 @@ public class SharedCalendarController {
 				LOG.info(ShareRequestDetails.UW_SUPPORT_RDATE + " parameter detected, added " + pref + " to " + requestDetails);
 			}
 			agenda = eventFilter.filterEvents(agenda, preferences);
-			
+
 			if(LOG.isDebugEnabled()) {
 				List<String> eventUids = eventDebugIds(agenda);
 				LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
@@ -400,7 +403,7 @@ public class SharedCalendarController {
 
 		// - filter VEvents to those only with DTSTART within requestDetails start/end
 		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
-		
+
 		VEvent matchingEvent = null;
 		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
@@ -443,7 +446,7 @@ public class SharedCalendarController {
 		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 
-		
+
 		if(displayFormat.isMarkupLanguage()) {
 			Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
@@ -474,8 +477,8 @@ public class SharedCalendarController {
 				calendarDataProcessor.stripEventDetails(agenda);
 				model.put("ical", agenda.toString());
 			}
-			
-			
+
+
 		} 
 		// determine the view
 		String viewName;

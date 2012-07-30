@@ -29,6 +29,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreference;
+
 /**
  * Bean to represent the set of preferences associated with a {@link Share}.
  *  
@@ -95,10 +97,21 @@ public class SharePreferences implements Serializable {
 		}
 		return results;
 	}
+	/**
+	 * Never null, but potentially empty.
+	 * 
+	 * @return a copy of this instance's {@link Set} of {@link ISharePreference}s.
+	 */
 	public Set<ISharePreference> getPreferences() {
 		return new HashSet<ISharePreference>(preferences);
 	}
 	
+	/**
+	 * Never null, but potentially empty.
+	 * 
+	 * @param type
+	 * @return a set of {@link ISharePreference}s in this instance with the specified type
+	 */
 	public Set<ISharePreference> getPreferencesByType(String type) {
 		Set<ISharePreference> result = new HashSet<ISharePreference>();
 		for(ISharePreference p : this.preferences) {
@@ -133,12 +146,7 @@ public class SharePreferences implements Serializable {
 	 * @return
 	 */
 	public boolean isFreeBusyOnly() {
-		Set<ISharePreference> prefs = getPreferencesByType(FreeBusyPreference.FREE_BUSY);
-		if(prefs.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return containsAny(FreeBusyPreference.FREE_BUSY);
 	}
 	
 	/**
@@ -160,7 +168,22 @@ public class SharePreferences implements Serializable {
 	 * @return true if contains {@link GuessableSharePreference}
 	 */
 	public boolean isGuessable() {
-		Set<ISharePreference> prefs = getPreferencesByType(GuessableSharePreference.GUESSABLE);
+		return containsAny(GuessableSharePreference.GUESSABLE);
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean containsProblemRecurringPreference() {
+		return containsAny(ProblematicRecurringEventSharePreference.PROBLEM_RECURRENCE_SUPPORT);
+	}
+	/**
+	 * 
+	 * @param type
+	 * @return true if this instance contains any preferences with the specified preference type
+	 */
+	protected boolean containsAny(String type) {
+		Set<ISharePreference> prefs = getPreferencesByType(type);
 		return prefs.size() > 0;
 	}
 	/**
@@ -285,6 +308,10 @@ public class SharePreferences implements Serializable {
 		}
 	}
 	
+	/**
+	 * 
+	 * @author Nicholas Blair
+	 */
 	static class ContentFilterImpl implements ContentFilter {
 		private final ISharePreference preference;
 		private final List<String> matchValues = new ArrayList<String>();
