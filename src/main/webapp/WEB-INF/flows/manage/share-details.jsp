@@ -321,7 +321,7 @@ function postAndRenderPreferences(url, form) {
 <div id="examples" class="margin3 padding1">
 <p>This ShareURL can be viewed with the following link:</p>
 <div class="sharelink">
-<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span></a>
+<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30)?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span></a>
 </div>
 
 <p><label for="client">I want to view my ShareURL in </label>
