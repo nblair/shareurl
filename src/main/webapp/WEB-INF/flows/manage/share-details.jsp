@@ -253,7 +253,7 @@ function renderShareUrlExample() {
 			}
 		}
 	}
-	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#dateRange').text() + $('#queryParameters').text());
+	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#icsSuffix').text() + $('#queryParameters').text());
 };
 function refreshDetails(fadeIn) {
 	$.get('${shareDetails}',
