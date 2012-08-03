@@ -20,37 +20,10 @@
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <title>Share your WiscCal Calendar - Manage ShareURL</title>
-<rs:resourceURL var="feedIcon" value="/rs/famfamfam/silk/1.3/feed.png"/>
-<rs:resourceURL var="htmlIcon" value="/rs/famfamfam/silk/1.3/html.png"/>
-<rs:resourceURL var="icalIcon" value="/rs/famfamfam/silk/1.3/calendar.png"/>
-<rs:resourceURL var="fbIcon" value="/rs/famfamfam/silk/1.3/clock.png"/>
-<rs:resourceURL var="helpIcon" value="/rs/famfamfam/silk/1.3/arrow_right.png"/>
 <rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
 <style type="text/css">
-.key {
-color:green;
-}
-.large {
-font-size:120%;
-}
-.examples li {
-padding-bottom: 1em;
-}
-.examples li.rss {
-list-style-image: url(${feedIcon});
-}
-.examples li.html {
-list-style-image: url(${htmlIcon});
-}
-.examples li.ical {
-list-style-image: url(${icalIcon});
-}
-.examples li.fb {
-list-style-image: url(${fbIcon});
-}
-.examples li.help {
-list-style-image: url(${helpIcon});
-}
+.key { color:green;}
+.large { font-size:120%;}
 .margin3 { margin: 3px; }
 .padding1 { padding: 1em; }
 .padding2 { padding: 2em; }
