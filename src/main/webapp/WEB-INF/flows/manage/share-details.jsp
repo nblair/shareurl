@@ -334,7 +334,7 @@ function postAndRenderPreferences(url, form) {
 
 <p><label for="client">I want to view my ShareURL in </label>
 <select name="client" id="clientselect">
-<option value="native" selected="selected">a Desktop Client, like Outlook, Mozilla Thunderbird</option>
+<option value="native" selected="selected">Microsoft Outlook or Mozilla Thunderbird</option>
 <option value="native">Apple iCal prior to Mountain Lion (10.8)</option>
 <option value="applecalendar108">Apple Calendar on Mountain Lion (10.8)</option>
 <option value="google">Google Calendar</option>
