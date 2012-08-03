@@ -21,43 +21,28 @@
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <rs:resourceURL var="keyImg" value="/rs/famfamfam/silk/1.3/key.png"/>
 <style type="text/css">
-.key {
-color:green;
-}
-.large {
-font-size:120%;
-}
-li.share {
-list-style-image: url(${keyImg});
-padding-bottom: 1em;
-}
-li.share a:hover{
-text-decoration: underline;
-color:green;
-}
-.details {
-font-style:italic;
-}
-#footnotewarning {
-font-size:65%;
-margin: 0 3em 0 3em;
-}
+.key { color:green;}
+.large { font-size:120%;}
+li.share { list-style-image: url(${keyImg});padding-bottom: 1em;}
+li.share a:hover{ text-decoration: underline;color:green;}
+.details { font-style:italic;}
+#footnotewarning { font-size:65%;margin: 0 3em 0 3em;}
 </style>
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(function() {
-	$('#psubmit').lockSubmit();
-	$('#tsubmit').lockSubmit();
+	$("input[type=submit]").removeAttr("disabled");
+	
 	$('#createpublic').submit(function(event) {
 		event.preventDefault();
+		$('#psubmit').attr('disabled', 'disabled');
 		postCreatePublic();		
 	});
 	$('#createtraditional').submit(function(event) {
         event.preventDefault();
+        $('#tsubmit').attr('disabled', 'disabled');
         postCreateTraditional();     
     });
-	
-	refreshMyShares(false);
 });
 
 function refreshMyShares(fadeIn) {
@@ -134,8 +119,7 @@ function postCreateTraditional() {
                     alert('failed to create traditional share: ' + data.message);
                 }
                 setTimeout(function() {
-                    $('#tsubmit').lockSubmitReset();
-                    $('#tsubmit').lockSubmit();
+                    $('#tsubmit').removeAttr('disabled');
                 }, 30000);
             }, 'json');
 };
@@ -156,7 +140,7 @@ These are intended for the privacy-conscious that don't like to or cannot advert
 traditional ShareURLs with different options.</p>
 <form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
 <fieldset>
-<input id="tsubmit" type="submit" value="Create a new Traditional ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
+<input id="tsubmit" type="submit" value="Create a new Traditional ShareURL"/>
 </fieldset>
 </form>
 <hr/>
@@ -167,7 +151,7 @@ traditional ShareURLs with different options.</p>
 <div class="publicshareform">
 <form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
-<input id="psubmit" type="submit" value="Create my Public ShareURL"/>&nbsp;<span class="inprogressplaceholder"></span>
+<input id="psubmit" type="submit" value="Create my Public ShareURL"/>
 </fieldset>
 </form>
 </div>
