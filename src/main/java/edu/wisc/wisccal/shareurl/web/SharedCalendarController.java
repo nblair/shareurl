@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import net.fortuna.ical4j.model.Calendar;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.util.UrlPathHelper;
 
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -96,6 +98,14 @@ import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreferenc
  * [web application context root]/u/[SHAREID]/dr([days backward, days forward])?ical&asText
  * </pre>
  * "asText" only registers in conjunction with the presence of the "ical" request parameter.
+ * </p>
+ * <p>If you prefer to receive the data in JavaScript Object Notation format (JSON), simply add the request parameter "json":</p>
+ * <pre>
+ * [web application context root]/u/[SHAREID]?json
+ * [web application context root]/u/[SHAREID]/dr([days backward, days forward])?json
+ * </pre>
+ * <p>
+ * This will return the data (as is from the CalendarDao) converted to a simple JSON model with a MIME type of "application/json."
  * </p>
  * 
  * @see ShareRequestDetails
@@ -263,6 +273,12 @@ public class SharedCalendarController {
 	 */
 	@RequestMapping("/u/**")
 	public String getShareUrl(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
+		String requestPath = new UrlPathHelper().getPathWithinServletMapping(request);
+		boolean coerceIcal = false;
+		if(requestPath.endsWith(ICS)) {
+			request = new IcsSuffixRemover(request);
+			coerceIcal = true;
+		} 
 		final ShareRequestDetails requestDetails = new ShareRequestDetails(request);
 		model.put("requestDetails", requestDetails);
 
@@ -282,7 +298,9 @@ public class SharedCalendarController {
 				return "share-not-found";
 			}
 			response.setCharacterEncoding(UTF_8);	
-			ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
+			if(coerceIcal && !ShareDisplayFormat.ICAL_ASTEXT.equals(requestDetails.getDisplayFormat())) {
+				requestDetails.setDisplayFormat(ShareDisplayFormat.ICAL);
+			}
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(LOG.isDebugEnabled()) {
@@ -328,7 +346,7 @@ public class SharedCalendarController {
 
 			// determine the view
 			String viewName;
-			switch(displayFormat) {
+			switch(requestDetails.getDisplayFormat()) {
 			case HTML:
 				viewName = "data/display";
 				break;
@@ -493,7 +511,7 @@ public class SharedCalendarController {
 			HTTPHelper.addContentDispositionHeader(response, requestDetails.getShareKey() + ICS);
 			break;
 		case ICAL_ASTEXT:
-			viewName = "data/display-ical";
+			viewName = "data/display-ical-astext";
 			break;
 		case JSON:
 			viewName = "jsonView";
@@ -506,5 +524,19 @@ public class SharedCalendarController {
 		return viewName;
 	}
 
-
+	/**
+	 * {@link HttpServletRequestWrapper} that overrides {@link #getRequestURI()} to
+	 * strip ".ics" from the end, if present.
+	 * 
+	 * @author Nicholas Blair
+	 */
+	static final class IcsSuffixRemover extends HttpServletRequestWrapper {
+		public IcsSuffixRemover(HttpServletRequest request) {
+			super(request);
+		}
+		@Override
+		public String getRequestURI() {
+			return StringUtils.removeEnd(super.getRequestURI(), ICS);
+		}
+	}
 }

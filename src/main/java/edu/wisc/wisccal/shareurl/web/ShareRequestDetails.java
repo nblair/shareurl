@@ -110,7 +110,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 
 	private final PathData pathData;
 	private Client client;
-	private final ShareDisplayFormat displayFormat;
+	private ShareDisplayFormat displayFormat;
 	private boolean overrideBreakRecurrence = false;
 	private boolean overrideConvertClass = false;
 	private boolean keepRecurrence = false;
@@ -301,6 +301,13 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	public ShareDisplayFormat getDisplayFormat() {
 		return this.displayFormat;
+	}
+	/**
+	 * 
+	 * @param displayFormat
+	 */
+	public void setDisplayFormat(ShareDisplayFormat displayFormat) {
+		this.displayFormat = displayFormat;
 	}
 	public boolean isKeepRecurrence() {
 		return keepRecurrence;

@@ -199,18 +199,26 @@ function renderShareUrlExample() {
 	var c = $("#clientselect option:selected").val();
 	if('native' == c || 'google' == c) {
 		$('#queryParameters').text('').fadeOut();
+		$('#icsSuffix').text('').fadeOut();
 		$('#queryParameters').text('?ical').fadeIn();
 	} else if ('browser' == c) {
 		$('#queryParameters').text('').fadeOut();
+		$('#icsSuffix').text('').fadeOut();
 	} else if ('news' == c) {
 		$('#queryParameters').text('').fadeOut();
+		$('#icsSuffix').text('').fadeOut();
 		$('#queryParameters').text('?rss').fadeIn();
 	} else if ('json' == c) {
 		$('#queryParameters').text('').fadeOut();
+		$('#icsSuffix').text('').fadeOut();
 		$('#queryParameters').text('?json').fadeIn();
 	} else if ('ics' == c) {
 		$('#queryParameters').text('').fadeOut();
+		$('#icsSuffix').text('').fadeOut();
 		$('#queryParameters').text('?ical').fadeIn();
+	} else if ('applecalendar108' == c) {
+		$('#queryParameters').text('').fadeOut();
+		$('#icsSuffix').text('.ics').fadeIn();
 	}
 	var datex = $('#datex').val();
 	var datey = $('#datey').val();
@@ -245,7 +253,7 @@ function renderShareUrlExample() {
 			}
 		}
 	}
-	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#queryParameters').text());
+	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#dateRange').text() + $('#queryParameters').text());
 };
 function refreshDetails(fadeIn) {
 	$.get('${shareDetails}',
@@ -321,12 +329,14 @@ function postAndRenderPreferences(url, form) {
 <div id="examples" class="margin3 padding1">
 <p>This ShareURL can be viewed with the following link:</p>
 <div class="sharelink">
-<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30)?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="queryParameters">?ical</span></span></a>
+<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30)?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="icsSuffix"></span><span id="queryParameters">?ical</span></span></a>
 </div>
 
 <p><label for="client">I want to view my ShareURL in </label>
 <select name="client" id="clientselect">
-<option value="native" selected="selected">a Desktop Client, like Outlook, Mozilla Thunderbird or Apple iCal</option>
+<option value="native" selected="selected">a Desktop Client, like Outlook, Mozilla Thunderbird</option>
+<option value="native">Apple iCal prior to Mountain Lion (10.8)</option>
+<option value="applecalendar108">Apple Calendar on Mountain Lion (10.8)</option>
 <option value="google">Google Calendar</option>
 <option value="browser">a Web Browser, like Firefox, Chrome, or Internet Explorer</option>
 <option value="ics">an ICS (iCalendar) file</option>
@@ -338,7 +348,7 @@ function postAndRenderPreferences(url, form) {
 <p><label for="x">I would like to see data from </label><input id="x" type="number" name="x" value="14" min="-999" max="999"/> days <select id="negatex"><option value="negate" selected="selected">back</option><option value="">forward</option></select> <label for="y">through </label><input id="y" type="number" name="y" value="30"  min="-999" max="999"/> days forward.</p>
 <p>OR, <label for="datex">I would like to see data from specifically </label><input id="datex" type="text" name="datex"/><label for="datey"> through </label><input id="datey" type="text" name="datey"/></p>
 
-<p>I am a developer and I would like to see <a title="View ShareURL Options (Opens new window)" target="_new_help" href="http://kb.wisc.edu/wisccal/page.php?id=13322">all available options for ShareURLs&raquo;</a></p>
+<p>I would like to see <a title="View ShareURL Options (Opens new window)" target="_new_help" href="http://kb.wisc.edu/wisccal/page.php?id=13322">all available options for ShareURLs&raquo;</a>, including options for web developers.</p>
 
 </div>
 
