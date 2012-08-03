@@ -136,6 +136,22 @@ public class ShareRequestDetailsTest {
 		assertEquals(ShareDisplayFormat.ICAL, details.getDisplayFormat());
 	}
 	
+	@Test
+	public void testRequestConstructoriCal10_8() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/123456789/dr(-10,140)");
+		request.addParameter("ical", "");
+		request.addHeader("User-Agent", "Mac OS X/10.8 (12A269) Calendar/1639");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		Date [] expectedDates = createExpectedDates(-10, 140);
+		assertEquals(expectedDates[0], details.getStartDate());
+		assertEquals(expectedDates[1], details.getEndDate());
+		assertEquals("dr(-10,140)", details.getDatePhrase());
+		assertNull(details.getEventId());
+		assertEquals("123456789", details.getShareKey());
+		assertFalse(details.requiresBreakRecurrence());
+		assertFalse(details.requiresConvertClass());
+		assertEquals(ShareDisplayFormat.ICAL, details.getDisplayFormat());
+	}
 	
 	/**
 	 * pass "/" into constructor, expect defaults for dates and null for event and share ids.
