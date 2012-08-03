@@ -44,20 +44,8 @@
         <url-pattern>/manage</url-pattern>
         <!-- old generate webflow -->
         <url-pattern>/generate</url-pattern>
+        <!-- parent path for shareurl management REST API -->
 		<url-pattern>/rest/*</url-pattern>
-	
-	    <!--  
-		<url-pattern>/shareDetails</url-pattern>
-		<url-pattern>/toac</url-pattern>
-		<url-pattern>/tofb</url-pattern>
-		<url-pattern>/includeP</url-pattern>
-		<url-pattern>/excludeP</url-pattern>
-		<url-pattern>/addPrivacyFilter</url-pattern>
-		<url-pattern>/addContentFilter</url-pattern>
-		<url-pattern>/resetFilters</url-pattern>
-		<url-pattern>/create-public</url-pattern>
-		-->
-		
 		<!-- login controllers -->
 		<url-pattern>/security_check</url-pattern>
 		<url-pattern>/mailplus_security_check</url-pattern>
