@@ -214,12 +214,8 @@ function renderShareUrlExample() {
 		$('#queryParameters').text('?json').fadeIn();
 	} else if ('ics' == c) {
 		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('').fadeOut();
-		$('#queryParameters').text('?ical').fadeIn();
-	} else if ('applecalendar108' == c) {
-		$('#queryParameters').text('').fadeOut();
 		$('#icsSuffix').text('.ics').fadeIn();
-	}
+	} 
 	var datex = $('#datex').val();
 	var datey = $('#datey').val();
 	if(datex != '' && datey != '') {
@@ -334,13 +330,11 @@ function postAndRenderPreferences(url, form) {
 
 <p><label for="client">I want to view my ShareURL in </label>
 <select name="client" id="clientselect">
-<option value="native" selected="selected">Microsoft Outlook or Mozilla Thunderbird</option>
-<option value="native">Apple iCal prior to Mountain Lion (10.8)</option>
-<option value="applecalendar108">Apple Calendar on Mountain Lion (10.8)</option>
-<option value="google">Google Calendar</option>
+<option value="native" selected="selected">Microsoft Outlook, Mozilla Thunderbird, or Apple iCal</option>
 <option value="browser">a Web Browser, like Firefox, Chrome, or Internet Explorer</option>
+<option value="google">Google Calendar</option>
 <option value="ics">an ICS (iCalendar) file</option>
-<option value="news">a News Reader</option>
+<option value="news">a News (RSS) Reader</option>
 <option value="json">Javascript Object Notation (JSON)</option>
 </select>
 </p>
