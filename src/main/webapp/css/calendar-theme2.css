@@ -8,4 +8,4 @@ img {border: 0;}
 .navrow1{padding-left:1em;}
 .weak{color:#777;font-style:italic;}
 .navrow2{padding-left:4em;}
-.sharedaterange{max-width:240px;text-align:center;word-spacing:0.75em;}
+.sharedaterange{max-width:240px;text-align:center;word-spacing:0.75em;background-color: #DDD; color: #000}
