@@ -19,7 +19,8 @@
 <rs:resourceURL var="noteIcon" value="/rs/famfamfam/silk/1.3/note.png"/>
 <rs:resourceURL var="flagIcon" value="/rs/famfamfam/silk/1.3/flag_blue.png"/>
 <rs:resourceURL var="taskIcon" value="/rs/famfamfam/silk/1.3/table_edit.png"/>
-
+<rs:resourceURL var="nextIcon" value="/rs/famfamfam/silk/1.3/resultset_next.png"/>
+<rs:resourceURL var="prevIcon" value="/rs/famfamfam/silk/1.3/resultset_previous.png"/>
 <!DOCTYPE html>
 <html>
 <head>
@@ -47,9 +48,8 @@
 <title>${title}</title>
 <link rel="alternate" title="${title}" href="${rssFeed}" type="application/rss+xml" />
 <style type="text/css">
-.cancel {
-text-decoration: line-through;
-}
+.cancel {text-decoration: line-through;}
+.white {color: #fff !important;}
 </style>
 </head>
 <body>
@@ -58,13 +58,16 @@ text-decoration: line-through;
 <div class="navrow1 sharedaterange">
 <c:choose>
 <c:when test="${requestDetails.numberDaysDisplayed > 0 }">
-<span>${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
+<span class="nowshowing">${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
 </c:when>
 <c:otherwise>
-<span>${startDateFormatted}</span>
+<a href="<c:url value="/u/${shareId}/${requestDetails.prevDatePhrase}"/>" title="previous day"><img src="${prevIcon}" alt="previous day"/></a>
+&nbsp;<span class="nowshowing">${startDateFormatted}</span>&nbsp;
+<a href="<c:url value="/u/${shareId}/${requestDetails.nextDatePhrase}"/>" title="next day"><img src="${nextIcon}" alt="next day"/></a>
 </c:otherwise>
 </c:choose>
 <a href="${rssFeed}" title="RSS Feed for this calendar"><img src="<c:url value="/img/feed_icon_16x16.gif"/>"/></a>
+<hr/>
 </div>
 </div>
 <div id="calendarEvents">

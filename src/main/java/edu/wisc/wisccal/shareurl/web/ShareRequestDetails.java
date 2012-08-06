@@ -394,6 +394,20 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		return this.pathData.getDatePhrase();
 	}
 	/**
+	 * 
+	 * @return
+	 */
+	public String getNextDatePhrase() {
+		return constructDatePhrase(pathData.getStartDateIndex() + 1, pathData.getEndDateIndex() + 1);
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public String getPrevDatePhrase() {
+		return constructDatePhrase(pathData.getStartDateIndex() - 1, pathData.getEndDateIndex() - 1);
+	}
+	/**
 	 * @return the canonical
 	 */
 	public boolean isCanonical() {
@@ -775,20 +789,21 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		// roll end forward specified days
 		end.add(Calendar.DATE, endDays);
 
-		// build valid date phrase from start and end
+		// overwrite datePhrase
+		pathData.setDatePhrase(constructDatePhrase(startDays, endDays));
+		pathData.setStartDate(start.getTime());
+		pathData.setEndDate(end.getTime());
+	}
+
+	static String constructDatePhrase(int startDays, int endDays) {
 		StringBuilder datePhraseBuilder = new StringBuilder();
 		datePhraseBuilder.append("dr(");
 		datePhraseBuilder.append(startDays);
 		datePhraseBuilder.append(",");
 		datePhraseBuilder.append(endDays);
 		datePhraseBuilder.append(")");
-
-		// overwrite datePhrase
-		pathData.setDatePhrase(datePhraseBuilder.toString());
-		pathData.setStartDate(start.getTime());
-		pathData.setEndDate(end.getTime());
+		return datePhraseBuilder.toString();
 	}
-
 	/**
 	 * 
 	 *
