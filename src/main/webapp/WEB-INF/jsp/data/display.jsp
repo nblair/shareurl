@@ -19,6 +19,7 @@
 <rs:resourceURL var="noteIcon" value="/rs/famfamfam/silk/1.3/note.png"/>
 <rs:resourceURL var="flagIcon" value="/rs/famfamfam/silk/1.3/flag_blue.png"/>
 <rs:resourceURL var="taskIcon" value="/rs/famfamfam/silk/1.3/table_edit.png"/>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -29,20 +30,22 @@
 <fmt:formatDate value="${endDate}" type="time" pattern="MM/dd/yyyy" var="endDateFormatted"/>
 <c:choose>
 <c:when test="${requestDetails.numberDaysDisplayed > 0 }">
-<title>Agenda for ${startDateFormatted} - ${endDateFormatted}</title>
+<c:set var="title" value="Agenda for ${startDateFormatted} - ${endDateFormatted}"/>
 </c:when>
 <c:otherwise>
-<title>Agenda for ${startDateFormatted}</title>
+<c:set var="title" value="Agenda for ${startDateFormatted}"/>
 </c:otherwise>
 </c:choose>
 <c:choose>
 <c:when test="${requestDetails.canonical}">
-<link rel="alternate" title="Shared Calendar" href="<c:url value="/u/${shareId}?rss&${requestDetails.canonicalStartEndEncoded}"/>" type="application/rss+xml" />
+<c:url value="/u/${shareId}?rss&${requestDetails.canonicalStartEndEncoded}" var="rssFeed"/>
 </c:when>
 <c:otherwise>
-<link rel="alternate" title="Shared Calendar" href="<c:url value="/u/${shareId}/${datePhrase}?rss"/>" type="application/rss+xml" />
+<c:url value="/u/${shareId}/${datePhrase}?rss" var="rssFeed"/>
 </c:otherwise>
 </c:choose>
+<title>${title}</title>
+<link rel="alternate" title="${title}" href="${rssFeed}" type="application/rss+xml" />
 <style type="text/css">
 .cancel {
 text-decoration: line-through;
@@ -55,12 +58,13 @@ text-decoration: line-through;
 <div class="navrow1 sharedaterange">
 <c:choose>
 <c:when test="${requestDetails.numberDaysDisplayed > 0 }">
-${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}
+<span>${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
 </c:when>
 <c:otherwise>
-${startDateFormatted}
+<span>${startDateFormatted}</span>
 </c:otherwise>
 </c:choose>
+<a href="${rssFeed}" title="RSS Feed for this calendar"><img src="<c:url value="/img/feed_icon_16x16.gif"/>"/></a>
 </div>
 </div>
 <div id="calendarEvents">

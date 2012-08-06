@@ -14,8 +14,8 @@
   limitations under the License.
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="<c:url value="/css/calendar-theme2.css"/>" media="all"/>
@@ -32,6 +32,11 @@
 <a href="<c:url value="/u/${requestDetails.shareKey}"/>" title="View Today's Schedule">View Today's Schedule</a>
 </c:otherwise>
 </c:choose>
+<rs:resourceURL var="calendarIcon" value="/rs/famfamfam/silk/1.3/calendar.png"/>
+<c:url value="?${requestScope['javax.servlet.forward.query_string']}" var="ics">
+<c:param name="ical"/>
+</c:url>
+&nbsp;<a href="${ics}" title="Download as iCalendar (ICS)">Download ICS&nbsp;<img src="${calendarIcon}"/></a>
 </div> <!-- close eventNav -->
 <div class="event">
 <p>
