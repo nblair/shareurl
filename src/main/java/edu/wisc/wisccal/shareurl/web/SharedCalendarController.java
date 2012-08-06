@@ -51,6 +51,7 @@ import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor;
+import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
 import edu.wisc.wisccal.shareurl.ical.IEventFilter;
 import edu.wisc.wisccal.shareurl.ical.VEventComparator;
 import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreference;
@@ -114,6 +115,8 @@ import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreferenc
  */
 @Controller
 public class SharedCalendarController {
+
+	private static final String JSON_VIEW = "jsonView";
 
 	private static final String JSON_CONTENT_TYPE = "application/json";
 
@@ -211,7 +214,7 @@ public class SharedCalendarController {
 	 * @param account
 	 * @param model
 	 */
-	protected void prepareModel(SharePreferences sharePreferences, ShareRequestDetails requestDetails, 
+	protected boolean prepareModel(SharePreferences sharePreferences, ShareRequestDetails requestDetails, 
 			Calendar agenda, ICalendarAccount account, ModelMap model) {
 		final ShareDisplayFormat display = requestDetails.getDisplayFormat();
 
@@ -228,30 +231,60 @@ public class SharedCalendarController {
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 
-			ComponentList components = agenda.getComponents(VEvent.VEVENT);
-			@SuppressWarnings("unchecked")
-			List<VEvent> allEvents = new ArrayList<VEvent>(components);
-
-			Collections.sort(allEvents, new VEventComparator());
-
-			if(ShareDisplayFormat.JSON.equals(display)) {
-				model.put("calendar", calendarDataProcessor.simplify(agenda, sharePreferences.isIncludeParticipants()));
+			if(null != requestDetails.getEventId()) {
+				VEvent matchingEvent = findMatchingEvent(agenda, requestDetails);
+				if(matchingEvent != null) {
+					if(null != matchingEvent.getDescription()) {
+						String descriptionValue = matchingEvent.getDescription().getValue();
+						String [] descriptionSections = descriptionValue.split("\n");
+						model.put("descriptionSections", descriptionSections);
+					}
+					if(ShareDisplayFormat.JSON.equals(display)) {
+						model.put("calendar", calendarDataProcessor.simplify(CalendarDataUtils.wrapEvent(matchingEvent), sharePreferences.isIncludeParticipants()));
+					} else {
+						model.put("event", matchingEvent);
+					}
+				} else {
+					// signal 404
+					return false;
+				}
+				
 			} else {
-				model.put("empty", components.size() == 0);
-				model.put("allEvents", allEvents);
-				model.put("startDate", requestDetails.getStartDate());
-				model.put("endDate", requestDetails.getEndDate());
-				model.put("shareId", requestDetails.getShareKey());
-				model.put("datePhrase", requestDetails.getDatePhrase());	
+				ComponentList components = agenda.getComponents(VEvent.VEVENT);
+				@SuppressWarnings("unchecked")
+				List<VEvent> allEvents = new ArrayList<VEvent>(components);
+
+				Collections.sort(allEvents, new VEventComparator());
+
+				if(ShareDisplayFormat.JSON.equals(display)) {
+					model.put("calendar", calendarDataProcessor.simplify(agenda, sharePreferences.isIncludeParticipants()));
+				} else {
+					model.put("empty", components.size() == 0);
+					model.put("allEvents", allEvents);
+					model.put("startDate", requestDetails.getStartDate());
+					model.put("endDate", requestDetails.getEndDate());
+					model.put("shareId", requestDetails.getShareKey());
+					model.put("datePhrase", requestDetails.getDatePhrase());	
+				}
 			}
 		} else {
+			if(null != requestDetails.getEventId()) {
+				calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
+				// targeting a specific event
+				// set agenda to point to a single event
+				VEvent matchingEvent = findMatchingEvent(agenda, requestDetails);
+				if(matchingEvent == null) {
+					return false;
+				} else {
+					agenda = CalendarDataUtils.wrapEvent(matchingEvent);
+				}
+			}
+			
 			// we are targeting iCalendar format
 			// - remove participants if necessary
 			if(!sharePreferences.isIncludeParticipants()) {
 				calendarDataProcessor.removeParticipants(agenda, account);
 			}
-
-			
 			// - adjust recurrence if necessary
 			if(!requestDetails.isKeepRecurrence()) {
 				calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
@@ -267,6 +300,25 @@ public class SharedCalendarController {
 
 			model.put("ical", agenda.toString());
 		}
+		return true;
+	}
+	/**
+	 * 
+	 * @param calendar
+	 * @param requestDetails
+	 * @return
+	 */
+	protected VEvent findMatchingEvent(Calendar calendar, ShareRequestDetails requestDetails) {
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent current = (VEvent) component;
+				if(eventMatchesRequestedEventId(current, requestDetails)) {
+					return current;
+				}
+			}
+		}
+		return null;
 	}
 	/**
 	 * Request handler.
@@ -280,6 +332,10 @@ public class SharedCalendarController {
 			coerceIcal = true;
 		} 
 		final ShareRequestDetails requestDetails = new ShareRequestDetails(request);
+		if(requestDetails.getEventId() == null) {
+			// store non single event requestDetails in the session to track the "last" so we can render a "return" link
+			request.getSession().setAttribute("lastNonSingleEventRequestDetails", requestDetails);
+		}
 		model.put("requestDetails", requestDetails);
 
 		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
@@ -330,7 +386,7 @@ public class SharedCalendarController {
 				return handleFreeBusyShare(agenda, requestDetails, response, model);
 			}
 
-			prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
+			boolean success = prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
 			if(LOG.isDebugEnabled()) {
 				List<String> eventUids = eventDebugIds(agenda);
 				LOG.debug("post prepareModel " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
@@ -338,35 +394,16 @@ public class SharedCalendarController {
 			if(LOG.isTraceEnabled()) {
 				LOG.trace("post prepareModel " + requestDetails + "; " + account + " has raw agenda " + agenda);
 			}
-
-			// short-circuit if a single event can be found.
-			if(null != requestDetails.getEventId()) {
-				return handleSingleEvent(agenda, requestDetails, model, response);
+			if(!success) {
+				response.setStatus(404);
+				return "event-not-found";
 			}
-
 			// determine the view
-			String viewName;
-			switch(requestDetails.getDisplayFormat()) {
-			case HTML:
-				viewName = "data/display";
-				break;
-			case ICAL:
-				viewName = "data/display-ical";
-				HTTPHelper.addContentDispositionHeader(response, requestDetails.getShareKey() + ICS);
-				break;
-			case ICAL_ASTEXT:
-				viewName = "data/display-ical-astext";
-				break;
-			case RSS:
-				viewName = "data/display-rss";
-				break;
-			case JSON:
-				response.setContentType(JSON_CONTENT_TYPE);
-				viewName = "jsonView";
-				break;
-			default:
-				viewName = "data/display";
-				break;
+			String viewName = pickEventDetailViewName(requestDetails, response);
+			if(JSON_VIEW.equals(viewName)) {
+				// drop requestDetails and descriptionSections from JSON model
+				model.remove("requestDetails");
+				model.remove("descriptionSections");
 			}
 			return viewName;
 		} else {
@@ -410,16 +447,14 @@ public class SharedCalendarController {
 	/**
 	 * 
 	 * @param agenda
-	 * @param details
+	 * @param account
+	 * @param share
+	 * @param requestDetails
+	 * @param model
+	 * @param response
 	 * @return
 	 */
-	protected String handleSingleEvent(final Calendar agenda, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
-		// - expandrecurrence first priority, want VEVENTs for each recurrence instance
-		calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
-
-		// - filter VEvents to those only with DTSTART within requestDetails start/end
-		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
-
+	protected String handleSingleEvent(final Calendar agenda, final ICalendarAccount account, final Share share, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
 		VEvent matchingEvent = null;
 		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
@@ -433,19 +468,89 @@ public class SharedCalendarController {
 		}
 
 		if(null != matchingEvent) {
-			if(null != matchingEvent.getDescription()) {
-				String descriptionValue = matchingEvent.getDescription().getValue();
-				String [] descriptionSections = descriptionValue.split("\n");
-				model.put("descriptionSections", descriptionSections);
+			if(requestDetails.getDisplayFormat().isMarkupLanguage()) {
+				if(null != matchingEvent.getDescription()) {
+					String descriptionValue = matchingEvent.getDescription().getValue();
+					String [] descriptionSections = descriptionValue.split("\n");
+					model.put("descriptionSections", descriptionSections);
+				}
+				model.put("shareId", requestDetails.getShareKey());
+				model.put("datePhrase", requestDetails.getDatePhrase());
+				model.put("event", matchingEvent);
+				return "data/single-event";
+			} else {
+				Calendar singleEventCalendar = CalendarDataUtils.wrapEvent(matchingEvent);
+				if(!share.getSharePreferences().isIncludeParticipants()) {
+					calendarDataProcessor.removeParticipants(singleEventCalendar, account);
+				}
+				model.put("ical", singleEventCalendar.toString());
+				return pickEventDetailViewName(requestDetails, response);
 			}
-			model.put("shareId", requestDetails.getShareKey());
-			model.put("datePhrase", requestDetails.getDatePhrase());
-			model.put("event", matchingEvent);
-			return "data/single-event";
 		} else {
 			response.setStatus(404);
 			return "event-not-found";
 		}
+	}
+
+	/**
+	 * 
+	 * @param requestDetails
+	 * @param response
+	 * @return
+	 */
+	protected String pickEventDetailViewName(ShareRequestDetails requestDetails, HttpServletResponse response) {
+		String viewName;
+		switch(requestDetails.getDisplayFormat()) {
+		case HTML:
+			if(StringUtils.isNotBlank(requestDetails.getEventId())) {
+				viewName = "data/single-event";
+			} else {
+				viewName = "data/display";
+			}
+			break;
+		case ICAL:
+			viewName = "data/display-ical";
+			addContentDispositionHeader(response, requestDetails);
+			break;
+		case ICAL_ASTEXT:
+			viewName = "data/display-ical-astext";
+			break;
+		case RSS:
+			viewName = "data/display-rss";
+			break;
+		case JSON:
+			response.setContentType(JSON_CONTENT_TYPE);
+			viewName = JSON_VIEW;
+			break;
+		default:
+			if(StringUtils.isNotBlank(requestDetails.getEventId())) {
+				viewName = "data/single-event";
+			} else {
+				viewName = "data/display";
+			}
+			break;
+		}
+		return viewName;
+	}
+	
+	/**
+	 * 
+	 * @param response
+	 * @param requestDetails
+	 */
+	protected void addContentDispositionHeader(HttpServletResponse response, ShareRequestDetails requestDetails) {
+		StringBuilder filename = new StringBuilder();
+		filename.append(requestDetails.getShareKey());
+		if(StringUtils.isNotBlank(requestDetails.getEventId())) {
+			filename.append("_");
+			filename.append(requestDetails.getEventId());
+		}
+		if(StringUtils.isNotBlank(requestDetails.getRecurrenceId())) {
+			filename.append("_");
+			filename.append(requestDetails.getRecurrenceId());
+		}
+		filename.append(ICS);
+		HTTPHelper.addContentDispositionHeader(response, filename.toString());
 	}
 	/**
 	 * 
@@ -461,7 +566,6 @@ public class SharedCalendarController {
 
 		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
-
 
 		if(displayFormat.isMarkupLanguage()) {
 			Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
@@ -493,8 +597,6 @@ public class SharedCalendarController {
 				calendarDataProcessor.stripEventDetails(agenda);
 				model.put("ical", agenda.toString());
 			}
-
-
 		} 
 		// determine the view
 		String viewName;
@@ -514,7 +616,7 @@ public class SharedCalendarController {
 			viewName = "data/display-ical-astext";
 			break;
 		case JSON:
-			viewName = "jsonView";
+			viewName = JSON_VIEW;
 			response.setContentType(JSON_CONTENT_TYPE);
 			break;
 		default:

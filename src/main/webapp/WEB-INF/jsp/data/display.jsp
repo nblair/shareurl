@@ -19,8 +19,8 @@
 <rs:resourceURL var="noteIcon" value="/rs/famfamfam/silk/1.3/note.png"/>
 <rs:resourceURL var="flagIcon" value="/rs/famfamfam/silk/1.3/flag_blue.png"/>
 <rs:resourceURL var="taskIcon" value="/rs/famfamfam/silk/1.3/table_edit.png"/>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="viewport" content="width=device-width" /> 
@@ -35,7 +35,14 @@
 <title>Agenda for ${startDateFormatted}</title>
 </c:otherwise>
 </c:choose>
+<c:choose>
+<c:when test="${requestDetails.canonical}">
+<link rel="alternate" title="Shared Calendar" href="<c:url value="/u/${shareId}?rss&${requestDetails.canonicalStartEndEncoded}"/>" type="application/rss+xml" />
+</c:when>
+<c:otherwise>
 <link rel="alternate" title="Shared Calendar" href="<c:url value="/u/${shareId}/${datePhrase}?rss"/>" type="application/rss+xml" />
+</c:otherwise>
+</c:choose>
 <style type="text/css">
 .cancel {
 text-decoration: line-through;
@@ -86,12 +93,14 @@ ${startDateFormatted}
 	</c:otherwise>
 	</c:choose>
 	<br/>
+	<fmt:formatDate value="${event.startDate.date}" type="time" pattern="yyyy-MM-dd" var="startParam"/>
+	<fmt:formatDate value="${event.endDate.date}" type="time" pattern="yyyy-MM-dd" var="endParam"/>
 	<c:choose>
 	<c:when test="${empty event.recurrenceId}">
-	<a title="event details" href="<c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}"/>"><span class="summary">${event.summary.value}</span></a>
+	<a title="event details" href="<c:url value="/u/${shareId}/${event.uid.value}?start=${startParam}&end=${endParam}"/>"><span class="summary">${event.summary.value}</span></a>
 	</c:when>
 	<c:otherwise>
-	<a title="event details" href="<c:url value="/u/${shareId}/${datePhrase}/${event.uid.value}/${event.recurrenceId.value}"/>"><span class="summary">${event.summary.value}</span></a>
+	<a title="event details" href="<c:url value="/u/${shareId}/${event.uid.value}/${event.recurrenceId.value}?start=${startParam}&end=${endParam}"/>"><span class="summary">${event.summary.value}</span></a>
 	</c:otherwise>
 	</c:choose>
 	

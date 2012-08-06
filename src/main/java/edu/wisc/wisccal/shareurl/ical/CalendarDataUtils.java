@@ -41,6 +41,9 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyFactory;
 import net.fortuna.ical4j.model.PropertyFactoryImpl;
 import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.TimeZone;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.parameter.Cn;
@@ -470,7 +473,6 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				VEvent event = (VEvent) component;
 				if(CalendarDataUtils.isEventRecurring(event)) {
 					PeriodList recurringPeriods = calculateRecurrence(event, start, end);
-
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, true);
@@ -478,7 +480,6 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 					}
-
 					// remove the "parent" event" now that we have individual recurrence instances
 					if(!recurringPeriods.isEmpty()) {
 						i.remove();
@@ -488,8 +489,6 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 					eventMap.put(comboId, event);
 					i.remove();
 				}
-
-
 			}
 		}
 
@@ -503,7 +502,6 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				}
 			});
 		}
-
 	}
 
 	/*
@@ -523,16 +521,13 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				VEvent event = (VEvent) component;
 				if(CalendarDataUtils.isEventRecurring(event)) {
 					PeriodList recurringPeriods = calculateRecurrence(event, start, end);
-
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
-						
 						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, false);
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
 					}
-
 					// remove the "parent" event" now that we have individual recurrence instances
 					if(!recurringPeriods.isEmpty()) {
 						i.remove();
@@ -836,6 +831,33 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 
 		return cal.getTime();
+	}
+	
+	/**
+	 * 
+	 * @param event
+	 * @return
+	 */
+	public static Calendar wrapEvent(VEvent event) {
+		ComponentList components = new ComponentList();
+		DtStart dtstart = event.getStartDate();
+		Parameter tzid = dtstart.getParameter(TzId.TZID);
+		if(tzid != null) {
+			// make sure we add the right timezone to the calendar
+			TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+			TimeZone timeZone = registry.getTimeZone(tzid.getValue());
+			if(timeZone != null) {
+				components.add(timeZone.getVTimeZone());
+			} else {
+				LOG.warn("could not find TimeZone with id " + tzid.getValue() + " on " + staticGetDebugId(event));
+			}
+		}
+		
+		components.add(event);
+		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
+		result.getProperties().add(Version.VERSION_2_0);
+		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
+		return result;
 	}
 
 	/**

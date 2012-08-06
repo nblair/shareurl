@@ -44,6 +44,10 @@ import edu.wisc.wisccal.shareurl.domain.Share;
  */
 public final class ShareRequestDetails implements IShareRequestDetails {
 
+	private static final String URL_PATH_SEPARATOR = "/";
+	private static final String QUESTION = "?";
+	private static final String EQ = "=";
+	private static final String AMP = "&";
 	private static final String VFB = "vfb";
 	public static final String START = "start";
 	public static final String END = "end";
@@ -118,6 +122,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	private boolean attendeeOnly = false;
 	private boolean personalOnly = false;
 	private boolean requiresProblemRecurringPreference = false;
+	private boolean canonical = false;
 
 	/**
 	 * 
@@ -125,7 +130,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	public ShareRequestDetails(final HttpServletRequest request) {
 		String requestPath = new UrlPathHelper().getPathWithinServletMapping(request);
-		if(requestPath.startsWith("/")) {
+		if(requestPath.startsWith(URL_PATH_SEPARATOR)) {
 			requestPath = requestPath.substring(1, requestPath.length());
 		}
 		requestPath = requestPath.trim();
@@ -146,13 +151,14 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 						this.pathData.setEndDate(CommonDateOperations.endOfDay(startDate));
 					} else {
 						Date endDate = safeParse(possibleFormat.getSimpleDateFormat(), endValue);
-						if(endDate != null) {
+						if(endDate != null && endDate.after(startDate)) {
 							this.pathData.setEndDate(CommonDateOperations.endOfDay(endDate));
 						} else {
 							this.pathData.setEndDate(CommonDateOperations.endOfDay(startDate));
 						}
 					}
-					
+
+					canonical = true;
 				}
 			}
 		}
@@ -255,7 +261,99 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		this.requiresProblemRecurringPreference = requiresProblemRecurringPreference;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public String getUrlSegment() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(getShareKey());
+		if(null != getDatePhrase() && !DEFAULT_DATE_PHRASE.equals(getDatePhrase())) {
+			builder.append(URL_PATH_SEPARATOR);
+			builder.append(getDatePhrase());
+		}
+		if(null != getEventId()) {
+			builder.append(URL_PATH_SEPARATOR);
+			builder.append(getEventId());
+			if(null != getRecurrenceId()) {
+				builder.append(URL_PATH_SEPARATOR);
+				builder.append(getRecurrenceId());
+			}
+		}
 
+		String queryParams = getUrlQueryParameters();
+		if(StringUtils.isNotBlank(queryParams)) {
+			builder.append(QUESTION);
+			builder.append(queryParams);
+		}
+		return builder.toString();
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public String getUrlQueryParameters() {
+		StringBuilder builder = new StringBuilder();
+		if(isCanonical()) {
+			appendCheckForAmpersand(builder, START + EQ + DateFormat.PATTERN_1.getSimpleDateFormat().format(getStartDate()));
+			appendCheckForAmpersand(builder, END + EQ + DateFormat.PATTERN_1.getSimpleDateFormat().format(getEndDate()));
+		}
+
+		switch(getDisplayFormat()) {
+		case ICAL:
+			appendCheckForAmpersand(builder, ICAL);
+			break;
+		case ICAL_ASTEXT:
+			appendCheckForAmpersand(builder, ICAL + AMP + ASTEXT);
+			break;
+		case JSON:
+			appendCheckForAmpersand(builder, JSON);
+			break;
+		case RSS:
+			appendCheckForAmpersand(builder, RSS);
+			break;
+		case VFB_LEGACY:
+			appendCheckForAmpersand(builder, VFB);
+			break;
+		}
+
+		if(isAttendeeOnly()) {
+			appendCheckForAmpersand(builder, ATTENDING);
+		} else if (isOrganizerOnly()) {
+			appendCheckForAmpersand(builder, ORGANIZING);
+		} else if (isPersonalOnly()) {
+			appendCheckForAmpersand(builder, PERSONAL);
+		}
+
+		if(getDisplayFormat().isIcalendar()) {
+			if(isKeepRecurrence()) {
+				appendCheckForAmpersand(builder, COMPATIBILITY_PARAM + EQ + KEEP_RECURRENCE);
+				if(requiresBreakRecurrence()) {
+					appendCheckForAmpersand(builder, COMPATIBILITY_PARAM + EQ + BREAK_RECURRENCE);
+				}
+			}
+			if(requiresConvertClass()) {
+				appendCheckForAmpersand(builder, COMPATIBILITY_PARAM + EQ + CONVERT_CLASS);
+			}
+
+			if(requiresProblemRecurringPreference()) {
+				appendCheckForAmpersand(builder, UW_SUPPORT_RDATE);
+			}
+		}
+		return builder.toString();
+	}
+	/**
+	 * Helper method to check if an ampersand is needed before appending the "toAppend" argument.
+	 * 
+	 * @param builder
+	 * @param toAppend
+	 */
+	private void appendCheckForAmpersand(StringBuilder builder, String toAppend) {
+		if(builder.length() != 0) {
+			builder.append(AMP);
+		}
+		builder.append(toAppend);
+	}
 
 	/**
 	 * @return the shareKey (never null)
@@ -294,6 +392,24 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	public String getDatePhrase() {
 		return this.pathData.getDatePhrase();
+	}
+	/**
+	 * @return the canonical
+	 */
+	public boolean isCanonical() {
+		return canonical;
+	}
+	/**
+	 * 
+	 * @return a string containing the start and end dates in canonical representation, encoded for URL query parameters
+	 */
+	public String getCanonicalStartEndEncoded() {
+		StringBuilder result = new StringBuilder();
+		result.append("start=");
+		result.append(DateFormat.PATTERN_1.getSimpleDateFormat().format(getStartDate()));
+		result.append("&end=");
+		result.append(DateFormat.PATTERN_1.getSimpleDateFormat().format(getEndDate()));
+		return result.toString();
 	}
 	/**
 	 * 
@@ -352,7 +468,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public boolean isPersonalOnly() {
 		return personalOnly;
 	}
-	
+
 	/**
 	 * 
 	 * @return the number of days displayed (0 or greater)
@@ -514,7 +630,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	static PathData extractPathData(String requestPath) {
 		PathData pathData = new PathData();
 
-		String [] tokens = requestPath.split("/");
+		String [] tokens = requestPath.split(URL_PATH_SEPARATOR);
 		// shareId is always the first token
 		pathData.setShareKey(tokens[0]);
 
@@ -712,6 +828,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 			return format;
 		}
 		/**
+		 * {@link SimpleDateFormat} is not thread safe, must return new instances each time.
 		 * 
 		 * @return a new {@link SimpleDateFormat} instance for this format
 		 */

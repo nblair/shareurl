@@ -708,6 +708,141 @@ public class ShareRequestDetailsTest {
 		assertTrue(details.requiresConvertClass());
 	}
 	
+	@Test
+	public void testGetUrlSegmentControl() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertEquals("someshareid", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(0,0)");
+		// default date phrase won't get replayed
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid", details.getUrlSegment());
+	}
+	
+	@Test
+	public void testGetUrlSegmentDatePhrase() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)", details.getUrlSegment());
+	}
+	
+	@Test
+	public void testGetUrlSegmentSingleEvent() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)/abcde12345");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)/abcde12345", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/abcde12345");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/abcde12345", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-14,14)/abcde12345/20120801T120000");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-14,14)/abcde12345/20120801T120000", details.getUrlSegment());
+	}
+	
+	@Test
+	public void testGetUrlSegmentDisplayFormats() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("rss", "");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?rss", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("json", "");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?json", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("ical", "");
+		request.addParameter("asText", "");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?ical&asText", details.getUrlSegment());
+	}
+	
+	@Test
+	public void testGetUrlSegmentEventTypes() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("personal", "");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?personal", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("json", "");
+		request.addParameter("organizing", "");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?json&organizing", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("ical", "");
+		request.addParameter("attending", "");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?ical&attending", details.getUrlSegment());
+	}
+	
+	@Test
+	public void testGetUrlSegmentCompatibility() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("compat", "kr");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		// compat ignore if no "ical" param present
+		assertEquals("someshareid/dr(-7,7)", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("rss", "");
+		request.addParameter("compat", "kr");
+		details = new ShareRequestDetails(request);
+		// compat ignore if no "ical" param present
+		assertEquals("someshareid/dr(-7,7)?rss", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "br");
+		details = new ShareRequestDetails(request);
+		// compat=br ignore if no compat=kr present
+		assertEquals("someshareid/dr(-7,7)?ical", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "kr");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?ical&compat=kr", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "kr");
+		request.addParameter("compat", "br");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?ical&compat=kr&compat=br", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid/dr(-7,7)");
+		request.addParameter("ical", "");
+		request.addParameter("compat", "cc");
+		request.addParameter("asText", "");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid/dr(-7,7)?ical&asText&compat=cc", details.getUrlSegment());
+	}
+	
+	@Test
+	public void testGetUrlSegmentCanonicals() {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/someshareid");
+		request.addParameter("start", "2012-08-01");
+		ShareRequestDetails details = new ShareRequestDetails(request);
+		assertEquals("someshareid?start=2012-08-01&end=2012-08-01", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid");
+		request.addParameter("start", "2012-08-01");
+		request.addParameter("end", "2012-08-31");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid?start=2012-08-01&end=2012-08-31", details.getUrlSegment());
+		
+		request = new MockHttpServletRequest("GET", "/someshareid");
+		request.addParameter("start", "2012-08-01");
+		request.addParameter("end", "2012-07-15");
+		details = new ShareRequestDetails(request);
+		assertEquals("someshareid?start=2012-08-01&end=2012-08-01", details.getUrlSegment());
+	}
 	
 	/**
 	 * Convenience method to calculate expected {@link Date} objects.

@@ -24,7 +24,14 @@
 <body>
 <div id="content">
 <div id="eventNav">
-<a href="<c:url value="/u/${shareId}/${datePhrase}"/>" title="return to agenda">&#171;Return</a>
+<c:choose>
+<c:when test="${not empty lastNonSingleEventRequestDetails}">
+<a href="<c:url value="/u/${lastNonSingleEventRequestDetails.urlSegment}"/>" title="return to agenda">&#171;Return</a>
+</c:when>
+<c:otherwise>
+<a href="<c:url value="/u/${requestDetails.shareKey}"/>" title="View Today's Schedule">View Today's Schedule</a>
+</c:otherwise>
+</c:choose>
 </div> <!-- close eventNav -->
 <div class="event">
 <p>
