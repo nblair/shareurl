@@ -22,6 +22,8 @@ import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
 
 /**
+ * {@link Controller} for creating {@link Share}s.
+ * 
  * @author Nicholas Blair
  */
 @Controller
@@ -45,6 +47,13 @@ public class ShareManagementController {
 		this.shareDao = shareDao;
 	}
 
+	/**
+	 * Will invoke {@link IShareDao#generateGuessableShare(ICalendarAccount, SharePreferences)}
+	 * for the authenticated user.
+	 *  
+	 * @param model
+	 * @return the name of the json view
+	 */
 	@RequestMapping(value="/create-public",method=RequestMethod.POST )
 	public String createPublic(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -66,6 +75,12 @@ public class ShareManagementController {
 		return "jsonView";
 	}
 
+	/**
+	 * Will invoke {@link IShareDao#generateNewShare(ICalendarAccount, SharePreferences)}
+	 * for the authenticated user.
+	 * @param model
+	 * @return the name of the json view
+	 */
 	@RequestMapping(value="/create-traditional",method=RequestMethod.POST )
 	public String createTraditional(ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

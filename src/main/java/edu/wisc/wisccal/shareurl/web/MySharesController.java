@@ -39,7 +39,6 @@ import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
  * links.
  * 
  * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: MySharesController.java 1663 2010-02-05 17:55:45Z npblair $
  */
 @Controller
 public class MySharesController  {

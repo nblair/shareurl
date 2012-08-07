@@ -42,8 +42,6 @@
         <url-pattern>/my-shares</url-pattern>
         <!-- webflow to manage a share -->
         <url-pattern>/manage</url-pattern>
-        <!-- old generate webflow -->
-        <url-pattern>/generate</url-pattern>
         <!-- parent path for shareurl management REST API -->
 		<url-pattern>/rest/*</url-pattern>
 		<!-- login controllers -->

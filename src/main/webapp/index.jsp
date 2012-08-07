@@ -33,7 +33,7 @@
 
 <div id="content" class="main col">
 <div id="briefdescr">
-<p>ShareURL is an enhancement for WiscCal that allows you to create a unique <acronym title="Uniform Resource Locator; an Internet address">URL</acronym> that allows you and anyone else to view your WiscCal event data.</p>
+<p>ShareURL is an enhancement for WiscCal that allows you to create a unique <acronym title="Uniform Resource Locator; a web address">URL</acronym> that allows you and anyone else to view your WiscCal event data.</p>
 </div>
 
 <p>
