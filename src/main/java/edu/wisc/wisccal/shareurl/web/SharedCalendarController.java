@@ -570,7 +570,7 @@ public class SharedCalendarController {
 		if(displayFormat.isMarkupLanguage()) {
 			Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
-				model.put("freebusy", calendarDataProcessor.simplify(freebusy, true));
+				model.put("calendar", calendarDataProcessor.simplify(freebusy, true));
 			} else {
 				VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
 				PeriodList periodList = new PeriodList();
@@ -618,6 +618,7 @@ public class SharedCalendarController {
 		case JSON:
 			viewName = JSON_VIEW;
 			response.setContentType(JSON_CONTENT_TYPE);
+			model.remove("requestDetails");
 			break;
 		default:
 			viewName = "fb/display";
