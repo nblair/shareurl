@@ -14,8 +14,8 @@
   limitations under the License.
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <title>Ineligible for WiscCal Service</title>
@@ -26,8 +26,8 @@
 <div class="alert">
 <strong>Your account is not eligible for this service.</strong>
 <p>
-If you are attempting to view your WiscCal schedule in My UW or create a ShareURL with your UW Madison NetID and see this page,
-please see the <a href="http://kb.wisc.edu/wisccal/page.php?id=3245">Help Desk documentation about WiscCal Eligibility</a>.
+If you are attempting to log in to WiscCal ShareURL with your UW Madison NetID and see this page,
+please see the <a href="https://kb.wisc.edu/helpdesk/page.php?id=15039">Help Desk documentation about WiscCal Eligibility</a>.
 </p>
 <a href="<c:url value="/logout.html"/>">Log Out Completely&raquo;</a>
 </div>

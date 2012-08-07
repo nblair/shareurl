@@ -20,10 +20,10 @@
 --%>
 
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<title>Share your WiscCal Calendar - Log in as a Resource account</title>
+<title>WiscCal ShareURL - Log in as a Resource account</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 
 <rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.css"/>

@@ -19,9 +19,9 @@
 
 --%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html>
 <head>
 <title>WiscCal ShareURL - Log In</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>

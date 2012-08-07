@@ -19,7 +19,7 @@
 <html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
-<title>Share your WiscCal Calendar - Manage ShareURL</title>
+<title>WiscCal ShareURL - Manage ${share.key }</title>
 <rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
 <style type="text/css">
 .key { color:green;}

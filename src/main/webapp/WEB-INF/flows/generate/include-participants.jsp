@@ -14,11 +14,11 @@
   limitations under the License.
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
-<title>Share your WiscCal Calendar - Generate a new ShareURL - Step 3</title>
+<title>WiscCal ShareURL - Generate a new ShareURL - Step 3</title>
 <rs:resourceURL var="jqueryPath" value="/rs/jquery/1.3.2/jquery-1.3.2.min.js"/>
 <script type="text/javascript" src="${jqueryPath}"></script>
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>

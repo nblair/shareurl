@@ -14,18 +14,18 @@
   limitations under the License.
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <link rel="stylesheet" type="text/css" href="<c:url value="/css/extras.css"/>"/>
-<title>WiscCal Tools Temporarily Unavailable</title>
+<title>WiscCal ShareURL Temporarily Unavailable</title>
 </head>
 <body>
 <p class="alert">
-WiscCal Tools is temporarily unavailable. You may see this message during scheduled maintenance
-for WiscCal Tools, which may occur between 5 and 7 am on Tuesday mornings.
+WiscCal ShareURL is temporarily unavailable. You may see this message during scheduled maintenance
+for WiscCal ShareURL, which may occur between 5 and 7 am on Tuesday mornings.
 <br/>
-Please contact the <a href="http://kb.wisc.edu/helpdesk/page.php?id=1">DoIT Help Desk</a> if you continue to see
+Please <a href="http://kb.wisc.edu/helpdesk/page.php?id=1">contact the DoIT Help Desk</a> if you continue to see
 this error message outside of scheduled maintenance hours.
 <!-- 
 

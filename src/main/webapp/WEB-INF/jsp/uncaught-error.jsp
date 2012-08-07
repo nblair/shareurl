@@ -14,8 +14,8 @@
   limitations under the License.
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <link rel="stylesheet" type="text/css" href="<c:url value="/css/extras.css"/>"/>
 <title>Unexpected Error Occurred</title>
@@ -24,7 +24,7 @@
 <p class="alert">
 An unexpected error occurred.
 <br/>
-Please contact the <a href="http://kb.wisc.edu/helpdesk/page.php?id=1">DoIT Help Desk</a> if you continue to see
+Please <a href="http://kb.wisc.edu/helpdesk/page.php?id=1">contact the DoIT Help Desk</a> if you continue to see
 this error message.
 <!-- 
 
