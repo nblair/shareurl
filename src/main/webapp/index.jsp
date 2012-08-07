@@ -18,7 +18,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
-<title>Share your WiscCal Calendar</title>
+<title>WiscCal ShareURL</title>
+<style type="text/css">
+#briefdescr{ font-weight:bold;}
+#content acronym { border-bottom:1px dotted;}
+.login {font-weight: bold;}
+#loginlinks {margin: 1em 0em 1em 0em; border:1px solid gray;padding:1em;}
+</style>
 </head>
 
 <body>
@@ -26,22 +32,30 @@
 <%@ include file="/WEB-INF/jsp/theme/body-start.jsp" %>
 
 <div id="content" class="main col">
-<p>This feature allows you to generate unique Share URLs that allow anyone who visits to access your WiscCal agenda, daily notes, and day events. 
-Use these URLs to post a public Web page for anyone (friends, family, etc.) to view with a browser or to display your WiscCal data in:</p>
-<ul>
-<li>Google Calendar - <a href="http://kb.wisc.edu/wisccal/page.php?id=5353">Help Desk setup instructions</a></li>
-<li>Mozilla Sunbird - <a href="http://kb.wisc.edu/wisccal/page.php?id=5337">Help Desk setup instructions</a></li>
-<li>Apple iCal - <a href="http://kb.wisc.edu/wisccal/page.php?id=5348">Help Desk setup instructions</a></li> 
-<li>Windows Vista Calendar - <a href="http://kb.wisc.edu/wisccal/page.php?id=5346">Help Desk setup instructions</a></li>
-<li>Outlook 2007 - <a href="http://kb.wisc.edu/wisccal/page.php?id=5488">Help Desk setup instructions</a></li>
-</ul>
-<p>Many more uses are possible. For example, it's easy to embed the HTML view of a ShareURL in an <acronym title="Inline Frame">iframe</acronym> element in a personal web site. 
-You can also use the <acronym title="Internet Standard for Calendar data exchange - RFC2445">iCalendar</acronym> data option and format the data on your own. 
-More information about ShareURLs and how they can be used can be found in our <a href="http://kb.wisc.edu/wisccal/page.php?id=5336">Help Desk documentation&raquo;</a>.
-</p>
+<div id="briefdescr">
+<p>ShareURL is an enhancement for WiscCal that allows you to create a unique <acronym title="Uniform Resource Locator; an Internet address">URL</acronym> that allows you and anyone else to view your WiscCal event data.</p>
+</div>
 
-<p>Your Share URL provides a read-only link to all your WiscCal calendar data. <strong>If you have ANY sensitive data (e.g., personal, financial, 
-medical information, or <a href="http://kb.wisc.edu/helpdesk/page.php?id=3249">data set to a sensitive access level</a>), then you should not use this feature.</strong> 
+<p>
+Once you create your ShareURL, it can be used to retrieve your WiscCal event data in a number of different formats:</p>
+<ul>
+<li><acronym title="Internet Standard for Calendar data exchange - RFC2445">iCalendar</acronym>, used by many Desktop Calendar clients and Google Calendar</li>
+<li>HTML, view your Calendar in a web browser</li>
+<li><acronym title="Really Simple Syndication">RSS</acronym>, subscribe to your calendar in a News Reader like any other feed</li>
+<li><acronym title="JavaScript Object Notation">JSON</acronym>, the data format for the web and web developers</li>
+</ul>
+
+<p>You are in control of what events or details of events are displayed by your ShareURL. You can create ShareURLs that share just the times when you are busy, 
+or some of the events in your agenda, like events that are marked "Public", or events that contain the word "soccer" in the title, or all of the events and their details.</p>
+
+<div id="loginlinks">
+<a class="login" href="<c:url value="/my-shares"/>">Log in to Manage ShareURLs for your personal or role based account&nbsp;&#187;</a><br/>
+<a class="login" href="<c:url value="/delegate-login.html"/>">Log in Manage ShareURLs for a WiscCal <acronym title="Conference Room, Projector, etc.">Resource</acronym>&nbsp;&#187;</a>
+</div>
+
+
+<p>Your Share URL can provide a read-only link to all your WiscCal calendar data. <strong>If you have ANY sensitive data (e.g., personal, financial, 
+medical information, or <a href="https://kb.wisc.edu/helpdesk/page.php?id=24155">data marked private that you do not wish to share</a>), then you should use caution with this feature.</strong> 
 If you post your Share URL on another public Web site, anyone who stumbles across it will be able to use it to read all appointments, daily notes, and day events in 
 your WiscCal account regardless of the access level you set when you created the event. If someone else has invited you to a confidential 
 meeting, that meeting may appear in your agenda and be viewable using this Share URL.</p>
@@ -52,10 +66,6 @@ meeting, that meeting may appear in your agenda and be viewable using this Share
 </div>
 --%>
 
-<ul>
-<li><strong><a href="<c:url value="/my-shares"/>">Manage ShareURLs for your personal or role based account&nbsp;&#187;</a></strong></li>
-<li><strong><a href="<c:url value="/delegate-login.html"/>">Manage ShareURLs for a WiscCal <acronym title="Conference Room, Projector, etc.">Resource</acronym>&nbsp;&#187;</a></strong></li>
-</ul>
 
 </div> <!-- content -->
 <%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
