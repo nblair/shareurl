@@ -67,7 +67,6 @@
 </c:otherwise>
 </c:choose>
 <a href="${rssFeed}" title="RSS Feed for this calendar"><img src="<c:url value="/img/feed_icon_16x16.gif"/>"/></a>
-<hr/>
 </div>
 </div>
 <div id="calendarEvents">
