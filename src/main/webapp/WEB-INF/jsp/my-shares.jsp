@@ -174,18 +174,26 @@ traditional ShareURLs with different options.</p>
 <c:param name="id" value="${share.key}"/>
 </c:url>
 <c:choose>
+<c:when test="${share.guessable }">
+<c:set var="linkText" value="View and/or Edit Options for ${share.key } (Public ShareURL)"/>
+</c:when>
+<c:otherwise>
+<c:set var="linkText" value="View and/or Edit Options for ${share.key }"/>
+</c:otherwise>
+</c:choose>
+<c:choose>
 <c:when test="${share.freeBusyOnly == true}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">View and/or Edit Options for ${share.key }</span></a>:&nbsp;<span class="details">Free Busy only.</span> 
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}</span></a>:&nbsp;<span class="details">Free Busy only.</span> 
 </li>
 </c:when>
 <c:otherwise>
 <c:choose>
 <c:when test="${share.eventFilterCount == 0}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">View and/or Edit Options for ${share.key }</span></a>:&nbsp;<span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}</span></a>:&nbsp;<span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
 </li>
 </c:when>
 <c:otherwise>
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">View and/or Edit Options for ${share.key }</span></a>:&nbsp;<span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}</span></a>:&nbsp;<span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
 </li>
 </c:otherwise>
 </c:choose>
