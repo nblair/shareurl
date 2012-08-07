@@ -1,5 +1,6 @@
 <%@ taglib prefix="rs" uri="http://www.jasig.org/resource-server" %>
 <%-- this file should contain solely the stylesheet, meta tags, and javascript elements needed in the head --%>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <rs:resourceURL var="jQuery" value="/rs/jquery/1.4.2/jquery-1.4.2.min.js"/>
 <script type="text/javascript" src="${jQuery}"></script>
