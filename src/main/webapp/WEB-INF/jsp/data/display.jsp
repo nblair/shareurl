@@ -57,13 +57,20 @@
 <div id="timeHeader">
 <div class="navrow1 sharedaterange">
 <c:choose>
-<c:when test="${requestDetails.numberDaysDisplayed > 0 }">
-<span class="nowshowing">${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
+<c:when test="${requestDetails.numberDaysDisplayed == 0}">
+<c:choose>
+<c:when test="${requestDetails.canonical }">
+<span class="nowshowing">${startDateFormatted}</span>
 </c:when>
 <c:otherwise>
 <a href="<c:url value="/u/${shareId}/${requestDetails.prevDatePhrase}"/>" title="previous day"><img src="${prevIcon}" alt="previous day"/></a>
 &nbsp;<span class="nowshowing">${startDateFormatted}</span>&nbsp;
 <a href="<c:url value="/u/${shareId}/${requestDetails.nextDatePhrase}"/>" title="next day"><img src="${nextIcon}" alt="next day"/></a>
+</c:otherwise>
+</c:choose>
+</c:when>
+<c:otherwise>
+<span class="nowshowing">${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
 </c:otherwise>
 </c:choose>
 <a href="${rssFeed}" title="RSS Feed for this calendar"><img src="<c:url value="/img/feed_icon_16x16.gif"/>"/></a>

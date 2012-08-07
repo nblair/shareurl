@@ -488,6 +488,9 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @return the number of days displayed (0 or greater)
 	 */
 	public int getNumberDaysDisplayed() {
+		if(isCanonical()) {
+			return new Long(CommonDateOperations.approximateDifference(getEndDate(), getStartDate())).intValue();
+		} 
 		return pathData.getEndDateIndex() - pathData.getStartDateIndex();
 	}
 	/* (non-Javadoc)
