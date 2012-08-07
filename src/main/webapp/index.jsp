@@ -50,7 +50,7 @@ or some of the events in your agenda, like events that are marked "Public", or e
 
 <div id="loginlinks">
 <a class="login" href="<c:url value="/my-shares"/>">Log in to Manage ShareURLs for your personal or role based account&nbsp;&#187;</a><br/>
-<a class="login" href="<c:url value="/delegate-login.html"/>">Log in Manage ShareURLs for a WiscCal <acronym title="Conference Room, Projector, etc.">Resource</acronym>&nbsp;&#187;</a>
+<a class="login" href="<c:url value="/delegate-login.html"/>">Log in to Manage ShareURLs for a WiscCal <acronym title="Conference Room, Projector, etc.">Resource</acronym>&nbsp;&#187;</a>
 </div>
 
 
