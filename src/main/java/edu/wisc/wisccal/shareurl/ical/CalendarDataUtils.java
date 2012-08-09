@@ -839,6 +839,19 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * @return
 	 */
 	public static Calendar wrapEvent(VEvent event) {
+		return wrapEvent(event, SHAREURL_PROD_ID);
+	}
+	
+	/**
+	 * Wrap the event in a {@link net.fortuna.ical4j.model.Calendar}.
+	 * If the {@link VEvent} indicates a {@link TzId} parameter on it's DTSTART,
+	 * this will include the corresponding VTIMEZONE.
+	 * 
+	 * @param event the event to wrap
+	 * @param prodId the value to use for the {@link ProdId} property on the result
+	 * @return the calendar
+	 */
+	public static Calendar wrapEvent(VEvent event, String prodId) {
 		ComponentList components = new ComponentList();
 		DtStart dtstart = event.getStartDate();
 		Parameter tzid = dtstart.getParameter(TzId.TZID);
@@ -856,7 +869,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		components.add(event);
 		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
 		result.getProperties().add(Version.VERSION_2_0);
-		result.getProperties().add(new ProdId(SHAREURL_PROD_ID));
+		result.getProperties().add(new ProdId(prodId));
 		return result;
 	}
 
