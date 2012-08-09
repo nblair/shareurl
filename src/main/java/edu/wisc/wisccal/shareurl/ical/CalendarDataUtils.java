@@ -105,7 +105,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	
 	protected final Set<String> retainedPropertyNamesOnStripDetails = new HashSet<String>(
 			Arrays.asList(new String[] { Uid.UID, DtStart.DTSTART, DtEnd.DTEND, DtStamp.DTSTAMP, 
-					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED }));
+					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED,
+					X_SHAREURL_OLD_RECURRENCE_ID, X_SHAREURL_RECURRENCE_EXPAND }));
 	/**
 	 * 
 	 * @param propertyName
@@ -303,10 +304,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants, boolean setRecurrenceId) {
-
 		VEvent copy = new VEvent();
 		copy.getProperties().add(new DtStart(period.getStart()));
 		copy.getProperties().add(new DtEnd(period.getEnd()));
+		copy.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
 		if(setRecurrenceId) {
 			copy.getProperties().add(propertyCopy(original.getUid()));
 			copy.getProperties().add(new RecurrenceId(period.getStart()));
@@ -476,7 +477,6 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, true);
-						recurrenceInstance.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
 						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
 						eventMap.put(comboId, recurrenceInstance);
 					}

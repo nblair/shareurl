@@ -561,17 +561,17 @@ public class SharedCalendarController {
 	 */
 	protected String handleFreeBusyShare(final Calendar agenda, final ShareRequestDetails requestDetails, final HttpServletResponse response,
 			final ModelMap model) {
-		model.put("requestDetails", requestDetails);
 		final ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 
 		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
 
 		if(displayFormat.isMarkupLanguage()) {
-			Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
-				model.put("calendar", calendarDataProcessor.simplify(freebusy, true));
+				calendarDataProcessor.stripEventDetails(agenda);
+				model.put("calendar", calendarDataProcessor.simplify(agenda, false));
 			} else {
+				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
 				VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
 				PeriodList periodList = new PeriodList();
 				for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
