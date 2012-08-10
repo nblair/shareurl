@@ -222,6 +222,8 @@ public class SharedCalendarController {
 			calendarDataProcessor.organizerOnly(agenda, account);
 		} else if (requestDetails.isAttendeeOnly()) {
 			calendarDataProcessor.attendeeOnly(agenda, account);
+		} else if (requestDetails.isPersonalOnly()) {
+			calendarDataProcessor.personalOnly(agenda, account);
 		}
 		// are we targeting a markup display?
 		if(display.isMarkupLanguage()) {
