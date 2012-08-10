@@ -15,6 +15,10 @@
 *******************************************************************************/
 package edu.wisc.wisccal.shareurl.ical;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -24,13 +28,16 @@ import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -145,6 +152,41 @@ public class CalendarDataUtilsTest {
 		
 		VEvent result = CalendarDataUtils.getSingleEvent(calendar, "12345");
 		Assert.assertNull(result);
+	}
+	
+	@Test
+	public void testGetEventParticipation() throws URISyntaxException {
+		CalendarDataUtils utils = new CalendarDataUtils();
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("somebody@wisc.edu");
+		
+		VEvent event = new VEvent();
+		Assert.assertEquals(EventParticipation.PERSONAL_EVENT, utils.getEventParticipation(event, calendarAccount));
+		
+		Organizer organizer = new Organizer("mailto:somebody@wisc.edu");
+		event.getProperties().add(organizer);
+		
+		// not a group event until another ATTENDEE shows up
+		Assert.assertEquals(EventParticipation.PERSONAL_EVENT, utils.getEventParticipation(event, calendarAccount));
+		
+		Attendee attendee = new Attendee("mailto:somebodyelse@wisc.edu");
+		event.getProperties().add(attendee);
+		
+		Assert.assertEquals(EventParticipation.ORGANIZER, utils.getEventParticipation(event, calendarAccount));
+		
+		event.getProperties().remove(organizer);
+		event.getProperties().remove(attendee);
+		
+		event.getProperties().add(new Organizer("mailto:somebodyelse@wisc.edu"));
+		Attendee selfAttendee = new Attendee("mailto:somebody@wisc.edu");
+		event.getProperties().add(selfAttendee);
+		
+		Assert.assertEquals(EventParticipation.ATTENDEE, utils.getEventParticipation(event, calendarAccount));
+		
+		event.getProperties().remove(selfAttendee);
+		
+		event.getProperties().add(new Attendee("mailto:another@wisc.edu"));
+		Assert.assertEquals(EventParticipation.NOT_INVOLVED, utils.getEventParticipation(event, calendarAccount));
 	}
 	
 	/**

@@ -579,11 +579,11 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	EventParticipation getEventParticipation(VEvent event, ICalendarAccount calendarAccount) {
 		Organizer organizer = event.getOrganizer();
 		PropertyList attendees = event.getProperties(Attendee.ATTENDEE);
-		if(null == organizer && attendees.size() == 0) {
+		if(null == organizer || attendees.size() == 0) {
 			return EventParticipation.PERSONAL_EVENT;
 		}
 
-		if(!organizer.getValue().equalsIgnoreCase(mailto(calendarAccount.getEmailAddress()))) {
+		if(organizer.getValue().equalsIgnoreCase(mailto(calendarAccount.getEmailAddress()))) {
 			return EventParticipation.ORGANIZER;
 		}
 
