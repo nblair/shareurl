@@ -91,6 +91,10 @@ import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
 @Service
 public final class CalendarDataUtils implements CalendarDataProcessor {
 
+	static final String BUSY = "Busy";
+
+	static final String FREE = "Free";
+
 	protected static final String X_SHAREURL_RECURRENCE_EXPAND = "X-SHAREURL-RECURRENCE-EXPAND";
 
 	protected static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
@@ -106,7 +110,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	protected final Set<String> retainedPropertyNamesOnStripDetails = new HashSet<String>(
 			Arrays.asList(new String[] { Uid.UID, DtStart.DTSTART, DtEnd.DTEND, DtStamp.DTSTAMP, 
 					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED,
-					X_SHAREURL_OLD_RECURRENCE_ID, X_SHAREURL_RECURRENCE_EXPAND }));
+					X_SHAREURL_OLD_RECURRENCE_ID, X_SHAREURL_RECURRENCE_EXPAND, Transp.TRANSP }));
 	/**
 	 * 
 	 * @param propertyName
@@ -190,7 +194,12 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 						j.remove();
 					}
 				}
-				component.getProperties().add(new Summary("Busy"));
+				Property transp = component.getProperty(Transp.TRANSP);
+				if(Transp.TRANSPARENT.equals(transp)) {
+					component.getProperties().add(new Summary(FREE));
+				} else {
+					component.getProperties().add(new Summary(BUSY));
+				}
 			}
 		}
 	}

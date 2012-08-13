@@ -30,9 +30,11 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Summary;
+import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
@@ -252,6 +254,36 @@ public class CalendarDataUtilsTest {
 		event.getProperties().remove(a);
 		utils.attendeeOnly(calendar, calendarAccount);
 		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
+	}
+	
+	@Test
+	public void testStripEventDetails() {
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test stripEventDetails", false);
+		event.getProperties().add(new Location("somewhere"));
+		Calendar calendar = CalendarDataUtils.wrapEvent(event);
+		
+		CalendarDataUtils utils = new CalendarDataUtils();
+		utils.stripEventDetails(calendar);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+		VEvent after = (VEvent) calendar.getComponent(VEvent.VEVENT);
+		Assert.assertNotNull(after.getUid());
+		Assert.assertEquals("Busy", after.getSummary().getValue());
+		Assert.assertNull(after.getLocation());
+	}
+	
+	@Test
+	public void testStripEventDetailsFree() {
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test stripEventDetails", false);
+		event.getProperties().add(Transp.TRANSPARENT);
+		Calendar calendar = CalendarDataUtils.wrapEvent(event);
+		
+		CalendarDataUtils utils = new CalendarDataUtils();
+		utils.stripEventDetails(calendar);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+		VEvent after = (VEvent) calendar.getComponent(VEvent.VEVENT);
+		Assert.assertNotNull(after.getUid());
+		Assert.assertEquals("Free", after.getSummary().getValue());
+		Assert.assertNull(after.getLocation());
 	}
 	/**
 	 * 
