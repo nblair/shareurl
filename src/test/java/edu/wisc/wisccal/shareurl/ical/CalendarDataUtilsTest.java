@@ -41,6 +41,8 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.wisc.wisccal.shareurl.Tests;
+
 /**
  * Test harness for {@link CalendarDataUtils}.
  *  
@@ -189,6 +191,68 @@ public class CalendarDataUtilsTest {
 		Assert.assertEquals(EventParticipation.NOT_INVOLVED, utils.getEventParticipation(event, calendarAccount));
 	}
 	
+	@Test
+	public void testPersonalOnly() throws URISyntaxException {
+		CalendarDataUtils utils = new CalendarDataUtils();
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("somebody@wisc.edu");
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test personalOnly", false);
+		
+		Calendar calendar = CalendarDataUtils.wrapEvent(event);
+		utils.personalOnly(calendar, calendarAccount);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(event, calendar.getComponents(VEvent.VEVENT).get(0));
+		
+		// add organizer and attendee
+		event.getProperties().add(new Organizer("mailto:somebodyelse@wisc.edu"));
+		event.getProperties().add(new Attendee("mailto:somebody@wisc.edu"));
+		utils.personalOnly(calendar, calendarAccount);
+		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
+	}
+	@Test
+	public void testOrganizingOnly() throws URISyntaxException {
+		CalendarDataUtils utils = new CalendarDataUtils();
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("somebody@wisc.edu");
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test personalOnly", false);
+		// add organizer and attendee
+		Organizer o = new Organizer("mailto:somebody@wisc.edu");
+		event.getProperties().add(o);
+		Attendee a = new Attendee("mailto:somebodyelse@wisc.edu");
+		event.getProperties().add(a);
+		Calendar calendar = CalendarDataUtils.wrapEvent(event);
+		utils.organizerOnly(calendar, calendarAccount);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(event, calendar.getComponents(VEvent.VEVENT).get(0));
+		
+		// remove organizer and attendee
+		event.getProperties().remove(o);
+		event.getProperties().remove(a);
+		utils.organizerOnly(calendar, calendarAccount);
+		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
+	}
+	@Test
+	public void testAttendingOnly() throws URISyntaxException {
+		CalendarDataUtils utils = new CalendarDataUtils();
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("somebody@wisc.edu");
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test personalOnly", false);
+		// add organizer and attendee
+		Organizer o = new Organizer("mailto:somebodyelse@wisc.edu");
+		event.getProperties().add(o);
+		Attendee a = new Attendee("mailto:somebody@wisc.edu");
+		event.getProperties().add(a);
+		Calendar calendar = CalendarDataUtils.wrapEvent(event);
+		utils.attendeeOnly(calendar, calendarAccount);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(event, calendar.getComponents(VEvent.VEVENT).get(0));
+		
+		// remove organizer and attendee
+		event.getProperties().remove(o);
+		event.getProperties().remove(a);
+		utils.attendeeOnly(calendar, calendarAccount);
+		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
+	}
 	/**
 	 * 
 	 * @param value
