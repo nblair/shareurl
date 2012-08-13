@@ -627,7 +627,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			if(VEvent.VEVENT.equals(component.getName())) {
 				VEvent event = (VEvent) component;
 				EventParticipation participation = getEventParticipation(event, calendarAccount);
-				if(participation.equals(EventParticipation.PERSONAL_EVENT)) {
+				if(!participation.equals(EventParticipation.PERSONAL_EVENT)) {
 					i.remove();
 					if(LOG.isDebugEnabled()) {
 						LOG.debug("personalOnly: removed " + getDebugId(component) + ", " + participation + " from agenda for " + calendarAccount);
