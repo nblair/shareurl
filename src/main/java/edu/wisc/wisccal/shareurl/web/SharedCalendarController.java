@@ -587,7 +587,7 @@ public class SharedCalendarController {
 				}
 				model.put("startDate", requestDetails.getStartDate());
 				model.put("endDate", requestDetails.getEndDate());
-				model.put("shareKey", requestDetails.getShareKey());
+				model.put("shareId", requestDetails.getShareKey());
 				model.put("datePhrase", requestDetails.getDatePhrase());
 			}
 		} else {	

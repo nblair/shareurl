@@ -15,6 +15,8 @@
 --%>
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <rs:resourceURL var="clockIcon" value="/rs/famfamfam/silk/1.3/clock.png"/>
+<rs:resourceURL var="nextIcon" value="/rs/famfamfam/silk/1.3/resultset_next.png"/>
+<rs:resourceURL var="prevIcon" value="/rs/famfamfam/silk/1.3/resultset_previous.png"/>
 <!DOCTYPE html>
 <html>
 <head>
@@ -25,25 +27,49 @@
 <fmt:formatDate value="${endDate}" type="time" pattern="MM/dd/yyyy" var="endDateFormatted"/>
 <c:choose>
 <c:when test="${requestDetails.numberDaysDisplayed > 0 }">
-<title>Free/Busy for ${startDateFormatted} - ${endDateFormatted}</title>
+<c:set var="title" value="Free/Busy for ${startDateFormatted} - ${endDateFormatted}"/>
 </c:when>
 <c:otherwise>
-<title>Free/Busy for ${startDateFormatted}</title>
+<c:set var="title" value="Free/Busy for ${startDateFormatted}"/>
 </c:otherwise>
 </c:choose>
+<c:choose>
+<c:when test="${requestDetails.canonical}">
+<c:url value="/u/${shareId}?rss&${requestDetails.canonicalStartEndEncoded}" var="rssFeed"/>
+</c:when>
+<c:otherwise>
+<c:url value="/u/${shareId}/${datePhrase}?rss" var="rssFeed"/>
+</c:otherwise>
+</c:choose>
+<title>${title}</title>
+<link rel="alternate" title="${title}" href="${rssFeed}" type="application/rss+xml" />
+<style type="text/css">
+.cancel {text-decoration: line-through;}
+.white {color: #fff !important;}
+</style>
 </head>
 <body>
 <div id="content">
 <div id="timeHeader">
 <div class="navrow1 sharedaterange">
 <c:choose>
-<c:when test="${requestDetails.numberDaysDisplayed > 0 }">
-${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}
+<c:when test="${requestDetails.numberDaysDisplayed == 0}">
+<c:choose>
+<c:when test="${requestDetails.canonical }">
+<span class="nowshowing">${startDateFormatted}</span>
 </c:when>
 <c:otherwise>
-${startDateFormatted}
+<a href="<c:url value="/u/${shareId}/${requestDetails.prevDatePhrase}"/>" title="previous day"><img src="${prevIcon}" alt="previous day"/></a>
+&nbsp;<span class="nowshowing">${startDateFormatted}</span>&nbsp;
+<a href="<c:url value="/u/${shareId}/${requestDetails.nextDatePhrase}"/>" title="next day"><img src="${nextIcon}" alt="next day"/></a>
 </c:otherwise>
 </c:choose>
+</c:when>
+<c:otherwise>
+<span class="nowshowing">${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
+</c:otherwise>
+</c:choose>
+<a href="${rssFeed}" title="RSS Feed for this calendar"><img src="<c:url value="/img/feed_icon_16x16.gif"/>"/></a>
 </div>
 </div>
 <div id="calendarEvents">
