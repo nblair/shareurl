@@ -26,6 +26,7 @@ import java.util.Iterator;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Attendee;
@@ -273,13 +274,46 @@ public class CalendarDataUtilsTest {
 	
 	@Test
 	public void testStripEventDetailsFree() {
-		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test stripEventDetails", false);
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test stripEventDetailsFree", false);
 		event.getProperties().add(Transp.TRANSPARENT);
 		Calendar calendar = CalendarDataUtils.wrapEvent(event);
 		
 		CalendarDataUtils utils = new CalendarDataUtils();
 		utils.stripEventDetails(calendar);
 		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
+	}
+	
+	@Test
+	public void testCheapRecurrenceCopy() throws ParseException {
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test cheapRecurrenceCopy", false);
+		event.getProperties().add(new Location("somewhere"));
+		CalendarDataUtils utils = new CalendarDataUtils();
+		Period period = new Period(new DateTime("20120814-0900"), new DateTime("20120814-1000"));
+		VEvent recurrenceCopy = utils.cheapRecurrenceCopy(event, period, false, false);
+		Assert.assertEquals(period.getStart(), recurrenceCopy.getStartDate().getDate());
+		Assert.assertEquals(period.getEnd(), recurrenceCopy.getEndDate().getDate());
+		Assert.assertEquals("somewhere", recurrenceCopy.getLocation().getValue());
+		Assert.assertEquals("test cheapRecurrenceCopy", recurrenceCopy.getSummary().getValue());
+		Assert.assertNotSame(event.getUid(), recurrenceCopy.getUid());
+		Assert.assertTrue(recurrenceCopy.getUid().getValue().startsWith(event.getUid().getValue()));
+		Assert.assertNull(recurrenceCopy.getTransparency());
+	}
+	
+	@Test
+	public void testCheapRecurrenceCopyTransparency() throws ParseException {
+		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test cheapRecurrenceCopy", false);
+		event.getProperties().add(new Location("somewhere"));
+		event.getProperties().add(Transp.TRANSPARENT);
+		CalendarDataUtils utils = new CalendarDataUtils();
+		Period period = new Period(new DateTime("20120814-0900"), new DateTime("20120814-1000"));
+		VEvent recurrenceCopy = utils.cheapRecurrenceCopy(event, period, false, false);
+		Assert.assertEquals(period.getStart(), recurrenceCopy.getStartDate().getDate());
+		Assert.assertEquals(period.getEnd(), recurrenceCopy.getEndDate().getDate());
+		Assert.assertEquals("somewhere", recurrenceCopy.getLocation().getValue());
+		Assert.assertEquals("test cheapRecurrenceCopy", recurrenceCopy.getSummary().getValue());
+		Assert.assertNotSame(event.getUid(), recurrenceCopy.getUid());
+		Assert.assertTrue(recurrenceCopy.getUid().getValue().startsWith(event.getUid().getValue()));
+		Assert.assertEquals(Transp.TRANSPARENT, recurrenceCopy.getTransparency());
 	}
 	/**
 	 * 

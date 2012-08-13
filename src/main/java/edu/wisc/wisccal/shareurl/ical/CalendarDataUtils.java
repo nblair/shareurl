@@ -343,6 +343,9 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(original.getClassification() != null) {
 			copy.getProperties().add(propertyCopy(original.getClassification()));
 		}
+		if(original.getTransparency() != null) {
+			copy.getProperties().add(propertyCopy(original.getTransparency()));
+		}
 		if(preserveParticipants) {
 			if(original.getOrganizer() != null) {
 				copy.getProperties().add(propertyCopy(original.getOrganizer()));
