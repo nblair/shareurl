@@ -83,10 +83,9 @@ import edu.wisc.wisccal.shareurl.domain.simple.Event;
 import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
 
 /**
- * Helper methods for iCalendar data.
+ * {@link CalendarDataProcessor} implementation.
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: CalendarDataUtils.java 1691 2010-02-10 18:58:13Z npblair $
+ * @author Nicholas Blair
  */
 @Service
 public final class CalendarDataUtils implements CalendarDataProcessor {
@@ -106,7 +105,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
 
 	private static final Log LOG = LogFactory.getLog(CalendarDataUtils.class);
-	
+
 	protected final Set<String> retainedPropertyNamesOnStripDetails = new HashSet<String>(
 			Arrays.asList(new String[] { Uid.UID, DtStart.DTSTART, DtEnd.DTEND, DtStamp.DTSTAMP, 
 					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED,
@@ -188,16 +187,16 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
-				for(Iterator<?> j = component.getProperties().iterator(); j.hasNext();) {
-					Property property = (Property) j.next();
-					if(!retainedPropertyNamesOnStripDetails.contains(property.getName())){
-						j.remove();
-					}
-				}
 				Property transp = component.getProperty(Transp.TRANSP);
 				if(Transp.TRANSPARENT.equals(transp)) {
-					component.getProperties().add(new Summary(FREE));
+					i.remove();
 				} else {
+					for(Iterator<?> j = component.getProperties().iterator(); j.hasNext();) {
+						Property property = (Property) j.next();
+						if(!retainedPropertyNamesOnStripDetails.contains(property.getName())){
+							j.remove();
+						}
+					}
 					component.getProperties().add(new Summary(BUSY));
 				}
 			}
@@ -328,7 +327,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			uid.append(period.getStart().toString());
 			copy.getProperties().add(new Uid(uid.toString()));
 		}
-		
+
 		if(original.getSummary() != null) {
 			copy.getProperties().add(propertyCopy(original.getSummary()));
 		}
@@ -352,7 +351,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 		return copy;
 	}
-	
+
 	/**
 	 * Copy the value of the UID property from the original (argument 2) to the "copy" (argument 1).
 	 * If the original didn't have a UID, make one.
@@ -841,7 +840,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 		return cal.getTime();
 	}
-	
+
 	/**
 	 * 
 	 * @param event
@@ -850,7 +849,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public static Calendar wrapEvent(VEvent event) {
 		return wrapEvent(event, SHAREURL_PROD_ID);
 	}
-	
+
 	/**
 	 * Wrap the event in a {@link net.fortuna.ical4j.model.Calendar}.
 	 * If the {@link VEvent} indicates a {@link TzId} parameter on it's DTSTART,
@@ -874,7 +873,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				LOG.warn("could not find TimeZone with id " + tzid.getValue() + " on " + staticGetDebugId(event));
 			}
 		}
-		
+
 		components.add(event);
 		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
 		result.getProperties().add(Version.VERSION_2_0);

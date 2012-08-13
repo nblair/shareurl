@@ -279,11 +279,7 @@ public class CalendarDataUtilsTest {
 		
 		CalendarDataUtils utils = new CalendarDataUtils();
 		utils.stripEventDetails(calendar);
-		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
-		VEvent after = (VEvent) calendar.getComponent(VEvent.VEVENT);
-		Assert.assertNotNull(after.getUid());
-		Assert.assertEquals("Free", after.getSummary().getValue());
-		Assert.assertNull(after.getLocation());
+		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
 	}
 	/**
 	 * 
