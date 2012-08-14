@@ -117,11 +117,7 @@ import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreferenc
 public class SharedCalendarController {
 
 	private static final String JSON_VIEW = "jsonView";
-
 	private static final String JSON_CONTENT_TYPE = "application/json";
-
-	//private static final String TEXT_HTML = "text/html";
-
 	private static final String UTF_8 = "UTF-8";
 
 	private Log LOG = LogFactory.getLog(this.getClass());
@@ -359,6 +355,13 @@ public class SharedCalendarController {
 			if(coerceIcal && !ShareDisplayFormat.ICAL_ASTEXT.equals(requestDetails.getDisplayFormat())) {
 				requestDetails.setDisplayFormat(ShareDisplayFormat.ICAL);
 			}
+			if(ShareDisplayFormat.MOBILECONFIG.equals(requestDetails.getDisplayFormat())) {
+				// don't need data, short circuit
+				model.put("share", share);
+				String filename = buildMobileconfigFilename(requestDetails);
+				HTTPHelper.addContentDispositionHeader(response, filename);
+				return "data/display-mobileconfig";
+			}
 
 			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
 			if(LOG.isDebugEnabled()) {
@@ -512,7 +515,8 @@ public class SharedCalendarController {
 			break;
 		case ICAL:
 			viewName = "data/display-ical";
-			addContentDispositionHeader(response, requestDetails);
+			String filename = buildIcsFilename(requestDetails);
+			HTTPHelper.addContentDispositionHeader(response, filename);
 			break;
 		case ICAL_ASTEXT:
 			viewName = "data/display-ical-astext";
@@ -535,12 +539,7 @@ public class SharedCalendarController {
 		return viewName;
 	}
 	
-	/**
-	 * 
-	 * @param response
-	 * @param requestDetails
-	 */
-	protected void addContentDispositionHeader(HttpServletResponse response, ShareRequestDetails requestDetails) {
+	String buildIcsFilename(ShareRequestDetails requestDetails) {
 		StringBuilder filename = new StringBuilder();
 		filename.append(requestDetails.getShareKey());
 		if(StringUtils.isNotBlank(requestDetails.getEventId())) {
@@ -552,7 +551,13 @@ public class SharedCalendarController {
 			filename.append(requestDetails.getRecurrenceId());
 		}
 		filename.append(ICS);
-		HTTPHelper.addContentDispositionHeader(response, filename.toString());
+		return filename.toString();
+	}
+	String buildMobileconfigFilename(ShareRequestDetails requestDetails) {
+		StringBuilder filename = new StringBuilder();
+		filename.append(requestDetails.getShareKey());
+		filename.append(".mobileconfig");
+		return filename.toString();
 	}
 	/**
 	 * 

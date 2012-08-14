@@ -61,6 +61,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	public static final String ICAL = "ical";
 	public static final String JSON = "json";
 	public static final String ASTEXT = "asText";
+	public static final String MOBILECONFIG = "mobileconfig";
 
 	public static final String USER_AGENT = "User-Agent";
 	public static final String COMPATIBILITY_PARAM = "compat";
@@ -692,6 +693,10 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @return
 	 */
 	static ShareDisplayFormat determineDisplayFormat(final HttpServletRequest request) {
+		String mobileconfigAttribute = request.getParameter(MOBILECONFIG);
+		if(null != mobileconfigAttribute) {
+			return ShareDisplayFormat.MOBILECONFIG;
+		}
 		String jsonAttribute = request.getParameter(JSON);
 		if(null != jsonAttribute) {
 			return ShareDisplayFormat.JSON;

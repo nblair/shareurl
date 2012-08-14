@@ -13,7 +13,7 @@ public enum ShareDisplayFormat {
 	ICAL_ASTEXT("ical+asText"),
 	VFB_LEGACY("vfb"),
 	JSON("json"),
-	DEBUG("debug");
+	MOBILECONFIG("mobileconfig");
 
 	private String displayType;
 
