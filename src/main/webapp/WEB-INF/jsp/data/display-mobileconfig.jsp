@@ -41,7 +41,7 @@
 			<key>PayloadDisplayName</key>
 			<string>Subscribed Calendar (WiscCal ShareURL - ${share.key})</string>
 			<key>PayloadIdentifier</key>
-			<string>edu.wisc.wisccal.shareurl.mobileconfig.</string>
+			<string>edu.wisc.wisccal.shareurl.mobileconfig.${share.key}</string>
 			<key>PayloadOrganization</key>
 			<string>University of Wisconsin-Madison</string>
 			<key>PayloadType</key>
