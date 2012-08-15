@@ -60,11 +60,11 @@
 	</array>
 	<key>PayloadDescription</key>
 	<%-- displayed on Install Profile page --%>
-	<string>WiscCal ShareURL iOS configuration for ${share.key}.</string>
+	<string>WiscCal ShareURL iOS configuration for ${share.key}. ${description}.</string>
 	<key>PayloadDisplayName</key>
 	<string>WiscCal ShareURL - ${share.key}</string>
 	<key>PayloadIdentifier</key>
-	<string>edu.wisc.wisccal.shareurl.mobileconfig</string>
+	<string>edu.wisc.wisccal.shareurl.mobileconfig.${share.key}</string>
 	<key>PayloadOrganization</key>
 	<string>University of Wisconsin-Madison</string>
 	<key>PayloadRemovalDisallowed</key>
