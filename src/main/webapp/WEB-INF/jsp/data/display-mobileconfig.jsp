@@ -59,9 +59,10 @@
 		</dict>
 	</array>
 	<key>PayloadDescription</key>
-	<string>WiscCal ShareURL iOS configuration.</string>
+	<%-- displayed on Install Profile page --%>
+	<string>WiscCal ShareURL iOS configuration for ${share.key}.</string>
 	<key>PayloadDisplayName</key>
-	<string>WiscCal ShareURL</string>
+	<string>WiscCal ShareURL - ${share.key}</string>
 	<key>PayloadIdentifier</key>
 	<string>edu.wisc.wisccal.shareurl.mobileconfig</string>
 	<key>PayloadOrganization</key>
@@ -71,7 +72,7 @@
 	<key>PayloadType</key>
 	<string>Configuration</string>
 	<key>PayloadUUID</key>
-	<string>WiscCal-ShareURL-MobileConfig-B0B4-ACC74A566E30</string>
+	<string>WiscCal-ShareURL-MobileConfig-${share.key}</string>
 	<key>PayloadVersion</key>
 	<integer>1</integer>
 </dict>
