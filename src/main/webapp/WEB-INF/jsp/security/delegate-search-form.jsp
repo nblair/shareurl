@@ -19,7 +19,7 @@ $(document).ready(function(){
 <form:form>
 <fieldset>
 <legend>Find a Resource</legend>
-<p class="info">A list of resources will appear as you begin typing; you must start with the 3 or 4 letter group identifier for the resource.</p>
+<p class="info">A list of resources will appear as you begin typing; you must start with the 3-6 letter group identifier for the resource.</p>
 <div class="formerror"><form:errors path="*"/></div>
 <label for="searchText">Resource Name:</label>&nbsp;
 <form:input path="searchText"/>

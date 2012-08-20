@@ -56,7 +56,7 @@ $(document).ready(function(){
 <h3>Log in as a Resource account</h3>
 
 <div class="info">
-<p>Use this form to log in as an WiscCal Resource Account that you administer. A list of resources will appear as you begin typing; you must start with the 3 or 4 letter group identifier for the resource.</p>
+<p>Use this form to log in as an WiscCal Resource Account that you administer. A list of resources will appear as you begin typing; you must start with the 3-6 letter group identifier for the resource.</p>
 <br/>
 <p>If no resources are displayed for your input, you may not be designated as the primary contact - please read the <a href="http://kb.wisc.edu/wisccal/page.php?id=5538">Help Desk documentation</a>.</p>
 </div>
