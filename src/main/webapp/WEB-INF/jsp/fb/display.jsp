@@ -80,7 +80,14 @@
 <c:otherwise>		
 	<c:forEach var="period" items="${busyPeriods}">
 	<img src="${clockIcon}" alt="Busy" title="Busy"/>
+	<c:choose>
+	<c:when test="${oevent:isAllDayPeriod(period)}">
+	<span class="weak"><fmt:formatDate value="${period.start}" type="date" pattern="MM/dd/yyyy"/>&nbsp;All Day</span>
+	</c:when>
+	<c:otherwise>
 	<span class="weak"><fmt:formatDate value="${period.start}" type="date" pattern="MM/dd/yyyy"/>&nbsp;<fmt:formatDate value="${period.start}" type="time" pattern="hh:mm a"/>&nbsp;-&nbsp;<fmt:formatDate value="${period.end}" type="time" pattern="hh:mm a"/></span>
+	</c:otherwise>
+	</c:choose>
 	<br/><span class="summary">Busy</span><br/>
 	</c:forEach>	
 </c:otherwise>
