@@ -39,6 +39,11 @@ public class LoginPageController {
 		return "mailplus-logout";
 	}
 	
+	@RequestMapping("/delegateLoginFailed.html")
+	public String showDelegateLoginFailed() {
+		return "delegateLoginFailed";
+	}
+	
 	/**
 	 * View shown when the user requests a feature that 
 	 * is not accessible to resource accounts.
