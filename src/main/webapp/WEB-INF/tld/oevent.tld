@@ -43,6 +43,16 @@
     </function>
     
     <function>
+        <description>Tests if a Period is an "all day" period</description>
+        <name>isAllDayPeriod</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>boolean isAllDayPeriod(net.fortuna.ical4j.model.Period)</function-signature>
+        <example>
+            &lt;c:if test="${oevent:isAllDayPeriod(period)}"&gt;
+        </example>
+    </function>
+    
+    <function>
         <description>Tests if a VEvent is cancelled</description>
         <name>isCancelled</name>
         <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
