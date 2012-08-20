@@ -45,21 +45,7 @@ public class PreferRecurrenceComponentComparator implements
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public int compare(Component o1, Component o2) {
-		// if one of the components is a timezone, shuffle that down first
-		/*
-		String componentName1 = o1.getName();
-		String componentName2 = o2.getName();
-		
-		int componentNameCompare = componentName1.compareTo(componentName2);
-		if(componentNameCompare != 0) {
-			return componentNameCompare * 10;
-		}
-		if(VTimeZone.VTIMEZONE.equals(componentName1) && VTimeZone.VTIMEZONE.equals(componentName2)) {
-			return 0;
-		}
-		*/
-		
+	public int compare(Component o1, Component o2) {		
 		// 1 or more of the components are events, compare on recurrence properties
 		CompareToBuilder builder = new CompareToBuilder();
 		builder.append(o1.getName(), o2.getName());
