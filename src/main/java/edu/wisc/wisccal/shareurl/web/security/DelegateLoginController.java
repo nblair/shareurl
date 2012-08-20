@@ -31,7 +31,6 @@ import edu.wisc.wisccal.shareurl.sasecurity.DelegateCalendarAccountUserDetailsIm
  * Simple {@link Controller} to display the delegate-login form.
  *  
  * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: DelegateLoginController.java 2040 2010-04-30 15:52:37Z npblair $
  */
 @Controller
 public class DelegateLoginController  {
