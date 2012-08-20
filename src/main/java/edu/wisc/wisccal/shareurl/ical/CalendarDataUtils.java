@@ -74,6 +74,7 @@ import net.fortuna.ical4j.model.property.XProperty;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -147,16 +148,12 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		vFreeBusy.getProperties().add(new DtEnd(new DateTime(end)));
 
 		// for each original event, add a FreeBUSY 
-		ComponentList originalEvents = original.getComponents();
-
-		for(Object o : originalEvents) {
-			Component component = (Component) o;
+		//Collections.sort(original.getComponents(), new PreferRecurrenceComponentComparator());
+		
+		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext(); ) {
+			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
 				VEvent e = (VEvent) component;
-				if(isDayEvent(e)) {
-					// skip day events in free busy
-					continue;
-				}
 
 				if(Transp.TRANSPARENT.equals(e.getTransparency())) {
 					// skip transparent events in free busy
@@ -265,6 +262,20 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public static boolean isDayEvent(VEvent event) {
 		return Value.DATE.equals(event.getStartDate().getParameter(Value.VALUE));
 	}
+	/**
+	 * 
+	 * @param period
+	 * @return true if the period represents a full day
+	 */
+	public static boolean isAllDayPeriod(Period period) {
+		Date start = period.getStart();
+		Date end = period.getEnd();
+		
+		Date expectedStart = DateUtils.truncate(start, java.util.Calendar.DATE);
+		Date expectedEnd = DateUtils.addDays(start, 1);
+		
+		return start.equals(expectedStart) && end.equals(expectedEnd);
+	}
 
 	/**
 	 * @param event
@@ -334,7 +345,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		VEvent copy = new VEvent();
 		final DtStart newDtStart;
 		final DtEnd newDtEnd;
-		if(Value.DATE.equals(original.getStartDate().getParameter(Value.VALUE))) {
+		final boolean isAllDayEvent = isDayEvent(original);
+		if(isAllDayEvent) {
 			newDtStart = new DtStart(truncate(period.getStart()));
 			newDtEnd = new DtEnd(truncate(period.getEnd()));
 		} else {
@@ -346,7 +358,13 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		copy.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
 		if(setRecurrenceId) {
 			copy.getProperties().add(propertyCopy(original.getUid()));
-			copy.getProperties().add(new RecurrenceId(period.getStart()));
+			final RecurrenceId newRecurrenceId;
+			if(isAllDayEvent) {
+				newRecurrenceId = new RecurrenceId(truncate(period.getStart()));
+			} else {
+				newRecurrenceId = new RecurrenceId(period.getStart());
+			}
+			copy.getProperties().add(newRecurrenceId);
 		} else {
 			// UID must be unique!
 			StringBuilder uid = new StringBuilder();
@@ -532,55 +550,16 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(!eventMap.values().isEmpty()) {
 			calendar.getComponents().addAll(eventMap.values());
 			// sort once more to shift timezones to the bottom
-			Collections.sort(calendar.getComponents(), new ComponentNameComparator());
+			Collections.sort(calendar.getComponents(), new PostRecurrenceExpansionComparator());
 		}
 	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#noRecurrence(net.fortuna.ical4j.model.Calendar, java.util.Date, java.util.Date, boolean)
 	 */
-	@Override
-	@SuppressWarnings("unchecked")
 	public void noRecurrence(final Calendar calendar, Date start, Date end, boolean preserveParticipants) {
-		Collections.sort(calendar.getComponents(), new PreferRecurrenceComponentComparator());
-
-		Map<EventCombinationId, VEvent> eventMap = new HashMap<EventCombinationId, VEvent>();
-
-		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
-			Component component = (Component) i.next();
-			if(VEvent.VEVENT.equals(component.getName()) ){
-				VEvent event = (VEvent) component;
-				if(CalendarDataUtils.isEventRecurring(event)) {
-					PeriodList recurringPeriods = calculateRecurrence(event, start, end);
-					for(Object o: recurringPeriods) {
-						Period period = (Period) o;
-						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, false);
-						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
-						eventMap.put(comboId, recurrenceInstance);
-						CalendarDataUtils.convertToCombinationUid(recurrenceInstance);
-					}
-					// remove the "parent" event" now that we have individual recurrence instances
-					if(!recurringPeriods.isEmpty()) {
-						i.remove();
-					}
-				} else if (event.getProperty(RecurrenceId.RECURRENCE_ID) != null) {
-					EventCombinationId comboId = new EventCombinationId(event);
-					eventMap.put(comboId, event);
-
-					CalendarDataUtils.convertToCombinationUid(event);
-					i.remove();
-				}
-
-
-			}
-		}
-
-		if(!eventMap.values().isEmpty()) {
-			calendar.getComponents().addAll(eventMap.values());
-			// sort once more to shift timezones to the bottom
-			Collections.sort(calendar.getComponents(), new ComponentNameComparator());
-		}
+		expandRecurrence(calendar, start, end, preserveParticipants);
+		breakRecurrence(calendar);
 	}
 
 	/*
@@ -945,6 +924,22 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 	static String removeMailto(String mailto) {
 		return StringUtils.remove(mailto, "mailto:");
+	}
+	
+	/**
+	 * 
+	 * @param component
+	 * @return
+	 */
+	public static String safeGetUid(Component component) {
+		if(component == null) {
+			return null;
+		}
+		Property uid = component.getProperty(Uid.UID);
+		if(uid == null) {
+			return null;
+		}
+		return uid.getValue();
 	}
 	
 	/**

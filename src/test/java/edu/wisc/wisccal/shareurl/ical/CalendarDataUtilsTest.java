@@ -18,20 +18,26 @@ package edu.wisc.wisccal.shareurl.ical;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
+import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.FreeBusy;
 import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.ProdId;
@@ -44,6 +50,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import edu.wisc.wisccal.shareurl.Tests;
@@ -409,5 +416,80 @@ public class CalendarDataUtilsTest {
 		CalendarDataUtils utils = new CalendarDataUtils();
 		utils.filterAgendaForDateRange(calendar, requestDetails);
 		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+	}
+	
+	@Test
+	public void testIsAllDayPeriod() {
+		Period negative = new Period(new DateTime(Tests.makeDateTime("20120820-1200")), new DateTime(Tests.makeDateTime("20120820-1300")));
+		Assert.assertFalse(CalendarDataUtils.isAllDayPeriod(negative));
+		
+		Period positive = new Period(new DateTime(Tests.makeDate("20120820")), new DateTime(Tests.makeDate("20120821")));
+		Assert.assertTrue(CalendarDataUtils.isAllDayPeriod(positive));
+	}
+	
+	@Test
+	public void testExpandRecurrenceOnRecurringAllDayEvent() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/recurring-day-event-1.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		Assert.assertEquals(2, calendar.getComponents().size());
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		utils.expandRecurrence(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"), false);	
+		Assert.assertEquals(5, calendar.getComponents().size());
+		for(Object o: calendar.getComponents()) {
+			VEvent event = (VEvent) o;
+			if("20120822".equals(event.getStartDate().getValue())) {
+				Assert.assertEquals(Transp.TRANSPARENT, event.getTransparency());
+			} else {
+				Assert.assertEquals(Transp.OPAQUE, event.getTransparency());
+			}
+		}
+	}
+	@Test
+	public void testNoRecurrenceOnRecurringAllDayEvent() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/recurring-day-event-1.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		Assert.assertEquals(2, calendar.getComponents().size());
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		utils.noRecurrence(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"), false);	
+		Assert.assertEquals(5, calendar.getComponents().size());
+		for(Object o: calendar.getComponents()) {
+			VEvent event = (VEvent) o;
+			if("20120822".equals(event.getStartDate().getValue())) {
+				Assert.assertEquals(Transp.TRANSPARENT, event.getTransparency());
+			} else {
+				Assert.assertEquals(Transp.OPAQUE, event.getTransparency());
+			}
+		}
+	}
+	
+	@Test
+	public void testConvertToFreeBusyExampleRecurringDayEvent1() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/recurring-day-event-1.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		Assert.assertEquals(2, calendar.getComponents().size());
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		utils.noRecurrence(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"), false);	
+		Assert.assertEquals(5, calendar.getComponents().size());
+		Calendar fbCalendar = utils.convertToFreeBusy(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"));
+		
+		Assert.assertEquals(1, fbCalendar.getComponents().size());
+		VFreeBusy freeBusy = (VFreeBusy) fbCalendar.getComponent(VFreeBusy.VFREEBUSY);
+		Period expectedSkipped = new Period(new DateTime(Tests.makeDate("20120822")), new DateTime(Tests.makeDate("20120823")));
+		Assert.assertNotNull(freeBusy);
+		for(Object o : freeBusy.getProperties(FreeBusy.FREEBUSY)) {
+			FreeBusy fb = (FreeBusy) o;
+			PeriodList periodList = fb.getPeriods();
+			for(Object p: periodList) {
+				Period period = (Period) p;
+				Assert.assertNotSame(expectedSkipped, period);
+			}
+			
+		}
 	}
 }
