@@ -81,6 +81,7 @@ import org.springframework.stereotype.Service;
 
 import edu.wisc.wisccal.shareurl.domain.simple.Event;
 import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
+import edu.wisc.wisccal.shareurl.web.IShareRequestDetails;
 
 /**
  * {@link CalendarDataProcessor} implementation.
@@ -180,10 +181,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 	/*
 	 * (non-Javadoc)
-	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#stripEventDetails(net.fortuna.ical4j.model.Calendar)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#stripEventDetails(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
 	 */
 	@Override
-	public void stripEventDetails(final Calendar original) {
+	public void stripEventDetails(final Calendar original, final ICalendarAccount calendarAccount) {
 		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
@@ -199,6 +200,24 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 					}
 					component.getProperties().add(new Summary(BUSY));
 				}
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#removeDeclined(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public void removeDeclined(Calendar calendar,
+			ICalendarAccount calendarAccount) {
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				VEvent event = (VEvent) component;
+				EventParticipation participation = getEventParticipation(event, calendarAccount);
+				if (participation.equals(EventParticipation.ATTENDEE_DECLINED)) {
+					i.remove();
+				} 
 			}
 		}
 	}
@@ -313,8 +332,17 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	@Override
 	public VEvent cheapRecurrenceCopy(VEvent original, Period period, boolean preserveParticipants, boolean setRecurrenceId) {
 		VEvent copy = new VEvent();
-		copy.getProperties().add(new DtStart(period.getStart()));
-		copy.getProperties().add(new DtEnd(period.getEnd()));
+		final DtStart newDtStart;
+		final DtEnd newDtEnd;
+		if(Value.DATE.equals(original.getStartDate().getParameter(Value.VALUE))) {
+			newDtStart = new DtStart(truncate(period.getStart()));
+			newDtEnd = new DtEnd(truncate(period.getEnd()));
+		} else {
+			 newDtStart = new DtStart(period.getStart());
+			 newDtEnd = new DtEnd(period.getEnd());
+		}
+		copy.getProperties().add(newDtStart);
+		copy.getProperties().add(newDtEnd);
 		copy.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
 		if(setRecurrenceId) {
 			copy.getProperties().add(propertyCopy(original.getUid()));
@@ -356,17 +384,15 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	}
 
 	/**
-	 * Copy the value of the UID property from the original (argument 2) to the "copy" (argument 1).
-	 * If the original didn't have a UID, make one.
-	 * @param copy
-	 * @param original
+	 * Truncates the {@link DateTime} argument to just a {@link net.fortuna.ical4j.model.Date}.
+	 * 
+	 * @param dateTime
+	 * @return
 	 */
-	protected void copyOrGenerateUid(VEvent copy, VEvent original) {
-		if(original.getUid() != null) {
-			copy.getProperties().add(propertyCopy(original.getUid()));
-		}
+	protected net.fortuna.ical4j.model.Date truncate(DateTime dateTime) {
+		net.fortuna.ical4j.model.Date result = new net.fortuna.ical4j.model.Date(dateTime);
+		return result;
 	}
-
 	/**
 	 * 
 	 * @param property
@@ -506,12 +532,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(!eventMap.values().isEmpty()) {
 			calendar.getComponents().addAll(eventMap.values());
 			// sort once more to shift timezones to the bottom
-			Collections.sort(calendar.getComponents(), new Comparator<Component>() {
-				@Override
-				public int compare(Component o1, Component o2) {
-					return new CompareToBuilder().append(o1.getName(), o2.getName()).toComparison();
-				}
-			});
+			Collections.sort(calendar.getComponents(), new ComponentNameComparator());
 		}
 	}
 
@@ -558,12 +579,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(!eventMap.values().isEmpty()) {
 			calendar.getComponents().addAll(eventMap.values());
 			// sort once more to shift timezones to the bottom
-			Collections.sort(calendar.getComponents(), new Comparator<Component>() {
-				@Override
-				public int compare(Component o1, Component o2) {
-					return new CompareToBuilder().append(o1.getName(), o2.getName()).toComparison();
-				}
-			});
+			Collections.sort(calendar.getComponents(), new ComponentNameComparator());
 		}
 	}
 
@@ -587,6 +603,12 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			}
 		}
 	}
+	/**
+	 * 
+	 * @param event
+	 * @param calendarAccount
+	 * @return
+	 */
 	EventParticipation getEventParticipation(VEvent event, ICalendarAccount calendarAccount) {
 		Organizer organizer = event.getOrganizer();
 		PropertyList attendees = event.getProperties(Attendee.ATTENDEE);
@@ -601,7 +623,14 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		for(Object o: attendees) {
 			Attendee attendee = (Attendee) o;
 			if(attendee.getValue().equals(mailto(calendarAccount.getEmailAddress()))) {
-				return EventParticipation.ATTENDEE;
+				Parameter partstat = attendee.getParameter(PartStat.PARTSTAT);
+				if(partstat == null || PartStat.NEEDS_ACTION.equals(partstat)) {
+					return EventParticipation.ATTENDEE_NEEDSACTION;
+				} else if (PartStat.ACCEPTED.equals(partstat)) {
+					return EventParticipation.ATTENDEE_ACCEPTED;
+				} else {
+					return EventParticipation.ATTENDEE_DECLINED;
+				}
 			}
 		}
 
@@ -618,7 +647,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			if(VEvent.VEVENT.equals(component.getName())) {
 				VEvent event = (VEvent) component;
 				EventParticipation participation = getEventParticipation(event, calendarAccount);
-				if(!participation.equals(EventParticipation.ATTENDEE)) {
+				if(!participation.isAttendee()) {
 					i.remove();
 					if(LOG.isDebugEnabled()) {
 						LOG.debug("attendeeOnly: removed " + getDebugId(component) + ", " + participation + " from agenda for " + calendarAccount);
@@ -647,6 +676,27 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			}
 		}
 	}
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#filterAgendaForDateRange(net.fortuna.ical4j.model.Calendar, edu.wisc.wisccal.shareurl.web.IShareRequestDetails)
+	 */
+	@Override
+	public void filterAgendaForDateRange(Calendar agenda,
+			IShareRequestDetails requestDetails) {
+		requestDetails.getStartDate();
+		
+		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext() ;){
+			Component c = (Component) i.next();
+			if(VEvent.VEVENT.equals(c.getName())) {
+				VEvent event = (VEvent) c;
+				if(requestDetails.getStartDate().after(event.getStartDate().getDate()) || 
+						requestDetails.getEndDate().before(event.getStartDate().getDate())) {
+					LOG.debug("removing event " + CalendarDataUtils.staticGetDebugId(event) + " since startdate falls outside of requestDetails window " + requestDetails);
+					i.remove();
+				}
+			}
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#simplify(net.fortuna.ical4j.model.Calendar, boolean)
@@ -895,5 +945,16 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 	static String removeMailto(String mailto) {
 		return StringUtils.remove(mailto, "mailto:");
+	}
+	
+	/**
+	 * {@link Comparator} for {@link Component#getName()}.
+	 * @author Nicholas Blair
+	 */
+	static class ComponentNameComparator implements Comparator<Component> {
+		@Override
+		public int compare(Component o1, Component o2) {
+			return new CompareToBuilder().append(o1.getName(), o2.getName()).toComparison();
+		}
 	}
 }

@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 
 import net.fortuna.ical4j.model.Calendar;
@@ -29,6 +29,7 @@ import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Location;
@@ -43,8 +44,10 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import edu.wisc.wisccal.shareurl.Tests;
+import edu.wisc.wisccal.shareurl.web.ShareRequestDetails;
 
 /**
  * Test harness for {@link CalendarDataUtils}.
@@ -75,7 +78,7 @@ public class CalendarDataUtilsTest {
 	@Test
 	public void testConvertClassPublicControl() throws Exception {
 		ComponentList components = new ComponentList();
-		VEvent event = new VEvent(new DateTime(makeDateTime("20100210-0900")), new DateTime(makeDateTime("20100210-1000")), "a");
+		VEvent event = new VEvent(new DateTime(Tests.makeDateTime("20100210-0900")), new DateTime(Tests.makeDateTime("20100210-1000")), "a");
 		event.getProperties().add(Clazz.PUBLIC);
 		
 		VEvent clone = (VEvent) event.copy();
@@ -99,11 +102,11 @@ public class CalendarDataUtilsTest {
 	@Test
 	public void testConvertClassPublic1() throws Exception {
 		ComponentList components = new ComponentList();
-		VEvent privateEvent = new VEvent(new DateTime(makeDateTime("20100210-0900")), new DateTime(makeDateTime("20100210-1000")), "private event");
+		VEvent privateEvent = new VEvent(new DateTime(Tests.makeDateTime("20100210-0900")), new DateTime(Tests.makeDateTime("20100210-1000")), "private event");
 		privateEvent.getProperties().add(Clazz.PRIVATE);
 		components.add(privateEvent);
 		
-		VEvent confidentialEvent = new VEvent(new DateTime(makeDateTime("20100210-0900")), new DateTime(makeDateTime("20100210-1000")), "confidential event");
+		VEvent confidentialEvent = new VEvent(new DateTime(Tests.makeDateTime("20100210-0900")), new DateTime(Tests.makeDateTime("20100210-1000")), "confidential event");
 		confidentialEvent.getProperties().add(Clazz.CONFIDENTIAL);
 		components.add(confidentialEvent);
 		
@@ -133,7 +136,7 @@ public class CalendarDataUtilsTest {
 	@Test
 	public void testGetSingleEventControl() throws Exception {
 		ComponentList components = new ComponentList();
-		VEvent privateEvent = new VEvent(new DateTime(makeDateTime("20100210-0900")), new DateTime(makeDateTime("20100210-1000")), "event");
+		VEvent privateEvent = new VEvent(new DateTime(Tests.makeDateTime("20100210-0900")), new DateTime(Tests.makeDateTime("20100210-1000")), "event");
 		privateEvent.getProperties().add(new Uid("12345"));
 		components.add(privateEvent);
 		Calendar calendar = new Calendar(components);
@@ -150,7 +153,7 @@ public class CalendarDataUtilsTest {
 	@Test
 	public void testGetSingleEventNotFound() throws Exception {
 		ComponentList components = new ComponentList();
-		VEvent privateEvent = new VEvent(new DateTime(makeDateTime("20100210-0900")), new DateTime(makeDateTime("20100210-1000")), "event");
+		VEvent privateEvent = new VEvent(new DateTime(Tests.makeDateTime("20100210-0900")), new DateTime(Tests.makeDateTime("20100210-1000")), "event");
 		privateEvent.getProperties().add(new Uid("123456"));
 		components.add(privateEvent);
 		Calendar calendar = new Calendar(components);
@@ -186,7 +189,7 @@ public class CalendarDataUtilsTest {
 		Attendee selfAttendee = new Attendee("mailto:somebody@wisc.edu");
 		event.getProperties().add(selfAttendee);
 		
-		Assert.assertEquals(EventParticipation.ATTENDEE, utils.getEventParticipation(event, calendarAccount));
+		Assert.assertEquals(EventParticipation.ATTENDEE_NEEDSACTION, utils.getEventParticipation(event, calendarAccount));
 		
 		event.getProperties().remove(selfAttendee);
 		
@@ -259,12 +262,14 @@ public class CalendarDataUtilsTest {
 	
 	@Test
 	public void testStripEventDetails() {
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("somebody@wisc.edu");
 		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test stripEventDetails", false);
 		event.getProperties().add(new Location("somewhere"));
 		Calendar calendar = CalendarDataUtils.wrapEvent(event);
 		
 		CalendarDataUtils utils = new CalendarDataUtils();
-		utils.stripEventDetails(calendar);
+		utils.stripEventDetails(calendar, calendarAccount);
 		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
 		VEvent after = (VEvent) calendar.getComponent(VEvent.VEVENT);
 		Assert.assertNotNull(after.getUid());
@@ -274,12 +279,14 @@ public class CalendarDataUtilsTest {
 	
 	@Test
 	public void testStripEventDetailsFree() {
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("somebody@wisc.edu");
 		VEvent event = Tests.mockEvent("20120813-0900", "20120813-1000", "test stripEventDetailsFree", false);
 		event.getProperties().add(Transp.TRANSPARENT);
 		Calendar calendar = CalendarDataUtils.wrapEvent(event);
 		
 		CalendarDataUtils utils = new CalendarDataUtils();
-		utils.stripEventDetails(calendar);
+		utils.stripEventDetails(calendar, calendarAccount);
 		Assert.assertEquals(0, calendar.getComponents(VEvent.VEVENT).size());
 	}
 	
@@ -294,6 +301,33 @@ public class CalendarDataUtilsTest {
 		Assert.assertEquals(period.getEnd(), recurrenceCopy.getEndDate().getDate());
 		Assert.assertEquals("somewhere", recurrenceCopy.getLocation().getValue());
 		Assert.assertEquals("test cheapRecurrenceCopy", recurrenceCopy.getSummary().getValue());
+		Assert.assertNotSame(event.getUid(), recurrenceCopy.getUid());
+		Assert.assertTrue(recurrenceCopy.getUid().getValue().startsWith(event.getUid().getValue()));
+		Assert.assertNull(recurrenceCopy.getTransparency());
+	}
+	
+	@Test
+	public void testTruncate() {
+		DateTime dateTime = new DateTime(Tests.makeDateTime("20120813-0900"));
+		CalendarDataUtils utils = new CalendarDataUtils();
+		Date date = utils.truncate(dateTime);
+		Assert.assertNotSame(dateTime, date);
+	}
+	@Test
+	public void testCheapRecurrenceCopyDayEvent() throws ParseException {
+		VEvent event = Tests.mockAllDayEvent("20120813", "20120814", "test cheapRecurrenceCopyDayEvent");
+		event.getProperties().add(new Location("somewhere"));
+		CalendarDataUtils utils = new CalendarDataUtils();
+		Period period = new Period(new DateTime("20120815"), new DateTime("20120816"));
+		VEvent recurrenceCopy = utils.cheapRecurrenceCopy(event, period, false, false);
+		Assert.assertEquals(period.getStart(), recurrenceCopy.getStartDate().getDate());
+		Assert.assertEquals(period.getEnd(), recurrenceCopy.getEndDate().getDate());
+		Assert.assertEquals(Value.DATE, recurrenceCopy.getStartDate().getParameter(Value.VALUE));
+		Assert.assertEquals(Value.DATE, recurrenceCopy.getEndDate().getParameter(Value.VALUE));
+		Assert.assertEquals("20120815", recurrenceCopy.getStartDate().getValue());
+		Assert.assertEquals("20120816", recurrenceCopy.getEndDate().getValue());
+		Assert.assertEquals("somewhere", recurrenceCopy.getLocation().getValue());
+		Assert.assertEquals("test cheapRecurrenceCopyDayEvent", recurrenceCopy.getSummary().getValue());
 		Assert.assertNotSame(event.getUid(), recurrenceCopy.getUid());
 		Assert.assertTrue(recurrenceCopy.getUid().getValue().startsWith(event.getUid().getValue()));
 		Assert.assertNull(recurrenceCopy.getTransparency());
@@ -315,14 +349,65 @@ public class CalendarDataUtilsTest {
 		Assert.assertTrue(recurrenceCopy.getUid().getValue().startsWith(event.getUid().getValue()));
 		Assert.assertEquals(Transp.TRANSPARENT, recurrenceCopy.getTransparency());
 	}
+	
 	/**
-	 * 
-	 * @param value
-	 * @return
-	 * @throws ParseException
+	 * Verify no exceptions thrown for empty calendar
 	 */
-	private java.util.Date makeDateTime(String value) throws ParseException {
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd-HHmm");
-		return DateUtils.truncate(df.parse(value), java.util.Calendar.MINUTE);
+	@Test
+	public void filterEmpty() {
+		Calendar calendar = new Calendar();
+		
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setRequestURI("/share/u/abcdefg");
+		request.setContextPath("/share");
+		request.setServletPath("/u");
+		ShareRequestDetails requestDetails = new ShareRequestDetails(request);
+		CalendarDataUtils utils = new CalendarDataUtils();
+		utils.filterAgendaForDateRange(calendar, requestDetails);
+	}
+	
+	/**
+	 * Verify event within date range is retained.
+	 */
+	@Test
+	public void filterControl() {
+		Calendar calendar = new Calendar();
+		Date now = new Date();
+		VEvent event = new VEvent(new DateTime(now), new DateTime(DateUtils.addMinutes(now, 30)), "filterControl");
+		calendar.getComponents().add(event);
+		
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setRequestURI("/share/u/abcdefg");
+		request.setContextPath("/share");
+		request.setServletPath("/u");
+		ShareRequestDetails requestDetails = new ShareRequestDetails(request);
+		CalendarDataUtils utils = new CalendarDataUtils();
+		utils.filterAgendaForDateRange(calendar, requestDetails);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
+	}
+	
+	/**
+	 * Verify event within date range is retained, and event outside of date range
+	 * is removed.
+	 * 
+	 */
+	@Test
+	public void filterRemove() {
+		Calendar calendar = new Calendar();
+		Date now = new Date();
+		VEvent event = new VEvent(new DateTime(now), new DateTime(DateUtils.addMinutes(now, 30)), "filterRemove-keep");
+		
+		VEvent willDrop = new VEvent(new DateTime(DateUtils.addDays(now, 1)), new DateTime(DateUtils.addMinutes(DateUtils.addDays(now, 1), 30)), "filterRemove-remove");
+		calendar.getComponents().add(event);
+		calendar.getComponents().add(willDrop);
+		
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setRequestURI("/share/u/abcdefg");
+		request.setContextPath("/share");
+		request.setServletPath("/u");
+		ShareRequestDetails requestDetails = new ShareRequestDetails(request);
+		CalendarDataUtils utils = new CalendarDataUtils();
+		utils.filterAgendaForDateRange(calendar, requestDetails);
+		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
 	}
 }

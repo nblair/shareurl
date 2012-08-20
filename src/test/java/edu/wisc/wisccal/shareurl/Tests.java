@@ -26,6 +26,7 @@ import java.util.UUID;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.TzId;
+import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.Summary;
@@ -38,6 +39,17 @@ import org.apache.commons.lang.time.DateUtils;
  */
 public class Tests {
 
+	/**
+	 * Create a date using the format "yyyyMMdd".
+	 * 
+	 * @param value
+	 * @return
+	 * @throws ParseException
+	 */
+	public static java.util.Date makeDate(String value) {
+		return makeDateTime(value, "yyyyMMdd");
+	}
+	
 	/**
 	 * Create a date using the format "yyyyMMdd-HHmm".
 	 * 
@@ -59,7 +71,7 @@ public class Tests {
 	 * @throws ParseException
 	 */
 	public static java.util.Date makeDateTime(String value, String format) {
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd-HHmm");
+		SimpleDateFormat df = new SimpleDateFormat(format);
 		try {
 			return DateUtils.truncate(df.parse(value), java.util.Calendar.MINUTE);
 		} catch (ParseException e) {
@@ -92,6 +104,27 @@ public class Tests {
 		} else {
 			dtEnd.setUtc(true);
 		}
+		event.getProperties().add(dtEnd);
+		event.getProperties().add(new Summary(summary));
+		return event;
+	}
+	
+	/**
+	 * Mock an all day event, will have a UID, DTSTART, DTEND, and SUMMARY.
+	 * 
+	 * @param start the start time "yyyyMMdd"
+	 * @param end the end time "yyyyMMdd"
+	 * @param the summary
+	 * @return the control event
+	 */
+	public static VEvent mockAllDayEvent(String start, String end, String summary) {
+		VEvent event = new VEvent();
+		event.getProperties().add(new Uid(UUID.randomUUID().toString()));
+		DtStart dtStart = new DtStart(new DateTime(Tests.makeDate(start)));
+		dtStart.getParameters().add(Value.DATE);
+		event.getProperties().add(dtStart);
+		DtEnd dtEnd = new DtEnd(new DateTime(Tests.makeDate(end)));
+		dtEnd.getParameters().add(Value.DATE);
 		event.getProperties().add(dtEnd);
 		event.getProperties().add(new Summary(summary));
 		return event;

@@ -11,6 +11,16 @@ package edu.wisc.wisccal.shareurl.ical;
 enum EventParticipation {
 	PERSONAL_EVENT,
 	ORGANIZER,
-	ATTENDEE,
+	ATTENDEE_ACCEPTED,
+	ATTENDEE_DECLINED,
+	ATTENDEE_NEEDSACTION,
 	NOT_INVOLVED;
+	
+	/**
+	 * 
+	 * @return
+	 */
+	boolean isAttendee() {
+		return this.equals(ATTENDEE_ACCEPTED) || this.equals(ATTENDEE_DECLINED) || this.equals(ATTENDEE_NEEDSACTION);
+	}
 }

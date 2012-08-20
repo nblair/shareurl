@@ -31,6 +31,8 @@ import net.fortuna.ical4j.model.property.FreeBusy;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 import edu.wisc.wisccal.shareurl.domain.simple.EventParticipant;
+import edu.wisc.wisccal.shareurl.web.IShareRequestDetails;
+import edu.wisc.wisccal.shareurl.web.ShareRequestDetails;
 
 /**
  * Interface defining the operations that execute the data formatting
@@ -60,8 +62,18 @@ public interface CalendarDataProcessor {
 	 * simply critical fields (DTSTART, DTEND, UID, etc) and setting the SUMMARY to "Busy".
 	 * 
 	 * @param original
+	 * @param calendarAccount
 	 */
-	void stripEventDetails(final Calendar original);
+	void stripEventDetails(final Calendar original, ICalendarAccount calendarAccount);
+	
+	/**
+	 * Mutative method.
+	 * Remove events that the {@link ICalendarAccount} has declined.
+	 * 
+	 * @param calendar
+	 * @param calendarAccount
+	 */
+	void removeDeclined(final Calendar calendar, ICalendarAccount calendarAccount);
 	/**
 	 * Mutative method. Convert the {@link Clazz} property of all
 	 * {@link VEvent} components in the calendar to {@link Clazz#PUBLIC}.
@@ -191,4 +203,15 @@ public interface CalendarDataProcessor {
 	 * @return the simplified representation
 	 */
 	edu.wisc.wisccal.shareurl.domain.simple.Calendar simplify(Calendar calendar, boolean includeParticipants);
+	
+	/**
+	 * Mutative method to inspect all {@link VEvent} components in the agenda argument
+	 * and remove those that have DTSTARTs that fall outside of the date range in the 
+	 * {@link ShareRequestDetails}.
+	 * 
+	 * @param agenda
+	 * @param requestDetails
+	 */
+	void filterAgendaForDateRange(Calendar agenda, IShareRequestDetails requestDetails);
+	
 }

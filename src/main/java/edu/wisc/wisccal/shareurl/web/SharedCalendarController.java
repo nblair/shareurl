@@ -227,7 +227,7 @@ public class SharedCalendarController {
 			calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
-			ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+			calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);
 
 			if(null != requestDetails.getEventId()) {
 				VEvent matchingEvent = findMatchingEvent(agenda, requestDetails);
@@ -286,7 +286,7 @@ public class SharedCalendarController {
 			// - adjust recurrence if necessary
 			if(!requestDetails.isKeepRecurrence()) {
 				calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), sharePreferences.isIncludeParticipants());
-				ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+				calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);
 			} else if(requestDetails.requiresBreakRecurrence()) {
 				calendarDataProcessor.breakRecurrence(agenda);
 			}
@@ -318,6 +318,7 @@ public class SharedCalendarController {
 		}
 		return null;
 	}
+	
 	/**
 	 * Request handler.
 	 */
@@ -388,7 +389,7 @@ public class SharedCalendarController {
 			}
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
-				return handleFreeBusyShare(agenda, requestDetails, response, model);
+				return handleFreeBusyShare(agenda, requestDetails, response, model, account);
 			}
 
 			boolean success = prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
@@ -567,15 +568,15 @@ public class SharedCalendarController {
 	 * @return
 	 */
 	protected String handleFreeBusyShare(final Calendar agenda, final ShareRequestDetails requestDetails, final HttpServletResponse response,
-			final ModelMap model) {
+			final ModelMap model, final ICalendarAccount calendarAccount) {
 		final ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 
 		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
-		ShareHelper.filterAgendaForDateRange(agenda, requestDetails);
+		calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);
 
 		if(displayFormat.isMarkupLanguage()) {
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
-				calendarDataProcessor.stripEventDetails(agenda);
+				calendarDataProcessor.stripEventDetails(agenda, calendarAccount);
 				model.put("calendar", calendarDataProcessor.simplify(agenda, false));
 			} else {
 				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
@@ -601,7 +602,12 @@ public class SharedCalendarController {
 				model.put("ical", freebusy.toString());
 			} else {
 				// want iCalendar output with VEVENTs, but no details
-				calendarDataProcessor.stripEventDetails(agenda);
+				calendarDataProcessor.stripEventDetails(agenda, calendarAccount);
+				// - convert class if necessary
+				if(requestDetails.requiresConvertClass()) {
+					calendarDataProcessor.convertClassPublic(agenda);
+				}
+				
 				model.put("ical", agenda.toString());
 			}
 		} 
