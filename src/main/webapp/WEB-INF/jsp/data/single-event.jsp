@@ -73,6 +73,7 @@ ${descriptionSection}<br/>
 </div> <!-- close description div -->
 </c:if>
 
+<c:if test="${includeParticipants }">
 <c:if test="${not empty event.organizer}">
 <p>
 <span class="label">Organizer:&nbsp;</span>
@@ -87,6 +88,7 @@ ${descriptionSection}<br/>
 <li><span class="attendee">${oevent:getParticipantDisplayName(attendee)} (<a href="${attendee.value}">${oevent:getParticipantEmailAddress(attendee)}</a>)</span>, <span class="partstat">${oevent:getParticipationStatus(attendee)}</span></li>
 </c:forEach>
 </ul>
+</c:if>
 </c:if>
 </div> <!-- close event div -->
 </div> <!-- close content div -->

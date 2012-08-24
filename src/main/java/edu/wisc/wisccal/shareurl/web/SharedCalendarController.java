@@ -232,15 +232,16 @@ public class SharedCalendarController {
 			if(null != requestDetails.getEventId()) {
 				VEvent matchingEvent = findMatchingEvent(agenda, requestDetails);
 				if(matchingEvent != null) {
-					if(null != matchingEvent.getDescription()) {
-						String descriptionValue = matchingEvent.getDescription().getValue();
-						String [] descriptionSections = descriptionValue.split("\n");
-						model.put("descriptionSections", descriptionSections);
-					}
 					if(ShareDisplayFormat.JSON.equals(display)) {
 						model.put("calendar", calendarDataProcessor.simplify(CalendarDataUtils.wrapEvent(matchingEvent), sharePreferences.isIncludeParticipants()));
 					} else {
+						if(null != matchingEvent.getDescription()) {
+							String descriptionValue = matchingEvent.getDescription().getValue();
+							String [] descriptionSections = descriptionValue.split("\n");
+							model.put("descriptionSections", descriptionSections);
+						}
 						model.put("event", matchingEvent);
+						model.put("includeParticipants", sharePreferences.isIncludeParticipants());
 					}
 				} else {
 					// signal 404
@@ -460,7 +461,7 @@ public class SharedCalendarController {
 	 * @param response
 	 * @return
 	 */
-	protected String handleSingleEvent(final Calendar agenda, final ICalendarAccount account, final Share share, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
+	private String handleSingleEvent(final Calendar agenda, final ICalendarAccount account, final Share share, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
 		VEvent matchingEvent = null;
 		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext();) {
 			Component component = (Component) i.next();
