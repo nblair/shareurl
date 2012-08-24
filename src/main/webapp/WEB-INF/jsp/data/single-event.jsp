@@ -19,6 +19,11 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="<c:url value="/css/calendar-theme2.css"/>" media="all"/>
+<style type="text/css">
+.accepted {color:green;}
+.declined {color:red;}
+.other {color:orange;}
+</style>
 <title>${event.summary.value}</title>
 </head>
 <body>
@@ -85,7 +90,7 @@ ${descriptionSection}<br/>
 <p><span class="label">Attendees:&nbsp;</span></p>
 <ul>
 <c:forEach items="${oevent:getAttendees(event)}" var="attendee">
-<li><span class="attendee">${oevent:getParticipantDisplayName(attendee)} (<a href="${attendee.value}">${oevent:getParticipantEmailAddress(attendee)}</a>)</span>, <span class="partstat">${oevent:getParticipationStatus(attendee)}</span></li>
+<li><span class="attendee">${oevent:getParticipantDisplayName(attendee)} (<a href="${attendee.value}">${oevent:getParticipantEmailAddress(attendee)}</a>)</span>, <span class="partstat ${oevent:getParticipationStatusStyle(attendee)}">${oevent:getParticipationStatus(attendee)}</span></li>
 </c:forEach>
 </ul>
 </c:if>

@@ -992,7 +992,32 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 		Parameter partstat = property.getParameter(PartStat.PARTSTAT);
 		if(partstat != null) {
-			return partstat.getValue();
+			if(PartStat.ACCEPTED.equals(partstat)) {
+				return "Attending";
+			} else if (PartStat.DECLINED.equals(partstat)){
+				return "Declined";
+			} else if (PartStat.NEEDS_ACTION.equals(partstat)) {
+				return "Maybe";
+			} else {
+				return partstat.getValue();
+			}
+		}
+		
+		return null;
+	}
+	public static String getParticipationStatusStyle(Property property) {
+		if(property == null) {
+			return null;
+		}
+		Parameter partstat = property.getParameter(PartStat.PARTSTAT);
+		if(partstat != null) {
+			if(PartStat.ACCEPTED.equals(partstat)) {
+				return "accepted";
+			} else if (PartStat.DECLINED.equals(partstat)){
+				return "declined";
+			} else {
+				return "other";
+			}
 		}
 		
 		return null;

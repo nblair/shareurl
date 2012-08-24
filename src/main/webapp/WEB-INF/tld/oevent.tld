@@ -90,6 +90,15 @@
         </example>
     </function>
     <function>
+        <description>Get the style for the participation status of an event participant</description>
+        <name>getParticipationStatusStyle</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>String getParticipationStatusStyle(net.fortuna.ical4j.model.Property)</function-signature>
+        <example>
+            &lt;c:out value="${oevent:getParticipationStatusStyle(attendee)}"&gt;
+        </example>
+    </function>
+    <function>
         <description>Get the list of attendee properties</description>
         <name>getAttendees</name>
         <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
