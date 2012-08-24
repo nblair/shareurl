@@ -63,6 +63,43 @@
     </function>
     
     <function>
+        <description>Get the email address of an event participant</description>
+        <name>getParticipantEmailAddress</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>String getParticipantEmailAddress(net.fortuna.ical4j.model.Property)</function-signature>
+        <example>
+            &lt;c:out value="${oevent:getParticipantEmailAddress(organizer)}"&gt;
+        </example>
+    </function>
+    <function>
+        <description>Get the display name of an event participant</description>
+        <name>getParticipantDisplayName</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>String getParticipantDisplayName(net.fortuna.ical4j.model.Property)</function-signature>
+        <example>
+            &lt;c:out value="${oevent:getParticipantDisplayName(organizer)}"&gt;
+        </example>
+    </function>
+    <function>
+        <description>Get the participation status of an event participant</description>
+        <name>getParticipationStatus</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>String getParticipationStatus(net.fortuna.ical4j.model.Property)</function-signature>
+        <example>
+            &lt;c:out value="${oevent:getParticipationStatus(attendee)}"&gt;
+        </example>
+    </function>
+    <function>
+        <description>Get the list of attendee properties</description>
+        <name>getAttendees</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>String getAttendees(net.fortuna.ical4j.model.component.VEvent)</function-signature>
+        <example>
+            &lt;c:out value="${oevent:getAttendees(event)}"&gt;
+        </example>
+    </function>
+    
+    <function>
         <description>Tests if a VEvent is a UW Available Appointment</description>
         <name>isSchedulingAssistantAppointment</name>
         <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>

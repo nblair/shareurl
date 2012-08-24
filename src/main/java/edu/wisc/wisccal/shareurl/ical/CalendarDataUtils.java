@@ -92,6 +92,8 @@ import edu.wisc.wisccal.shareurl.web.IShareRequestDetails;
 @Service
 public final class CalendarDataUtils implements CalendarDataProcessor {
 
+	private static final String MAILTO_PREFIX = "mailto:";
+
 	static final String BUSY = "Busy";
 
 	static final String FREE = "Free";
@@ -919,11 +921,11 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * @return
 	 */
 	static String mailto(String emailAddress) {
-		return "mailto:" + emailAddress;
+		return MAILTO_PREFIX + emailAddress;
 	}
 
 	static String removeMailto(String mailto) {
-		return StringUtils.remove(mailto, "mailto:");
+		return StringUtils.remove(mailto, MAILTO_PREFIX);
 	}
 	
 	/**
@@ -942,6 +944,59 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		return uid.getValue();
 	}
 	
+	/**
+	 * 
+	 * @param property
+	 * @return
+	 */
+	public static String getParticipantEmailAddress(Property property) {
+		if(property == null) {
+			return null;
+		}
+		if(property.getValue().startsWith(MAILTO_PREFIX)) {
+			return removeMailto(property.getValue());
+		}
+		
+		return null;
+	}
+	/**
+	 * 
+	 * @param property
+	 * @return
+	 */
+	public static String getParticipantDisplayName(Property property) {
+		if(property == null) {
+			return null;
+		}
+		Parameter cn = property.getParameter(Cn.CN);
+		if(cn != null) {
+			return cn.getValue();
+		}
+		
+		return null;
+	}
+	public static PropertyList getAttendees(VEvent event) {
+		if(event == null) {
+			return null;
+		}
+		
+		return event.getProperties(Attendee.ATTENDEE);
+	}
+	/**
+	 * 
+	 * @param property
+	 */
+	public static String getParticipationStatus(Property property) {
+		if(property == null) {
+			return null;
+		}
+		Parameter partstat = property.getParameter(PartStat.PARTSTAT);
+		if(partstat != null) {
+			return partstat.getValue();
+		}
+		
+		return null;
+	}
 	/**
 	 * {@link Comparator} for {@link Component#getName()}.
 	 * @author Nicholas Blair
