@@ -8,7 +8,7 @@ package edu.wisc.wisccal.shareurl.ical;
  * 
  * @author Nicholas Blair
  */
-enum EventParticipation {
+public enum EventParticipation {
 	PERSONAL_EVENT,
 	ORGANIZER,
 	ATTENDEE_ACCEPTED,
@@ -18,9 +18,9 @@ enum EventParticipation {
 	
 	/**
 	 * 
-	 * @return
+	 * @return true if this equals any of the ATTENDEE prefixed values
 	 */
-	boolean isAttendee() {
+	public boolean isAttendee() {
 		return this.equals(ATTENDEE_ACCEPTED) || this.equals(ATTENDEE_DECLINED) || this.equals(ATTENDEE_NEEDSACTION);
 	}
 }

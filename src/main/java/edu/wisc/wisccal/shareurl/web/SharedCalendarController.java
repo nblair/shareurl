@@ -52,6 +52,7 @@ import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
+import edu.wisc.wisccal.shareurl.ical.EventParticipation;
 import edu.wisc.wisccal.shareurl.ical.IEventFilter;
 import edu.wisc.wisccal.shareurl.ical.VEventComparator;
 import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreference;
@@ -235,6 +236,9 @@ public class SharedCalendarController {
 					if(ShareDisplayFormat.JSON.equals(display)) {
 						model.put("calendar", calendarDataProcessor.simplify(CalendarDataUtils.wrapEvent(matchingEvent), sharePreferences.isIncludeParticipants()));
 					} else {
+						EventParticipation participation = calendarDataProcessor.getEventParticipation(matchingEvent, account);
+						// wrap the event with the participation bundled
+						matchingEvent = new VEventWithAccountEventParticipation(matchingEvent.getProperties(), matchingEvent.getAlarms(), participation);
 						if(null != matchingEvent.getDescription()) {
 							String descriptionValue = matchingEvent.getDescription().getValue();
 							String [] descriptionSections = descriptionValue.split("\n");
@@ -250,11 +254,15 @@ public class SharedCalendarController {
 				
 			} else {
 				ComponentList components = agenda.getComponents(VEvent.VEVENT);
-				@SuppressWarnings("unchecked")
-				List<VEvent> allEvents = new ArrayList<VEvent>(components);
-
+				List<VEvent> allEvents = new ArrayList<VEvent>();
+				for(Iterator<?> i = components.iterator(); i.hasNext(); ) {
+					VEvent event = (VEvent) i.next();
+					EventParticipation participation = calendarDataProcessor.getEventParticipation(event, account);
+					allEvents.add(new VEventWithAccountEventParticipation(event.getProperties(), event.getAlarms(), participation));
+				}
 				Collections.sort(allEvents, new VEventComparator());
-
+				
+				
 				if(ShareDisplayFormat.JSON.equals(display)) {
 					model.put("calendar", calendarDataProcessor.simplify(agenda, sharePreferences.isIncludeParticipants()));
 				} else {

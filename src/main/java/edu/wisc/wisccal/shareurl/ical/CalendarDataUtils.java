@@ -584,13 +584,12 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			}
 		}
 	}
-	/**
-	 * 
-	 * @param event
-	 * @param calendarAccount
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#getEventParticipation(net.fortuna.ical4j.model.component.VEvent, org.jasig.schedassist.model.ICalendarAccount)
 	 */
-	EventParticipation getEventParticipation(VEvent event, ICalendarAccount calendarAccount) {
+	@Override
+	public EventParticipation getEventParticipation(VEvent event, ICalendarAccount calendarAccount) {
 		Organizer organizer = event.getOrganizer();
 		PropertyList attendees = event.getProperties(Attendee.ATTENDEE);
 		if(null == organizer || attendees.size() == 0) {

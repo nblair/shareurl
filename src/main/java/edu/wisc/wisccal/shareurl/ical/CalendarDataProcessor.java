@@ -187,6 +187,14 @@ public interface CalendarDataProcessor {
 	void personalOnly(Calendar calendar, ICalendarAccount calendarAccount);
 	
 	/**
+	 * 
+	 * @param event
+	 * @param calendarAccount
+	 * @return the {@link EventParticipation} for the {@link ICalendarAccount} in the event
+	 */
+	EventParticipation getEventParticipation(VEvent event, ICalendarAccount calendarAccount);
+	
+	/**
 	 * Mutative method.
 	 * Remove all ATTENDEE and ORGANIZER properties from the events in the calendar.
 	 * 

@@ -46,7 +46,7 @@
 <div class="event">
 <p>
 <span class="label">Summary:&nbsp;</span>
-<span class="summary">${event.summary.value}<c:if test="${oevent:isCancelled(event)}"> - CANCELLED</c:if></span>
+<span class="summary"><c:choose><c:when test="${oevent:isCancelled(event)}">CANCELLED:&nbsp;</c:when><c:when test="${event.needsActionAttendee }"><i>Tentative</i>:&nbsp;</c:when></c:choose>${event.summary.value}</span>
 </p>
 <div class="when">
 <p>

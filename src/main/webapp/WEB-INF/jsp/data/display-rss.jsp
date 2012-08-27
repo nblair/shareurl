@@ -7,7 +7,7 @@
     <description>Shared Calendar</description>
 	<c:forEach var="event" items="${allEvents}" varStatus="itemCount">
     <item>
-      <title>[<fmt:formatDate value="${event.startDate.date}" type="date" pattern="M/d"/>]&#160;<c:if test="${oevent:isCancelled(event)}">CANCELLED: </c:if><c:out value="${event.summary.value}"/></title> 
+      <title>[<fmt:formatDate value="${event.startDate.date}" type="date" pattern="M/d"/>]&#160;<c:choose><c:when test="${oevent:isCancelled(event)}">CANCELLED: </c:when><c:when test="${event.needsActionAttendee}">Tentative: </c:when></c:choose><c:out value="${event.summary.value}"/></title> 
       <description>
       <![CDATA[
       <c:out value="${event.description.value}"/>
