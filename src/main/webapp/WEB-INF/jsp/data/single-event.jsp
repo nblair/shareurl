@@ -23,6 +23,7 @@
 .accepted {color:green;}
 .declined {color:red;}
 .other {color:orange;}
+.invited {color:blue;}
 </style>
 <title>${event.summary.value}</title>
 </head>

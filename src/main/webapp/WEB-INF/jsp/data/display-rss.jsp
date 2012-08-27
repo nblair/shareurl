@@ -11,7 +11,8 @@
       <c:choose>
       <c:when test="${oevent:isCancelled(event)}">CANCELLED: </c:when>
       <c:when test="${event.declinedAttendee}">Declined: </c:when>
-      <c:when test="${event.needsActionAttendee}">Tentative: </c:when>
+      <c:when test="${event.tentativeAttendee}">Tentative: </c:when>
+      <c:when test="${event.needsActionAttendee}">Invited: </c:when>
       </c:choose>
       <c:out value="${event.summary.value}"/>
       </title> 

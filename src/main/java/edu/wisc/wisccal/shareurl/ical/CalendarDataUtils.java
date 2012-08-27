@@ -608,6 +608,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 					return EventParticipation.ATTENDEE_NEEDSACTION;
 				} else if (PartStat.ACCEPTED.equals(partstat)) {
 					return EventParticipation.ATTENDEE_ACCEPTED;
+				} else if (PartStat.TENTATIVE.equals(partstat)) {
+					return EventParticipation.ATTENDEE_TENTATIVE;
 				} else {
 					return EventParticipation.ATTENDEE_DECLINED;
 				}
@@ -995,8 +997,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				return "Attending";
 			} else if (PartStat.DECLINED.equals(partstat)){
 				return "Declined";
-			} else if (PartStat.NEEDS_ACTION.equals(partstat)) {
+			} else if (PartStat.TENTATIVE.equals(partstat)) {
 				return "Maybe";
+			} else if (PartStat.NEEDS_ACTION.equals(partstat)) {
+				return "Invited";
 			} else {
 				return partstat.getValue();
 			}
@@ -1014,6 +1018,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				return "accepted";
 			} else if (PartStat.DECLINED.equals(partstat)){
 				return "declined";
+			} else if (PartStat.NEEDS_ACTION.equals(partstat)) {
+				return "invited";
 			} else {
 				return "other";
 			}

@@ -61,6 +61,14 @@ public class VEventWithAccountEventParticipation extends VEvent {
 	public boolean isNeedsActionAttendee() {
 		return EventParticipation.ATTENDEE_NEEDSACTION.equals(accountEventParticipation);
 	}
+	/**
+	 *  Helper method for JSTL.
+	 * 
+	 * @return true if this instance's {@link EventParticipation} equals {@link EventParticipation#ATTENDEE_TENTATIVE}
+	 */
+	public boolean isTentativeAttendee() {
+		return EventParticipation.ATTENDEE_TENTATIVE.equals(accountEventParticipation);
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

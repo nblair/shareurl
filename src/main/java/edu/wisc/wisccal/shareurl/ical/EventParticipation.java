@@ -14,6 +14,7 @@ public enum EventParticipation {
 	ATTENDEE_ACCEPTED,
 	ATTENDEE_DECLINED,
 	ATTENDEE_NEEDSACTION,
+	ATTENDEE_TENTATIVE,
 	NOT_INVOLVED;
 	
 	/**
@@ -21,6 +22,6 @@ public enum EventParticipation {
 	 * @return true if this equals any of the ATTENDEE prefixed values
 	 */
 	public boolean isAttendee() {
-		return this.equals(ATTENDEE_ACCEPTED) || this.equals(ATTENDEE_DECLINED) || this.equals(ATTENDEE_NEEDSACTION);
+		return this.equals(ATTENDEE_ACCEPTED) || this.equals(ATTENDEE_DECLINED) || this.equals(ATTENDEE_NEEDSACTION) || this.equals(ATTENDEE_TENTATIVE);
 	}
 }
