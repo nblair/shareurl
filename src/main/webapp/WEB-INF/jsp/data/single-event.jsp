@@ -49,6 +49,7 @@
 <span class="summary">
 <c:choose>
 <c:when test="${oevent:isCancelled(event)}">CANCELLED:&nbsp;${event.summary.value}</c:when>
+<c:when test="${event.declinedAttendee}">Declined:&nbsp;${event.summary.value}</c:when>
 <c:when test="${event.needsActionAttendee }"><i>Tentative</i>:&nbsp;${event.summary.value}</c:when>
 <c:otherwise>${event.summary.value}</c:otherwise>
 </c:choose>
