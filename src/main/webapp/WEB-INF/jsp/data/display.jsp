@@ -84,6 +84,7 @@
 <c:otherwise>		
 	
 	<c:forEach var="event" items="${allEvents}">
+	<%-- 
 	<c:choose>
 	<c:when test="${oevent:isCancelled(event) or event.declinedAttendee}">
 	<c:set var="statusClass" value="cancel"/>
@@ -92,6 +93,7 @@
 	<c:set var="statusClass" value=""/>
 	</c:otherwise>
 	</c:choose>
+	--%>
 	
 	<!-- begin ${event.uid.value} -->
 	<div class="${statusClass}">
@@ -110,12 +112,22 @@
 	<fmt:formatDate value="${event.endDate.date}" type="time" pattern="yyyy-MM-dd" var="endParam"/>
 	<c:choose>
 	<c:when test="${empty event.recurrenceId}">
-	<a title="event details" href="<c:url value="/u/${shareId}/${event.uid.value}?start=${startParam}&end=${endParam}"/>"><span class="summary"><c:if test="${!oevent:isCancelled(event) and event.needsActionAttendee}"><i>Tentative</i>:&nbsp;</c:if>${event.summary.value}</span></a>
+	<c:url value="/u/${shareId}/${event.uid.value}?start=${startParam}&end=${endParam}" var="eventUrl"/>
 	</c:when>
 	<c:otherwise>
-	<a title="event details" href="<c:url value="/u/${shareId}/${event.uid.value}/${event.recurrenceId.value}?start=${startParam}&end=${endParam}"/>"><span class="summary"><c:if test="${!oevent:isCancelled(event) and event.needsActionAttendee}"><i>Tentative</i>:&nbsp;</c:if>${event.summary.value}</span></a>
+	<c:url value="/u/${shareId}/${event.uid.value}/${event.recurrenceId.value}?start=${startParam}&end=${endParam}" var="eventUrl"/>
 	</c:otherwise>
 	</c:choose>
+	
+	<a title="event details" href="${eventUrl}">
+	<span class="summary">
+	<c:choose>
+	<c:when test="${oevent:isCancelled(event)}"><del>CANCELLED:&nbsp;${event.summary.value}</del></c:when>
+	<c:when test="${event.needsActionAttendee}"><i>Tentative</i>:&nbsp;${event.summary.value}</c:when>
+	<c:otherwise>${event.summary.value}</c:otherwise>
+	</c:choose>
+	</span>
+	</a>
 	
 	<br/>
 	</div>

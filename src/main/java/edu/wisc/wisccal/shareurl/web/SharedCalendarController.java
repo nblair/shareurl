@@ -225,7 +225,7 @@ public class SharedCalendarController {
 		// are we targeting a markup display?
 		if(display.isMarkupLanguage()) {
 			// - expandrecurrence first priority, want VEVENTs for each recurrence instance
-			calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
+			calendarDataProcessor.expandRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), true);
 
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);

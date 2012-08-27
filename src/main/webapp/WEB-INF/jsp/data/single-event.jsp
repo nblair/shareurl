@@ -46,7 +46,13 @@
 <div class="event">
 <p>
 <span class="label">Summary:&nbsp;</span>
-<span class="summary"><c:choose><c:when test="${oevent:isCancelled(event)}">CANCELLED:&nbsp;</c:when><c:when test="${event.needsActionAttendee }"><i>Tentative</i>:&nbsp;</c:when></c:choose>${event.summary.value}</span>
+<span class="summary">
+<c:choose>
+<c:when test="${oevent:isCancelled(event)}">CANCELLED:&nbsp;${event.summary.value}</c:when>
+<c:when test="${event.needsActionAttendee }"><i>Tentative</i>:&nbsp;${event.summary.value}</c:when>
+<c:otherwise>${event.summary.value}</c:otherwise>
+</c:choose>
+</span>
 </p>
 <div class="when">
 <p>
