@@ -451,53 +451,6 @@ public class SharedCalendarController {
 
 		return false;
 	}
-	/**
-	 * 
-	 * @param agenda
-	 * @param account
-	 * @param share
-	 * @param requestDetails
-	 * @param model
-	 * @param response
-	 * @return
-	 */
-	private String handleSingleEvent(final Calendar agenda, final ICalendarAccount account, final Share share, final ShareRequestDetails requestDetails, final ModelMap model, HttpServletResponse response) {
-		VEvent matchingEvent = null;
-		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext();) {
-			Component component = (Component) i.next();
-			if(VEvent.VEVENT.equals(component.getName())) {
-				VEvent current = (VEvent) component;
-				if(eventMatchesRequestedEventId(current, requestDetails)) {
-					matchingEvent = current;
-					break;
-				}
-			}
-		}
-
-		if(null != matchingEvent) {
-			if(requestDetails.getDisplayFormat().isMarkupLanguage()) {
-				if(null != matchingEvent.getDescription()) {
-					String descriptionValue = matchingEvent.getDescription().getValue();
-					String [] descriptionSections = descriptionValue.split("\n");
-					model.put("descriptionSections", descriptionSections);
-				}
-				model.put("shareId", requestDetails.getShareKey());
-				model.put("datePhrase", requestDetails.getDatePhrase());
-				model.put("event", matchingEvent);
-				return "data/single-event";
-			} else {
-				Calendar singleEventCalendar = CalendarDataUtils.wrapEvent(matchingEvent);
-				if(!share.getSharePreferences().isIncludeParticipants()) {
-					calendarDataProcessor.removeParticipants(singleEventCalendar, account);
-				}
-				model.put("ical", singleEventCalendar.toString());
-				return pickEventDetailViewName(requestDetails, response);
-			}
-		} else {
-			response.setStatus(404);
-			return "event-not-found";
-		}
-	}
 
 	/**
 	 * 

@@ -90,7 +90,17 @@ ${descriptionSection}<br/>
 <p><span class="label">Attendees:&nbsp;</span></p>
 <ul>
 <c:forEach items="${oevent:getAttendees(event)}" var="attendee">
-<li><span class="attendee">${oevent:getParticipantDisplayName(attendee)} (<a href="${attendee.value}">${oevent:getParticipantEmailAddress(attendee)}</a>)</span>, <span class="partstat ${oevent:getParticipationStatusStyle(attendee)}">${oevent:getParticipationStatus(attendee)}</span></li>
+<c:set var="displayName" value="${oevent:getParticipantDisplayName(attendee)}"/>
+<li>
+<c:choose>
+<c:when test="${empty displayName}">
+<span class="attendee"><a href="${attendee.value}">${oevent:getParticipantEmailAddress(attendee)}</a></span>, <span class="partstat ${oevent:getParticipationStatusStyle(attendee)}">${oevent:getParticipationStatus(attendee)}</span>
+</c:when>
+<c:otherwise>
+<span class="attendee">${oevent:getParticipantDisplayName(attendee)}&nbsp;(<a href="${attendee.value}">${oevent:getParticipantEmailAddress(attendee)}</a>)</span>, <span class="partstat ${oevent:getParticipationStatusStyle(attendee)}">${oevent:getParticipationStatus(attendee)}</span>
+</c:otherwise>
+</c:choose>
+</li>
 </c:forEach>
 </ul>
 </c:if>
