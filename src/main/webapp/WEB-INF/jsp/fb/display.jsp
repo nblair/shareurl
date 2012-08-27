@@ -33,16 +33,7 @@
 <c:set var="title" value="Free/Busy for ${startDateFormatted}"/>
 </c:otherwise>
 </c:choose>
-<c:choose>
-<c:when test="${requestDetails.canonical}">
-<c:url value="/u/${shareId}?rss&${requestDetails.canonicalStartEndEncoded}" var="rssFeed"/>
-</c:when>
-<c:otherwise>
-<c:url value="/u/${shareId}/${datePhrase}?rss" var="rssFeed"/>
-</c:otherwise>
-</c:choose>
 <title>${title}</title>
-<link rel="alternate" title="${title}" href="${rssFeed}" type="application/rss+xml" />
 <style type="text/css">
 .cancel {text-decoration: line-through;}
 .white {color: #fff !important;}
@@ -69,7 +60,6 @@
 <span class="nowshowing">${startDateFormatted}&nbsp;-&nbsp;${endDateFormatted}</span>
 </c:otherwise>
 </c:choose>
-<a href="${rssFeed}" title="RSS Feed for this calendar"><img src="<c:url value="/img/feed_icon_16x16.gif"/>"/></a>
 </div>
 </div>
 <div id="calendarEvents">
