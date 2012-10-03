@@ -50,6 +50,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -476,7 +477,8 @@ public class CalendarDataUtilsTest {
 		CalendarDataUtils utils = new CalendarDataUtils();	
 		utils.noRecurrence(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"), false);	
 		Assert.assertEquals(5, calendar.getComponents().size());
-		Calendar fbCalendar = utils.convertToFreeBusy(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"));
+		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		Calendar fbCalendar = utils.convertToFreeBusy(calendar, Tests.makeDate("20120820"), Tests.makeDate("20120825"), account);
 		
 		Assert.assertEquals(1, fbCalendar.getComponents().size());
 		VFreeBusy freeBusy = (VFreeBusy) fbCalendar.getComponent(VFreeBusy.VFREEBUSY);
@@ -491,5 +493,56 @@ public class CalendarDataUtilsTest {
 			}
 			
 		}
+	}
+	
+	/**
+	 * @throws ParserException 
+	 * @throws IOException 
+	 * 
+	 */
+	@Test
+	public void testConvertToFreeBusyAllDayGroupEventOrganizer() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/all-day-group-event.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		
+		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		Mockito.when(account.getEmailAddress()).thenReturn("jfortune@wisc.edu");
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		Calendar fbCalendar = utils.convertToFreeBusy(calendar, Tests.makeDate("20121006"), Tests.makeDate("20121007"), account);
+		Assert.assertEquals(1, fbCalendar.getComponents().size());
+		VFreeBusy freeBusy = (VFreeBusy) fbCalendar.getComponent(VFreeBusy.VFREEBUSY);
+		PeriodList periodList = new PeriodList();
+		for(Object o : freeBusy.getProperties(FreeBusy.FREEBUSY)) {
+			FreeBusy fb = (FreeBusy) o;
+			periodList.addAll(fb.getPeriods());
+		}
+		Assert.assertEquals(1, periodList.size());
+	}
+	/**
+	 * @throws ParserException 
+	 * @throws IOException 
+	 * 
+	 */
+	@Test
+	public void testConvertToFreeBusyAllDayGroupEventAttendee() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/all-day-group-event.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		
+		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		Mockito.when(account.getEmailAddress()).thenReturn("jfortune@doit.wisc.edu");
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		Calendar fbCalendar = utils.convertToFreeBusy(calendar, Tests.makeDate("20121006"), Tests.makeDate("20121007"), account);
+		Assert.assertEquals(1, fbCalendar.getComponents().size());
+		VFreeBusy freeBusy = (VFreeBusy) fbCalendar.getComponent(VFreeBusy.VFREEBUSY);
+		PeriodList periodList = new PeriodList();
+		for(Object o : freeBusy.getProperties(FreeBusy.FREEBUSY)) {
+			FreeBusy fb = (FreeBusy) o;
+			periodList.addAll(fb.getPeriods());
+		}
+		Assert.assertEquals(0, periodList.size());
 	}
 }

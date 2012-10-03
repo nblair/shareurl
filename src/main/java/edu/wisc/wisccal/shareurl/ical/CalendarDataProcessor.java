@@ -51,9 +51,10 @@ public interface CalendarDataProcessor {
 	 * @param original must not be null
 	 * @param start must not be null
 	 * @param end must not be null
+	 * @param calendarAccount the account that owns the calendar
 	 * @return a never null calendar that contains a freebusy representation of the original
 	 */
-	Calendar convertToFreeBusy(Calendar original, java.util.Date start, final java.util.Date end);
+	Calendar convertToFreeBusy(Calendar original, java.util.Date start, java.util.Date end, ICalendarAccount calendarAccount);
 	
 	/**
 	 * Mutative method.

@@ -541,7 +541,7 @@ public class SharedCalendarController {
 				calendarDataProcessor.stripEventDetails(agenda, calendarAccount);
 				model.put("calendar", calendarDataProcessor.simplify(agenda, false));
 			} else {
-				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarAccount);
 				VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
 				PeriodList periodList = new PeriodList();
 				for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
@@ -560,7 +560,7 @@ public class SharedCalendarController {
 			}
 		} else {	
 			if(ShareDisplayFormat.VFB_LEGACY.equals(displayFormat)) {
-				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate());
+				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarAccount);
 				model.put("ical", freebusy.toString());
 			} else {
 				// want iCalendar output with VEVENTs, but no details

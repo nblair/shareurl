@@ -152,7 +152,7 @@ public class FreeBusyReadURLController  {
 				calendarDataProcessor.noRecurrence(calendar, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
 				calendarDataProcessor.filterAgendaForDateRange(calendar, requestDetails);
 				
-				Calendar freeBusy = calendarDataProcessor.convertToFreeBusy(calendar, requestDetails.getStartDate(), requestDetails.getEndDate());
+				Calendar freeBusy = calendarDataProcessor.convertToFreeBusy(calendar, requestDetails.getStartDate(), requestDetails.getEndDate(), account);
 
 				model.put("startDate", requestDetails.getStartDate());
 				model.put("endDate", requestDetails.getEndDate());

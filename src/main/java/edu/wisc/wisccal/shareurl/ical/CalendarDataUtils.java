@@ -141,7 +141,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#convertToFreeBusy(net.fortuna.ical4j.model.Calendar, java.util.Date, java.util.Date)
 	 */
 	@Override
-	public Calendar convertToFreeBusy(final Calendar original, final java.util.Date start, final java.util.Date end) {
+	public Calendar convertToFreeBusy(final Calendar original, final java.util.Date start, final java.util.Date end, final ICalendarAccount calendarAccount) {
 		ComponentList resultComponents = new ComponentList();
 		VFreeBusy vFreeBusy = new VFreeBusy();
 		// add dtstart from arguments
@@ -151,7 +151,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 		// for each original event, add a FreeBUSY 
 		//Collections.sort(original.getComponents(), new PreferRecurrenceComponentComparator());
-		
+
 		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext(); ) {
 			Component component = (Component) i.next();
 			if(VEvent.VEVENT.equals(component.getName())) {
@@ -159,6 +159,11 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 				if(Transp.TRANSPARENT.equals(e.getTransparency())) {
 					// skip transparent events in free busy
+					continue;
+				}
+				EventParticipation participation = getEventParticipation(e, calendarAccount);
+				if(participation.isAttendee() && !EventParticipation.ATTENDEE_ACCEPTED.equals(participation)) {
+					// is an attendee, but not accepted, skip
 					continue;
 				}
 				PeriodList freeBusyPeriodList = new PeriodList();
@@ -191,13 +196,19 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				if(Transp.TRANSPARENT.equals(transp)) {
 					i.remove();
 				} else {
-					for(Iterator<?> j = component.getProperties().iterator(); j.hasNext();) {
-						Property property = (Property) j.next();
-						if(!retainedPropertyNamesOnStripDetails.contains(property.getName())){
-							j.remove();
+					EventParticipation participation = getEventParticipation((VEvent) component, calendarAccount); 
+					if(participation.isAttendee() && !participation.equals(EventParticipation.ATTENDEE_ACCEPTED)) {
+						// calendarAccount is an attendee of this event, but hasn't accepted - remove!
+						i.remove();
+					} else{
+						for(Iterator<?> j = component.getProperties().iterator(); j.hasNext();) {
+							Property property = (Property) j.next();
+							if(!retainedPropertyNamesOnStripDetails.contains(property.getName())){
+								j.remove();
+							}
 						}
+						component.getProperties().add(new Summary(BUSY));
 					}
-					component.getProperties().add(new Summary(BUSY));
 				}
 			}
 		}
@@ -272,10 +283,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public static boolean isAllDayPeriod(Period period) {
 		Date start = period.getStart();
 		Date end = period.getEnd();
-		
+
 		Date expectedStart = DateUtils.truncate(start, java.util.Calendar.DATE);
 		Date expectedEnd = DateUtils.addDays(start, 1);
-		
+
 		return start.equals(expectedStart) && end.equals(expectedEnd);
 	}
 
@@ -352,8 +363,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			newDtStart = new DtStart(truncate(period.getStart()));
 			newDtEnd = new DtEnd(truncate(period.getEnd()));
 		} else {
-			 newDtStart = new DtStart(period.getStart());
-			 newDtEnd = new DtEnd(period.getEnd());
+			newDtStart = new DtStart(period.getStart());
+			newDtEnd = new DtEnd(period.getEnd());
 		}
 		copy.getProperties().add(newDtStart);
 		copy.getProperties().add(newDtEnd);
@@ -665,7 +676,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	public void filterAgendaForDateRange(Calendar agenda,
 			IShareRequestDetails requestDetails) {
 		requestDetails.getStartDate();
-		
+
 		for(Iterator<?> i = agenda.getComponents().iterator(); i.hasNext() ;){
 			Component c = (Component) i.next();
 			if(VEvent.VEVENT.equals(c.getName())) {
@@ -928,7 +939,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	static String removeMailto(String mailto) {
 		return StringUtils.remove(mailto, MAILTO_PREFIX);
 	}
-	
+
 	/**
 	 * 
 	 * @param component
@@ -944,7 +955,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 		return uid.getValue();
 	}
-	
+
 	/**
 	 * 
 	 * @param property
@@ -957,7 +968,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(property.getValue().startsWith(MAILTO_PREFIX)) {
 			return removeMailto(property.getValue());
 		}
-		
+
 		return null;
 	}
 	/**
@@ -973,14 +984,14 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		if(cn != null) {
 			return cn.getValue();
 		}
-		
+
 		return null;
 	}
 	public static PropertyList getAttendees(VEvent event) {
 		if(event == null) {
 			return null;
 		}
-		
+
 		return event.getProperties(Attendee.ATTENDEE);
 	}
 	/**
@@ -1005,7 +1016,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				return partstat.getValue();
 			}
 		}
-		
+
 		return null;
 	}
 	public static String getParticipationStatusStyle(Property property) {
@@ -1024,7 +1035,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				return "other";
 			}
 		}
-		
+
 		return null;
 	}
 	/**
