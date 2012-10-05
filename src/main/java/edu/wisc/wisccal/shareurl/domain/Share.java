@@ -26,8 +26,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * Bean representing the mapping between a unique key
  * and the customer's calendar system unique id.
  * 
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: Share.java 1677 2010-02-08 18:31:01Z npblair $
+ * @author Nicholas Blair
  */
 public class Share implements Serializable {
 
@@ -110,18 +109,24 @@ public class Share implements Serializable {
 	}
 	/**
 	 * @see SharePreferences#isGuessable()
-	 * @return {@link  SharePreferences#isGuessable()}
+	 * @return {@link SharePreferences#isGuessable()}
 	 */
 	public boolean isGuessable() {
 		return this.sharePreferences.isGuessable();
 	}
-	
 	/**
 	 * 
 	 * @return
 	 */
 	public int getEventFilterCount() {
 		return this.sharePreferences.getEventFilterCount();
+	}
+	/**
+	 * Some shares aren't revocable.
+	 * @return
+	 */
+	public boolean isRevocable() {
+		return this.sharePreferences.isRevocable();
 	}
 	
 	/**

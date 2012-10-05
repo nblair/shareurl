@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.emory.mathcs.backport.java.util.Collections;
+import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
@@ -38,13 +39,14 @@ import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
  * Implementation of Controller to display Share information and provide management
  * links.
  * 
- * @author Nicholas Blair, nblair@doit.wisc.edu
+ * @author Nicholas Blair
  */
 @Controller
 public class MySharesController  {
 
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private IShareDao shareDao;
+	private AutomaticPublicShareService automaticPublicShareService;
 
 	/**
 	 * @param shareDao the shareDao to set
@@ -53,7 +55,15 @@ public class MySharesController  {
 	public void setShareDao(IShareDao shareDao) {
 		this.shareDao = shareDao;
 	}
-	
+	/**
+	 * @param automaticPublicShareService the automaticPublicShareService to set
+	 */
+	@Autowired
+	public void setAutomaticPublicShareService(
+			AutomaticPublicShareService automaticPublicShareService) {
+		this.automaticPublicShareService = automaticPublicShareService;
+	}
+
 	/**
 	 * 
 	 * @param model
@@ -67,6 +77,7 @@ public class MySharesController  {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("displaying manage share form for " + activeAccount + ", format=" + format);
 		}
+		model.put("optedOut", automaticPublicShareService.hasOptedOut(activeAccount));
 		List<Share> shares = shareDao.retrieveByOwner(activeAccount);
 		Collections.sort(shares, new Comparator<Share>() {
 			@Override

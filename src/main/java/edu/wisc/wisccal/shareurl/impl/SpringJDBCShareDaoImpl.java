@@ -51,7 +51,7 @@ IShareDao {
 
 	private static final int SHARE_ID_LENGTH = 16;
 	private static final String VALID = "Y";
-	
+
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	/**
 	 * 
@@ -106,7 +106,7 @@ IShareDao {
 			return storeNewShare(key, ownerUniqueId, preferences);
 		}
 	}
-	
+
 	/**
 	 * Insert a new record in the shares table, and persist
 	 * the {@link SharePreferences}
@@ -127,7 +127,7 @@ IShareDao {
 		for(ISharePreference pref : preferences.getPreferences()) {
 			storePreference(key, pref);
 		}
-		
+
 		Share share = new Share();
 		share.setKey(key);
 		share.setOwnerCalendarUniqueId(ownerId);
@@ -135,7 +135,7 @@ IShareDao {
 		LOG.info("generated new share: " + share);
 		return share;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.IShareDao#retrieveGuessableShare(org.jasig.schedassist.model.ICalendarAccount)
 	 */
@@ -169,15 +169,20 @@ IShareDao {
 	 */
 	@Override
 	public void revokeShare(Share share) {
-		int rows = this.getSimpleJdbcTemplate().update(
-				"update shares set valid = 'N' where name = ? and owner = ?",
-				share.getKey(),
-				share.getOwnerCalendarUniqueId());
-		if(rows == 1 && LOG.isInfoEnabled()) {
-			LOG.info("successfully revoked share: " + share);
-		} else if (rows != 1) {
-			LOG.warn("revoke share " + share + " returned unexpected number of rows affected: " + rows);
+		if(share.isRevocable()) {
+			int rows = this.getSimpleJdbcTemplate().update(
+					"update shares set valid = 'N' where name = ? and owner = ?",
+					share.getKey(),
+					share.getOwnerCalendarUniqueId());
+			if(rows == 1 && LOG.isInfoEnabled()) {
+				LOG.info("successfully revoked share: " + share);
+			} else if (rows != 1) {
+				LOG.warn("revoke share " + share + " returned unexpected number of rows affected: " + rows);
+			}
+		} else {
+			LOG.warn("ignoring revokeShare for non-revocable share: " + share);
 		}
+
 	}
 
 	/* (non-Javadoc)
@@ -216,7 +221,7 @@ IShareDao {
 			share.getSharePreferences().removePreference(sharePreference);
 			LOG.info("successfully removed " + sharePreference + " from " + share);
 		}
-		
+
 		return share;
 	}
 	/**
@@ -247,7 +252,7 @@ IShareDao {
 		}
 		// step 3: mark share as valid
 		this.simpleJdbcTemplate.update("update shares set valid='Y' where name=?", share.getKey());
-		
+
 		Share result = new Share();
 		result.setKey(share.getKey());
 		result.setOwnerCalendarUniqueId(share.getOwnerCalendarUniqueId());
@@ -274,7 +279,7 @@ IShareDao {
 			LOG.warn("unexpected result for storePreference: " + rows + " (preference: " + preference + ", key: " + shareKey + ")");
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param shareKey
@@ -285,7 +290,7 @@ IShareDao {
 				"select * from share_preferences where sharekey = ?", 
 				new PersistenceSharePreferenceRowMapper(),
 				shareKey);
-		
+
 		return results;
 	}
 	/**
@@ -335,7 +340,7 @@ IShareDao {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 
 	 * @param key
@@ -360,7 +365,7 @@ IShareDao {
 		}
 		return shares;
 	}
-	
+
 	/**
 	 * @see SharePreferences#construct(String, String, String)
 	 * @param persistencePref

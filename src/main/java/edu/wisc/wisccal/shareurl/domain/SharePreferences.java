@@ -149,6 +149,10 @@ public class SharePreferences implements Serializable {
 		return containsAny(FreeBusyPreference.FREE_BUSY);
 	}
 	
+	public boolean isRevocable() {
+		return !containsAny(NonRevocablePreference.NON_REVOCABLE);
+	}
+	
 	/**
 	 * Short cut to determine if this share has an
 	 * IncludeParticipants preference set to true.

@@ -27,6 +27,9 @@ li.share { list-style-image: url(${keyImg});padding-bottom: 1em;}
 li.share a:hover{ text-decoration: underline;color:green;}
 .details { font-style:italic;}
 #footnotewarning { font-size:65%;margin: 0 3em 0 3em;}
+.fcontainer {overflow:hidden;width:100%;}
+.fleft {float:left;}
+.fright {float:right;}
 </style>
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
@@ -43,6 +46,18 @@ $(function() {
         $('#tsubmit').attr('disabled', 'disabled');
         postCreateTraditional();     
     });
+	/*
+	$('#optout').submit(function(event) {
+        event.preventDefault();
+        $('#osubmit').attr('disabled', 'disabled');
+        postOptOut();     
+    });
+	$('#optin').submit(function(event) {
+        event.preventDefault();
+        $('#isubmit').attr('disabled', 'disabled');
+        postOptIn();
+    });
+	*/
 });
 
 function refreshMyShares(fadeIn) {
@@ -58,7 +73,9 @@ function refreshMyShares(fadeIn) {
 					} else {
 						for(var i = 0; i < data.shares.length; i++) {
 							var share = data.shares[i];
-							if(share.freeBusyOnly) {
+							if(share.guessableOptOut) {
+								// skip
+							} else if(share.freeBusyOnly) {
 								var liText = '<li class="share"><a title="View Details and/or Edit Options for ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key;
 								if(share.guessable) {
 									liText += ' (Public ShareURL)';
@@ -102,7 +119,7 @@ function postCreatePublic() {
 				if(data.success) {
 					refreshMyShares(true);
 					$('#guessableInner').empty();
-					$('<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>')
+					$('<p><span class="large">Your Public ShareURL is now customizable</span>, use the link below to change how much of your calendar data is displayed</p>')
 						.appendTo('#guessableInner').fadeIn();
 				} else {
 					alert('failed to create public share: ' + data.message);
@@ -146,18 +163,37 @@ traditional ShareURLs with different options.</p>
 <hr/>
 <div id="guessableInner">
 <c:choose>
-<c:when test="${not hasGuessable}">
-<p><span class="large">Public ShareURLs</span> (new!) work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.</p>
+<c:when test="${optedOut}">
+<p>You have opted not to have a <span class="large">Public ShareURL</span>.</p>
 <div class="publicshareform">
-<form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
+<form action="<c:url value="/rest/opt-in"/>" method="post" id="optin">
 <fieldset>
-<input id="psubmit" type="submit" value="Create my Public ShareURL"/>
+<input id="isubmit" type="submit" value="Opt back in to Public ShareURL"/>
 </fieldset>
 </form>
 </div>
 </c:when>
+<c:when test="${not hasGuessable}">
+<p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string. One has been automatically registered for you.</p>
+<div class="fcontainer">
+<div class="publicshareform fleft">
+<form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
+<fieldset>
+<input id="psubmit" type="submit" value="Make my Public ShareURL customizable"/>
+</fieldset>
+</form>
+</div>
+<div class="publicshareform fleft" style="padding-left: 1.5em;">
+<form action="<c:url value="/rest/opt-out"/>" method="post" id="optout">
+<fieldset>
+<input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
+</fieldset>
+</form>
+</div>
+</div>
+</c:when>
 <c:otherwise>
-<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>
+<p><span class="large">Your Public ShareURL is customizable</span>, use the link below to change how much of your calendar data is displayed.</p>
 </c:otherwise>
 </c:choose>
 </div> <!-- end id=guessableInner -->

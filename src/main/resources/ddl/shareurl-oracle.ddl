@@ -11,3 +11,8 @@ CREATE TABLE SHARE_PREFERENCES (
 	preference_key varchar2(64) not null,
 	preference_value varchar2(256) not null
 );
+CREATE TABLE OPT_OUT (
+	account varchar2(64) not null,
+	val char(1) not null,
+	effective date not null
+);

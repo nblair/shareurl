@@ -183,6 +183,14 @@ public class FreeBusyReadRequestDetails implements IShareRequestDetails {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.web.IShareRequestDetails#isPublicUrl()
+	 */
+	@Override
+	public boolean isPublicUrl() {
+		return getShareKey().contains("@");
+	}
+
 	/**
 	 * @return the period
 	 */

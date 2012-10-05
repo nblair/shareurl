@@ -20,8 +20,7 @@ package edu.wisc.wisccal.shareurl.domain;
  * Subclass of {@link AbstractSharePreference} that
  * marks the attached share as "free busy only".
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: FreeBusyPreference.java 1695 2010-02-12 16:22:52Z npblair $
+ * @author Nicholas Blair
  */
 public final class FreeBusyPreference extends AbstractSharePreference {
 

@@ -15,24 +15,13 @@
  *******************************************************************************/
 package edu.wisc.wisccal.shareurl.impl;
 
-import javax.sql.DataSource;
-
 import net.fortuna.ical4j.model.property.Summary;
 
-import org.apache.commons.io.IOUtils;
 import org.easymock.EasyMock;
 import org.jasig.schedassist.model.ICalendarAccount;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.wisc.wisccal.shareurl.domain.AccessClassification;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
@@ -44,12 +33,9 @@ import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 /**
  * Test harness for {@link SpringJDBCShareDaoImpl}.
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: SpringJDBCShareDaoImplTest.java 1677 2010-02-08 18:31:01Z npblair $
+ * @author Nicholas Blair
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:database-test.xml"})
-public class SpringJDBCShareDaoImplTest extends AbstractJUnit4SpringContextTests {
+public class SpringJDBCShareDaoImplTest extends AbstractDatabaseDependentTest {
 
 	private SpringJDBCShareDaoImpl shareDao;
 
@@ -164,31 +150,4 @@ public class SpringJDBCShareDaoImplTest extends AbstractJUnit4SpringContextTests
 		Assert.assertFalse(result.getSharePreferences().isFreeBusyOnly());
 	}
 
-
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@Before
-	public void createDatabase() throws Exception {
-		Resource createDdl = (Resource) this.applicationContext.getBean("createDdl");
-
-		String sql = IOUtils.toString(createDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-	}
-
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@After
-	public void destroyDatabase()  throws Exception {
-		Resource destroyDdl = (Resource) this.applicationContext.getBean("destroyDdl");
-		
-		String sql = IOUtils.toString(destroyDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-		System.out.println("done destroy");
-	}
 }

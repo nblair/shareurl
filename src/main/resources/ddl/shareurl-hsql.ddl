@@ -13,3 +13,10 @@ create table share_preferences (
 	preference_value varchar (256) not null,
 	CONSTRAINT fk2 FOREIGN KEY (sharekey) REFERENCES shares(name)
 );
+
+create table opt_out (
+	account varchar(64) not null,
+	val char(1) not null,
+	effective timestamp not null,
+	CHECK (val in ('Y','N'))
+);

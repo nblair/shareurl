@@ -3,6 +3,11 @@
  */
 package edu.wisc.wisccal.shareurl.web;
 
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,17 +30,24 @@ import net.fortuna.ical4j.model.property.Uid;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jasig.schedassist.ICalendarAccountDao;
+import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ModelMap;
 
+import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
+import edu.wisc.wisccal.shareurl.IShareDao;
+import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
+import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
+import edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
+import edu.wisc.wisccal.shareurl.ical.IEventFilter;
 import edu.wisc.wisccal.shareurl.web.ShareRequestDetails.Client;
-import edu.wisc.wisccal.shareurl.web.ShareRequestDetails.PathData;
 
 /**
  * @author Nicholas Blair
@@ -60,7 +72,7 @@ public class SharedCalendarControllerTest {
 		
 		SharePreferences share = new SharePreferences();
 		
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(share, requestDetails, emptyCalendar, account, model);
 	
 		Assert.assertEquals("12345abcde", model.get("shareId"));
@@ -101,7 +113,7 @@ public class SharedCalendarControllerTest {
 		
 		SharePreferences share = new SharePreferences();
 		
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(share, requestDetails, calendar, account, model);
 	
 		Assert.assertEquals("12345abcde", model.get("shareId"));
@@ -127,7 +139,7 @@ public class SharedCalendarControllerTest {
 		
 		SharePreferences share = new SharePreferences();
 		
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(share, requestDetails, emptyCalendar, account, model);
 	
 		Assert.assertEquals(emptyCalendar.toString(), model.get("ical"));
@@ -165,7 +177,7 @@ public class SharedCalendarControllerTest {
 		
 		SharePreferences sharePreferences = new SharePreferences();
 		
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 	
 		Assert.assertEquals(calendar.toString(), model.get("ical"));
@@ -195,7 +207,7 @@ public class SharedCalendarControllerTest {
 		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(5, calendar.getComponents(VEvent.VEVENT).size());
@@ -230,7 +242,7 @@ public class SharedCalendarControllerTest {
 		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.ICAL, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(5, calendar.getComponents(VEvent.VEVENT).size());
@@ -271,7 +283,7 @@ public class SharedCalendarControllerTest {
 		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.ICAL, true, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(1, calendar.getComponents(VEvent.VEVENT).size());
@@ -301,7 +313,7 @@ public class SharedCalendarControllerTest {
 		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(3, calendar.getComponents(VEvent.VEVENT).size());
@@ -337,7 +349,7 @@ public class SharedCalendarControllerTest {
 		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
 		
 		SharePreferences sharePreferences = new SharePreferences();
-		ICalendarAccount account = Mockito.mock(ICalendarAccount.class);
+		ICalendarAccount account = mock(ICalendarAccount.class);
 		controller.prepareModel(sharePreferences, requestDetails, calendar, account, model);
 		
 		Assert.assertEquals(4, calendar.getComponents(VEvent.VEVENT).size());
@@ -352,6 +364,86 @@ public class SharedCalendarControllerTest {
 				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
 			}
 		}
+	}
+	
+	@Test
+	public void testGetShareUrlNotFound() {
+		SharedCalendarController controller = new SharedCalendarController();
+		
+		IShareDao shareDao = mock(IShareDao.class);
+		// will return null by default
+		controller.setShareDao(shareDao);
+		
+		ModelMap model = new ModelMap();
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/abcdefg");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		controller.getShareUrl(model, request, response);
+		
+		Assert.assertEquals(404, response.getStatus());
+	}
+	
+	@Test
+	public void testGetShareUrlAutomaticOptOut() {
+		SharedCalendarController controller = new SharedCalendarController();
+		
+		IShareDao shareDao = mock(IShareDao.class);
+		// shareDao.retrieve... will return null by default
+		controller.setShareDao(shareDao);
+		AutomaticPublicShareService autoShare = mock(AutomaticPublicShareService.class);
+		controller.setAutomaticPublicShareService(autoShare);
+		
+		ModelMap model = new ModelMap();
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/bbadger@wisc.edu");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		controller.getShareUrl(model, request, response);
+		
+		Assert.assertEquals(404, response.getStatus());
+	}
+	
+	@Test
+	public void testGetShareUrlAutomatic() {
+		SharedCalendarController controller = new SharedCalendarController();
+		
+		IShareDao shareDao = mock(IShareDao.class);
+		ICalendarDataDao calendarDataDao = mock(ICalendarDataDao.class);
+		CalendarDataProcessor dataProcessor = mock(CalendarDataProcessor.class);
+		IEventFilter eventFilter = mock(IEventFilter.class);
+		AutomaticPublicShareService autoPublicShareService = mock(AutomaticPublicShareService.class);
+		ICalendarAccountDao calendarAccountDao = mock(ICalendarAccountDao.class);
+		
+		Share share = new Share();
+		share.setKey("bbadger@wisc.edu");
+		share.getSharePreferences().addPreference(new FreeBusyPreference());
+		share.setOwnerCalendarUniqueId("bbadger@wisc.edu");
+		when(autoPublicShareService.getAutomaticPublicShare("bbadger@wisc.edu")).thenReturn(share);
+		
+		ICalendarAccount account = mock(ICalendarAccount.class);
+		when(account.getEmailAddress()).thenReturn("bbadger@wisc.edu");
+		when(calendarAccountDao.getCalendarAccountFromUniqueId("bbadger@wisc.edu")).thenReturn(account);
+		
+		Calendar agenda = new Calendar();
+		when(calendarDataDao.getCalendar(eq(account), isA(java.util.Date.class), isA(java.util.Date.class))).thenReturn(agenda);
+		
+		dataProcessor.noRecurrence(eq(agenda), isA(java.util.Date.class), isA(java.util.Date.class), isA(Boolean.class));
+		dataProcessor.filterAgendaForDateRange(isA(Calendar.class), isA(IShareRequestDetails.class));
+		when(dataProcessor.convertToFreeBusy(eq(agenda), isA(java.util.Date.class), isA(java.util.Date.class), eq(account))).thenReturn(agenda);
+		
+		when(eventFilter.filterEvents(eq(agenda), isA(SharePreferences.class))).thenReturn(agenda);
+		
+		controller.setShareDao(shareDao);
+		controller.setAutomaticPublicShareService(autoPublicShareService);
+		controller.setCalendarAccountDao(calendarAccountDao);
+		controller.setCalendarDataProcessor(dataProcessor);
+		controller.setCalendarDataDao(calendarDataDao);
+		controller.setEventFilter(eventFilter);
+		
+		ModelMap model = new ModelMap();
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/bbadger@wisc.edu");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		controller.getShareUrl(model, request, response);
+		
+		Assert.assertEquals(200, response.getStatus());
+		Assert.assertEquals(Boolean.TRUE, model.get("noEvents"));
 	}
 }
 

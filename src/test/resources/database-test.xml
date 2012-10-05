@@ -20,4 +20,8 @@
 	<bean id="destroyDdl" class="org.springframework.core.io.ClassPathResource">
 		<constructor-arg value="ddl/shareurl-destroy-hsql.ddl"/>
 	</bean>
+	
+	<bean id="optOutDao" class="edu.wisc.wisccal.shareurl.impl.SpringJDBCOptOutDaoImpl">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
 </beans>

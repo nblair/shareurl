@@ -50,6 +50,10 @@
 <c:url value="/rest/addContentFilter" var="addContentFilter"/>
 <c:url value="/rest/resetFilters" var="resetFilters"/>
 
+<c:set var="revokeMessage" value="This ShareURL will be permanently deleted. Are you sure?"/>
+<c:if test="${share.guessable}">
+<c:set var="revokeMessage" value="Your Public ShareURL will revert to the default (Free/Busy Only). Are you sure?"/>
+</c:if>
 <rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
 <link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}" media="all"/>
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
@@ -59,7 +63,7 @@
 $(function() {
 	$('.revokeform').submit(function(e) {
 		e.preventDefault();
-		var confirmed = confirm('This ShareURL will be permanently deleted. Are you sure?');
+		var confirmed = confirm('${revokeMessage}');
 		if(confirmed) {
 			$('.revokeform').unbind();
 			$('.revokeform').submit();

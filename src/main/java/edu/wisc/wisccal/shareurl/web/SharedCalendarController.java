@@ -47,6 +47,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UrlPathHelper;
 
+import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -131,6 +132,7 @@ public class SharedCalendarController {
 	private ICalendarAccountDao calendarAccountDao;
 	private IEventFilter eventFilter;
 	private CalendarDataProcessor calendarDataProcessor;
+	private AutomaticPublicShareService automaticPublicShareService;
 
 	/**
 	 * @param shareDao the shareDao to set
@@ -166,6 +168,21 @@ public class SharedCalendarController {
 	@Autowired
 	public void setCalendarDataProcessor(CalendarDataProcessor calendarDataProcessor) {
 		this.calendarDataProcessor = calendarDataProcessor;
+	}
+
+	/**
+	 * @return the automaticPublicShareService
+	 */
+	public AutomaticPublicShareService getAutomaticPublicShareService() {
+		return automaticPublicShareService;
+	}
+	/**
+	 * @param automaticPublicShareService the automaticPublicShareService to set
+	 */
+	@Autowired
+	public void setAutomaticPublicShareService(
+			AutomaticPublicShareService automaticPublicShareService) {
+		this.automaticPublicShareService = automaticPublicShareService;
 	}
 	/**
 	 * @return the calendarDataProcessor
@@ -329,7 +346,7 @@ public class SharedCalendarController {
 	}
 	
 	/**
-	 * Request handler.
+	 * Main Request handler for ShareURL requests.
 	 */
 	@RequestMapping("/u/**")
 	public String getShareUrl(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
@@ -347,10 +364,20 @@ public class SharedCalendarController {
 		model.put("requestDetails", requestDetails);
 
 		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
+		if(null == share && requestDetails.isPublicUrl()) {
+			share = automaticPublicShareService.getAutomaticPublicShare(requestDetails.getShareKey());
+		}
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(requestDetails + " shareDao#retrieveByKey returns " + share);
 		}
-		if(null != share) {
+		if(null == share) {
+			// share not found, return 404
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("share not found with key: " + requestDetails.getShareKey());
+			}
+			response.setStatus(404);
+			return "share-not-found";
+		} else {
 			ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 			if(null == account) {
 				// account not found for share, revoke and 404
@@ -373,29 +400,7 @@ public class SharedCalendarController {
 				return "data/display-mobileconfig";
 			}
 
-			Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
-			if(LOG.isDebugEnabled()) {
-				List<String> eventUids = eventDebugIds(agenda);
-				LOG.debug("begin processing " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
-			}
-			if(LOG.isTraceEnabled()) {
-				LOG.trace("begin processing " + requestDetails + "; " + account + " has raw agenda " + agenda);
-			}
-			SharePreferences preferences = share.getSharePreferences();
-			if(requestDetails.requiresProblemRecurringPreference()) {
-				ProblematicRecurringEventSharePreference pref = new ProblematicRecurringEventSharePreference();
-				preferences.addPreference(pref);
-				LOG.info(ShareRequestDetails.UW_SUPPORT_RDATE + " parameter detected, added " + pref + " to " + requestDetails);
-			}
-			agenda = eventFilter.filterEvents(agenda, preferences);
-
-			if(LOG.isDebugEnabled()) {
-				List<String> eventUids = eventDebugIds(agenda);
-				LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
-			}
-			if(LOG.isTraceEnabled()) {
-				LOG.trace("post filterEvents for " + requestDetails + "; " + account + " has raw agenda " + agenda);
-			}
+			Calendar agenda = obtainAgenda(account, requestDetails, share.getSharePreferences());
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
 				return handleFreeBusyShare(agenda, requestDetails, response, model, account);
@@ -421,16 +426,45 @@ public class SharedCalendarController {
 				model.remove("descriptionSections");
 			}
 			return viewName;
-		} else {
-			// share not found, return 404
-			if(LOG.isDebugEnabled()) {
-				LOG.debug("share not found with uniqueid: " + requestDetails.getShareKey());
-			}
-			response.setStatus(404);
-			return "share-not-found";
-		}
+		} 
 	}
+	/**
+	 * Retrieve the agenda, and perform base required filtering.
+	 * 
+	 * @see IEventFilter#filterEvents(Calendar, SharePreferences)
+	 * @param account
+	 * @param requestDetails
+	 * @param share
+	 * @return the {@link Calendar}, post filtering
+	 */
+	protected Calendar obtainAgenda(ICalendarAccount account, ShareRequestDetails requestDetails, SharePreferences preferences) {
+		Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
+		if(LOG.isDebugEnabled()) {
+			List<String> eventUids = eventDebugIds(agenda);
+			LOG.debug("begin processing " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+		}
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("begin processing " + requestDetails + "; " + account + " has raw agenda " + agenda);
+		}
+		
+		if(requestDetails.requiresProblemRecurringPreference()) {
+			ProblematicRecurringEventSharePreference pref = new ProblematicRecurringEventSharePreference();
+			preferences.addPreference(pref);
+			LOG.info(ShareRequestDetails.UW_SUPPORT_RDATE + " parameter detected, added " + pref + " to " + requestDetails);
+		}
+		agenda = eventFilter.filterEvents(agenda, preferences);
 
+		if(LOG.isDebugEnabled()) {
+			List<String> eventUids = eventDebugIds(agenda);
+			LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+		}
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("post filterEvents for " + requestDetails + "; " + account + " has raw agenda " + agenda);
+		}
+		return agenda;
+	}
+	
+	
 	List<String> eventDebugIds(Calendar calendar) {
 		if(calendar == null) {
 			return Collections.emptyList();
@@ -544,9 +578,11 @@ public class SharedCalendarController {
 				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarAccount);
 				VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
 				PeriodList periodList = new PeriodList();
-				for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
-					FreeBusy fb = (FreeBusy) o;
-					periodList.addAll(fb.getPeriods());
+				if(vFreeBusy != null) {
+					for(Object o : vFreeBusy.getProperties(FreeBusy.FREEBUSY)) {
+						FreeBusy fb = (FreeBusy) o;
+						periodList.addAll(fb.getPeriods());
+					}
 				}
 				if(periodList.size() == 0) {
 					model.put("noEvents", true);
