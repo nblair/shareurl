@@ -24,6 +24,7 @@ import edu.wisc.wisccal.shareurl.domain.Share;
 public class AutomaticPublicShareServiceImpl implements
 		AutomaticPublicShareService {
 
+	private static final String Y = "Y";
 	private IShareDao shareDao;
 	private OptOutDao optOutDao;
 	private ICalendarAccountDao calendarAccountDao;
@@ -141,17 +142,19 @@ public class AutomaticPublicShareServiceImpl implements
 		return isEligible(result) ? result : null;
 	}
 	/**
-	 * TODO: implementation should perform 3 checks:
+	 * Perform 3 eligibility checks:
 	 * <ol>
-	 * <li>Is the person eligible for calendar service? If not, return false. (complete)</li>
-	 * <li>Has the person opted out? If so, return false. (complete)</li>
-	 * <li>Does the person have a FERPA hold on their email address? If so, return false. (incomplete)</li>
+	 * <li>Is the person eligible for calendar service? If not, return false.</li>
+	 * <li>Has the person opted out? If so, return false.</li>
+	 * <li>Does the person have a FERPA hold on their email address? If so, return false.</li>
 	 * </ol>
 	 * @param calendarAccount
-	 * @return true  if the account is eligible
+	 * @return true if the account is eligible
 	 */
 	protected boolean isEligible(ICalendarAccount calendarAccount) {
-		return calendarAccount != null && calendarAccount.isEligible() && !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount);
+		return calendarAccount != null && calendarAccount.isEligible() 
+				&& !isUnsearchable(calendarAccount) && !hasFerpaHold(calendarAccount) 
+				&& !hasOptedOut(calendarAccount);
 	}
 	
 	/**
@@ -160,6 +163,16 @@ public class AutomaticPublicShareServiceImpl implements
 	 * @return true if the account is "unsearchable"
 	 */
 	protected boolean isUnsearchable(ICalendarAccount calendarAccount) {
-		return "Y".equals(calendarAccount.getAttributeValue(getUnsearchableAttributeName()));
+		return Y.equals(calendarAccount.getAttributeValue(getUnsearchableAttributeName()));
+	}
+	
+	/**
+	 * TODO implement hasFerpaHold
+	 * 
+	 * @param calendarAccount
+	 * @return true if the account has a FERPA hold specifically on the email address attribute
+	 */
+	protected boolean hasFerpaHold(ICalendarAccount calendarAccount) {
+		return false;
 	}
 }
