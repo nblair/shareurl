@@ -2,6 +2,7 @@ create table shares (
 	name varchar(64) not null,
 	owner varchar(96) not null,
 	valid char(1) not null, 
+	label varchar(96),
 	CONSTRAINT sharekey_unq UNIQUE(name),
 	CHECK (valid in ('Y','N'))
 );

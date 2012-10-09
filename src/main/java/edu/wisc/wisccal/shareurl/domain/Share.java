@@ -37,6 +37,7 @@ public class Share implements Serializable {
 	
 	private String ownerCalendarUniqueId;
 	private String key;
+	private String label;
 	private SharePreferences sharePreferences = new SharePreferences();
 	private boolean valid = true;
 
@@ -58,14 +59,24 @@ public class Share implements Serializable {
 	public String getOwnerCalendarUniqueId() {
 		return ownerCalendarUniqueId;
 	}
-
 	/**
 	 * @param ownerCalendarUniqueId the ownerCalendarUniqueId to set
 	 */
 	public void setOwnerCalendarUniqueId(String ownerCalendarUniqueId) {
 		this.ownerCalendarUniqueId = ownerCalendarUniqueId;
 	}
-
+	/**
+	 * @return the label
+	 */
+	public String getLabel() {
+		return label;
+	}
+	/**
+	 * @param label the label to set
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+	}
 	/**
 	 * @return the valid
 	 */
@@ -162,6 +173,7 @@ public class Share implements Serializable {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
 			.append("ownerCalendarUniqueId", this.ownerCalendarUniqueId)
 			.append("name", this.key)
+			.append("label", this.label)
 			.append("sharePreferences", sharePreferences)
 			.toString();
 	}

@@ -1,5 +1,5 @@
 <%-- 
-  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
+  Copyright 2007-2012 The Board of Regents of the University of Wisconsin System.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -86,6 +86,11 @@ $(function() {
 	
 	setupResetFiltersHandler();
 	renderShareControls(initShare, false);
+	$('#setLabel').submit(function(event) {
+        event.preventDefault();
+        $('#lsubmit').attr('disabled', 'disabled');
+        postSetLabel();     
+    });
 });
 function getAvailablePrivacyFilters(share) {
 	var options = { "PUBLIC": "Public", "CONFIDENTIAL": "Show Date and Time Only", "PRIVATE": "Private" };
@@ -282,6 +287,19 @@ function postAndRenderPreferences(url, form) {
 			},
 			"json");
 };
+function postSetLabel() {
+    var data = $('#setLabel').serializeObject();
+    data["shareKey"] = '${share.key}';
+    $.post('<c:url value="/rest/set-label"/>',
+            data,
+            function(data) {
+                if(data.share) {
+                    //update label text
+                    $('#labelinput').value(data.share.label);
+                }
+            },
+            "json");
+};
 </script>
 </head>
 
@@ -292,12 +310,15 @@ function postAndRenderPreferences(url, form) {
 
 <div id="content" class="main col">
 
-<h2>Options for ShareURL <span class="key large">${share.key }</span></h2>
 <div id="shareDetails">
-<ul>
-<c:if test="${share.includeParticipants}">
-<li><strong>Include Event Participants.</strong></li>
+<h2>Options for <span class="key">${share.key }</span></h2>
+<c:if test="${not share.guessable }">
+<form id="setLabel">
+<fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change"></fieldset>
+</form>
 </c:if>
+<h3>This ShareURL will respond with:</h3>
+<ul>
 <c:choose>
 <c:when test="${share.freeBusyOnly}">
 <li>Free Busy only.</li>
@@ -313,6 +334,9 @@ function postAndRenderPreferences(url, form) {
 </c:choose>
 </c:otherwise>
 </c:choose>
+<c:if test="${share.includeParticipants}">
+<li><strong>Including Event Participants.</strong></li>
+</c:if>
 </ul>
 </div>
 

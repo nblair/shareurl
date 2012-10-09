@@ -322,6 +322,40 @@ public class EditSharePreferencesController {
 	
 	/**
 	 * 
+	 * @param shareKey
+	 * @param label
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/set-label",method=RequestMethod.POST) 
+	public String setLabel(@RequestParam String shareKey, @RequestParam String label, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling setLabel request for " + activeAccount);
+		}
+		if(validateLabel(label)) {
+			Share candidate = identifyCandidate(shareKey, activeAccount);
+			if(candidate != null && !candidate.isRevocable() && !candidate.isGuessable()) {
+				candidate = shareDao.setLabel(candidate, label);
+				model.addAttribute("share", candidate);
+			}
+		} else {
+			model.addAttribute("error", "Label invalid");
+		}
+		
+		return JSON_VIEW;
+	}
+	/**
+	 * 
+	 * @param label
+	 * @return
+	 */
+	protected boolean validateLabel(String label) {
+		return StringUtils.isNotBlank(label) && label.length() < 96;
+	}
+	/**
+	 * 
 	 * @param candidate
 	 * @param propertyName
 	 * @param propertyValue

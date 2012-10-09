@@ -224,6 +224,18 @@ IShareDao {
 
 		return share;
 	}
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.IShareDao#setLabel(edu.wisc.wisccal.shareurl.domain.Share, java.lang.String)
+	 */
+	@Override
+	public Share setLabel(Share share, String label) {
+		int rows = this.getSimpleJdbcTemplate().update("update shares set label=? where name=?", label, share.getKey());
+		if(rows == 1) {
+			share.setLabel(label);
+			LOG.info("successfully updated set label for " + share);
+		}
+		return share;
+	}
 	/**
 	 * Called if and only if:
 	 * <ol>

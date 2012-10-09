@@ -101,4 +101,12 @@ public interface IShareDao {
 	 * @return
 	 */
 	Share removeSharePreference(Share share, ISharePreference sharePreference);
+	
+	/**
+	 * Store a new label for the {@link Share}.
+	 * @param share
+	 * @param label
+	 * @return the updated {@link Share}
+	 */
+	Share setLabel(Share share, String label);
 }

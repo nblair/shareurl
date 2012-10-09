@@ -46,18 +46,6 @@ $(function() {
         $('#tsubmit').attr('disabled', 'disabled');
         postCreateTraditional();     
     });
-	/*
-	$('#optout').submit(function(event) {
-        event.preventDefault();
-        $('#osubmit').attr('disabled', 'disabled');
-        postOptOut();     
-    });
-	$('#optin').submit(function(event) {
-        event.preventDefault();
-        $('#isubmit').attr('disabled', 'disabled');
-        postOptIn();
-    });
-	*/
 });
 
 function refreshMyShares(fadeIn) {
@@ -73,10 +61,8 @@ function refreshMyShares(fadeIn) {
 					} else {
 						for(var i = 0; i < data.shares.length; i++) {
 							var share = data.shares[i];
-							if(share.guessableOptOut) {
-								// skip
-							} else if(share.freeBusyOnly) {
-								var liText = '<li class="share"><a title="View Details and/or Edit Options for ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key;
+							if(share.freeBusyOnly) {
+								var liText = '<li class="share"><a title="View Details and/or Edit Options for ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">Edit Options for ' + share.key;
 								if(share.guessable) {
 									liText += ' (Public ShareURL)';
 								}
@@ -93,16 +79,30 @@ function refreshMyShares(fadeIn) {
 									details += ', Include Participants';
 								}
 								details += '.';
-								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key + 
-								'</span></a>:&nbsp;<span class="details">' + details + '</span></li>').appendTo(ul);
+								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key + '" href="manage?id=' + share.key + '">';
+							    liText += '<span class="key large">Edit Options for ' + share.key;
+							    if(share.guessable) {
+                                    liText += ' (Public ShareURL)';
+                                } else if(share.label) {
+							    	liText += '<i>(' + share.label + ')</i>';
+							    }
+							    liText += '</span></a><br/><span class="details">' + details + '</span></li>';
+								$(liText).appendTo(ul);
 							} else {
 								var details = share.sharePreferences.filterDisplay;
 								if(share.includeParticipants) {
 									details += ', Include Participants';
 								}
 								details += '.';
-								$('<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">View and/or Edit Options for ' + share.key + 
-								'</span></a>:&nbsp;<span class="details">' + details + '</span></li>').appendTo(ul);
+								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '">';
+								liText += '<span class="key large">Edit Options for ' + share.key;
+								if(share.guessable) {
+                                    liText += ' (Public ShareURL)';
+                                } else if(share.label) {
+                                    liText += '<i>(' + share.label + ')</i>';
+                                }
+                                liText += '</span></a><br/><span class="details">' + details + '</span></li>';
+								$(liText).appendTo(ul);
 							}
 						}
 					}
@@ -211,25 +211,25 @@ traditional ShareURLs with different options.</p>
 </c:url>
 <c:choose>
 <c:when test="${share.guessable }">
-<c:set var="linkText" value="View and/or Edit Options for ${share.key } (Public ShareURL)"/>
+<c:set var="linkText" value="Edit Options for ${share.key } (Public ShareURL)"/>
 </c:when>
 <c:otherwise>
-<c:set var="linkText" value="View and/or Edit Options for ${share.key }"/>
+<c:set var="linkText" value="Edit Options for ${share.key }"/>
 </c:otherwise>
 </c:choose>
 <c:choose>
 <c:when test="${share.freeBusyOnly == true}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}</span></a>:&nbsp;<span class="details">Free Busy only.</span> 
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}<c:if test="${not empty share.label}">&nbsp;<i>(${share.label})</i></c:if></span></a><br/><span class="details">Free Busy only.</span> 
 </li>
 </c:when>
 <c:otherwise>
 <c:choose>
 <c:when test="${share.eventFilterCount == 0}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}</span></a>:&nbsp;<span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}<c:if test="${not empty share.label}">&nbsp;<i>(${share.label})</i></c:if></span></a><br/><span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
 </li>
 </c:when>
 <c:otherwise>
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}</span></a>:&nbsp;<span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
+<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}<c:if test="${not empty share.label}">&nbsp;<i>(${share.label})</i></c:if></span></a><br/><span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
 </li>
 </c:otherwise>
 </c:choose>
