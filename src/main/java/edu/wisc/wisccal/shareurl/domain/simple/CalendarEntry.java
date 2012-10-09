@@ -21,6 +21,8 @@ package edu.wisc.wisccal.shareurl.domain.simple;
 
 import java.util.Date;
 
+import net.fortuna.ical4j.model.property.Transp;
+
 import org.apache.commons.lang.time.DateUtils;
 
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
@@ -38,7 +40,7 @@ public class CalendarEntry {
 	private Date startTime;
 	private Date endTime;
 	private String timezone;
-	private FreeBusyStatus status = FreeBusyStatus.BUSY;
+	private String transparency;
 	
 	/**
 	 * @return the uid
@@ -89,17 +91,38 @@ public class CalendarEntry {
 		this.timezone = timezone;
 	}
 	/**
+	 * @return the transparency
+	 */
+	public String getTransparency() {
+		return transparency;
+	}
+	/**
+	 * @param transparency the transparency to set
+	 */
+	public void setTransparency(String transparency) {
+		this.transparency = transparency;
+	}
+	public FreeBusyStatus getShowTimeAs() {
+		if(Transp.TRANSPARENT.getValue().equals(getTransparency())) {
+			return FreeBusyStatus.FREE;
+		}
+		return FreeBusyStatus.BUSY;
+	}
+	public void setShowTimeAs(FreeBusyStatus freeBusyStatus) {
+		if(FreeBusyStatus.FREE.equals(freeBusyStatus)) {
+			setTransparency(Transp.TRANSPARENT.getValue());
+		} else {
+			setTransparency(Transp.OPAQUE.getValue());
+		}
+		
+	}
+	/**
 	 * @return the status
 	 */
 	public FreeBusyStatus getStatus() {
-		return status;
+		return getShowTimeAs();
 	}
-	/**
-	 * @param status the status to set
-	 */
-	public void setStatus(FreeBusyStatus status) {
-		this.status = status;
-	}
+
 	/**
 	 * Derived; if {@link #getStartTime()} and {@link #getEndTime()}
 	 * return timestamps that equal the truncated self, this returns true.
@@ -130,9 +153,10 @@ public class CalendarEntry {
 		result = prime * result + ((endTime == null) ? 0 : endTime.hashCode());
 		result = prime * result
 				+ ((startTime == null) ? 0 : startTime.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result
 				+ ((timezone == null) ? 0 : timezone.hashCode());
+		result = prime * result
+				+ ((transparency == null) ? 0 : transparency.hashCode());
 		result = prime * result + ((uid == null) ? 0 : uid.hashCode());
 		return result;
 	}
@@ -141,35 +165,51 @@ public class CalendarEntry {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (!(obj instanceof CalendarEntry)) {
 			return false;
+		}
 		CalendarEntry other = (CalendarEntry) obj;
 		if (endTime == null) {
-			if (other.endTime != null)
+			if (other.endTime != null) {
 				return false;
-		} else if (!endTime.equals(other.endTime))
+			}
+		} else if (!endTime.equals(other.endTime)) {
 			return false;
+		}
 		if (startTime == null) {
-			if (other.startTime != null)
+			if (other.startTime != null) {
 				return false;
-		} else if (!startTime.equals(other.startTime))
+			}
+		} else if (!startTime.equals(other.startTime)) {
 			return false;
-		if (status != other.status)
-			return false;
+		}
 		if (timezone == null) {
-			if (other.timezone != null)
+			if (other.timezone != null) {
 				return false;
-		} else if (!timezone.equals(other.timezone))
+			}
+		} else if (!timezone.equals(other.timezone)) {
 			return false;
+		}
+		if (transparency == null) {
+			if (other.transparency != null) {
+				return false;
+			}
+		} else if (!transparency.equals(other.transparency)) {
+			return false;
+		}
 		if (uid == null) {
-			if (other.uid != null)
+			if (other.uid != null) {
 				return false;
-		} else if (!uid.equals(other.uid))
+			}
+		} else if (!uid.equals(other.uid)) {
 			return false;
+		}
 		return true;
 	}
 	/* (non-Javadoc)
@@ -177,9 +217,19 @@ public class CalendarEntry {
 	 */
 	@Override
 	public String toString() {
-		return "CalendarEntry [uid=" + uid + ", startTime=" + startTime
-				+ ", endTime=" + endTime + ", timezone=" + timezone
-				+ ", status=" + status + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("CalendarEntry [uid=");
+		builder.append(uid);
+		builder.append(", startTime=");
+		builder.append(startTime);
+		builder.append(", endTime=");
+		builder.append(endTime);
+		builder.append(", timezone=");
+		builder.append(timezone);
+		builder.append(", transparency=");
+		builder.append(transparency);
+		builder.append("]");
+		return builder.toString();
 	}
 	
 }

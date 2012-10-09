@@ -21,6 +21,7 @@ public class Event extends CalendarEntry {
 	private String recurrenceId;
 	private String privacy;
 	private boolean recurring;
+	private String eventStatus;
 	
 	/**
 	 * @return the summary
@@ -82,7 +83,6 @@ public class Event extends CalendarEntry {
 	public void setAttendees(List<Attendee> attendees) {
 		this.attendees = attendees;
 	}
-	
 	/**
 	 * @return the recurrenceId
 	 */
@@ -119,6 +119,18 @@ public class Event extends CalendarEntry {
 	public void setRecurring(boolean recurring) {
 		this.recurring = recurring;
 	}
+	/**
+	 * @return the eventStatus
+	 */
+	public String getEventStatus() {
+		return eventStatus;
+	}
+	/**
+	 * @param eventStatus the eventStatus to set
+	 */
+	public void setEventStatus(String eventStatus) {
+		this.eventStatus = eventStatus;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -130,6 +142,8 @@ public class Event extends CalendarEntry {
 				+ ((attendees == null) ? 0 : attendees.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((eventStatus == null) ? 0 : eventStatus.hashCode());
 		result = prime * result
 				+ ((location == null) ? 0 : location.hashCode());
 		result = prime * result
@@ -146,50 +160,75 @@ public class Event extends CalendarEntry {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (!(obj instanceof Event)) {
 			return false;
+		}
 		Event other = (Event) obj;
 		if (attendees == null) {
-			if (other.attendees != null)
+			if (other.attendees != null) {
 				return false;
-		} else if (!attendees.equals(other.attendees))
+			}
+		} else if (!attendees.equals(other.attendees)) {
 			return false;
+		}
 		if (description == null) {
-			if (other.description != null)
+			if (other.description != null) {
 				return false;
-		} else if (!description.equals(other.description))
+			}
+		} else if (!description.equals(other.description)) {
 			return false;
+		}
+		if (eventStatus == null) {
+			if (other.eventStatus != null) {
+				return false;
+			}
+		} else if (!eventStatus.equals(other.eventStatus)) {
+			return false;
+		}
 		if (location == null) {
-			if (other.location != null)
+			if (other.location != null) {
 				return false;
-		} else if (!location.equals(other.location))
+			}
+		} else if (!location.equals(other.location)) {
 			return false;
+		}
 		if (organizer == null) {
-			if (other.organizer != null)
+			if (other.organizer != null) {
 				return false;
-		} else if (!organizer.equals(other.organizer))
+			}
+		} else if (!organizer.equals(other.organizer)) {
 			return false;
+		}
 		if (privacy == null) {
-			if (other.privacy != null)
+			if (other.privacy != null) {
 				return false;
-		} else if (!privacy.equals(other.privacy))
+			}
+		} else if (!privacy.equals(other.privacy)) {
 			return false;
+		}
 		if (recurrenceId == null) {
-			if (other.recurrenceId != null)
+			if (other.recurrenceId != null) {
 				return false;
-		} else if (!recurrenceId.equals(other.recurrenceId))
+			}
+		} else if (!recurrenceId.equals(other.recurrenceId)) {
 			return false;
-		if (recurring != other.recurring)
+		}
+		if (recurring != other.recurring) {
 			return false;
+		}
 		if (summary == null) {
-			if (other.summary != null)
+			if (other.summary != null) {
 				return false;
-		} else if (!summary.equals(other.summary))
+			}
+		} else if (!summary.equals(other.summary)) {
 			return false;
+		}
 		return true;
 	}
 	/* (non-Javadoc)
@@ -197,11 +236,29 @@ public class Event extends CalendarEntry {
 	 */
 	@Override
 	public String toString() {
-		return "Event [summary=" + summary + ", location=" + location
-				+ ", description=" + description + ", organizer=" + organizer
-				+ ", attendees=" + attendees + ", recurrenceId=" + recurrenceId
-				+ ", privacy=" + privacy + ", recurring=" + recurring
-				+ ", toString()=" + super.toString() + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("Event [summary=");
+		builder.append(summary);
+		builder.append(", location=");
+		builder.append(location);
+		builder.append(", description=");
+		builder.append(description);
+		builder.append(", organizer=");
+		builder.append(organizer);
+		builder.append(", attendees=");
+		builder.append(attendees);
+		builder.append(", recurrenceId=");
+		builder.append(recurrenceId);
+		builder.append(", privacy=");
+		builder.append(privacy);
+		builder.append(", recurring=");
+		builder.append(recurring);
+		builder.append(", eventStatus=");
+		builder.append(eventStatus);
+		builder.append(", toString()=");
+		builder.append(super.toString());
+		builder.append("]");
+		return builder.toString();
 	}
 	
 	

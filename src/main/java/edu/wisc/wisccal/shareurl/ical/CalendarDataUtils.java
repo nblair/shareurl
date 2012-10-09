@@ -18,7 +18,6 @@ package edu.wisc.wisccal.shareurl.ical;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,7 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,9 +45,7 @@ import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.parameter.Cn;
-import net.fortuna.ical4j.model.parameter.FbType;
 import net.fortuna.ical4j.model.parameter.PartStat;
-import net.fortuna.ical4j.model.parameter.SentBy;
 import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Attendee;
@@ -80,8 +76,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.stereotype.Service;
 
-import edu.wisc.wisccal.shareurl.domain.simple.Event;
-import edu.wisc.wisccal.shareurl.domain.simple.FreeBusyStatus;
 import edu.wisc.wisccal.shareurl.web.IShareRequestDetails;
 
 /**
@@ -100,11 +94,11 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 
 	protected static final String X_SHAREURL_RECURRENCE_EXPAND = "X-SHAREURL-RECURRENCE-EXPAND";
 
-	protected static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
+	public static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
 
 	public static final long MILLISECS_PER_MINUTE = 60*1000;
 
-	private static final String UW_SEPARATOR = "_UW_";
+	public static final String UW_SEPARATOR = "_UW_";
 
 	public static final String SHAREURL_PROD_ID = "-//ShareURL//WiscCal//EN";
 
@@ -114,6 +108,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			Arrays.asList(new String[] { Uid.UID, DtStart.DTSTART, DtEnd.DTEND, DtStamp.DTSTAMP, 
 					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED,
 					X_SHAREURL_OLD_RECURRENCE_ID, X_SHAREURL_RECURRENCE_EXPAND, Transp.TRANSP }));
+
 	/**
 	 * 
 	 * @param propertyName
@@ -688,120 +683,8 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 				}
 			}
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#simplify(net.fortuna.ical4j.model.Calendar, boolean)
-	 */
-	@Override
-	public edu.wisc.wisccal.shareurl.domain.simple.Calendar simplify(
-			Calendar calendar, boolean includeParticipants) {
-		if(calendar == null) {
-			return null;
-		}
-		edu.wisc.wisccal.shareurl.domain.simple.Calendar result = new edu.wisc.wisccal.shareurl.domain.simple.Calendar();
-		result.setProductId(SHAREURL_PROD_ID);
-		result.setVersion(nullSafePropertyValue(calendar.getVersion()));
-		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext(); ) {
-			Component component = (Component) i.next();
-			if(VEvent.VEVENT.equals(component.getName())) {
-				Event event = convert((VEvent) component, includeParticipants);
-				result.getEntries().add(event);
-			} else if (VFreeBusy.VFREEBUSY.equals(component.getName())) {
-				List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> freeBusy = convert((VFreeBusy) component);
-				result.getEntries().addAll(freeBusy);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * 
-	 * @param vfreebusy
-	 * @return
-	 */
-	public List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> convert(VFreeBusy vfreebusy) {
-		List<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy> result = new ArrayList<edu.wisc.wisccal.shareurl.domain.simple.FreeBusy>();
-		String uid = nullSafePropertyValue(vfreebusy.getUid());
-		PropertyList freebusy = vfreebusy.getProperties(FreeBusy.FREEBUSY);
-		for(Object o : freebusy) {
-			FreeBusy fb = (FreeBusy) o;
-			FreeBusyStatus status = FreeBusyStatus.BUSY;
-			FbType type = (FbType) fb.getParameter(FbType.FBTYPE);
-			if(type != null && type.getValue().startsWith("FREE")) {
-				status = FreeBusyStatus.FREE;
-			}
-			PeriodList periods = fb.getPeriods();
-			for(Object p: periods) {
-				Period period = (Period) p;
-				edu.wisc.wisccal.shareurl.domain.simple.FreeBusy instance = new edu.wisc.wisccal.shareurl.domain.simple.FreeBusy();
-				instance.setStartTime(period.getRangeStart());
-				instance.setEndTime(period.getRangeEnd());
-				instance.setStatus(status);
-				instance.setUid(uid);
-				result.add(instance);
-			}
-		}
-		return result;
-	}
-	/**
-	 * 
-	 * @param vevent
-	 * @param removeParticipants
-	 * @return
-	 */
-	public Event convert(VEvent vevent, boolean includeParticipants) {
-		Event event = new Event();
-		event.setUid(nullSafePropertyValue(vevent.getUid()));
-		event.setStartTime(vevent.getStartDate().getDate());
-		event.setEndTime(vevent.getEndDate(true).getDate());
-		event.setTimezone(nullSafeParameterValue(vevent.getStartDate().getParameter(TzId.TZID)));
-		event.setSummary(nullSafePropertyValue(vevent.getSummary()));
-		event.setDescription(nullSafePropertyValue(vevent.getDescription()));
-		Clazz clazz = vevent.getClassification();
-		if(clazz == null) {
-			clazz = Clazz.PUBLIC;
-		}
-		event.setPrivacy(nullSafePropertyValue(clazz));
-		event.setLocation(nullSafePropertyValue(vevent.getLocation()));
-		if(includeParticipants) {
-			net.fortuna.ical4j.model.property.Organizer organizer = vevent.getOrganizer();
-			if(organizer != null) {
-				edu.wisc.wisccal.shareurl.domain.simple.Organizer o = new edu.wisc.wisccal.shareurl.domain.simple.Organizer();
-				o.setDisplayName(nullSafeParameterValue(organizer.getParameter(Cn.CN)));
-				o.setEmailAddress(removeMailto(organizer.getValue()));
-				o.setDesignateOrganizer(nullSafeParameterValue(organizer.getParameter(SentBy.SENT_BY)));
-				event.setOrganizer(o);
-			}
-			PropertyList attendees = vevent.getProperties(Attendee.ATTENDEE);
-			for(Object o: attendees) {
-				Attendee attendee = (Attendee) o;
-
-				edu.wisc.wisccal.shareurl.domain.simple.Attendee a = new edu.wisc.wisccal.shareurl.domain.simple.Attendee();
-				a.setDisplayName(nullSafeParameterValue(attendee.getParameter(Cn.CN)));
-				a.setEmailAddress(removeMailto(attendee.getValue()));
-				a.setParticipationStatus(nullSafeParameterValue(attendee.getParameter(PartStat.PARTSTAT)));
-
-				event.getAttendees().add(a);
-			}
-		}
-		event.setRecurrenceId(nullSafePropertyValue(vevent.getRecurrenceId()));
-		if(event.getRecurrenceId() == null) {
-			// try the X-UW version
-			event.setRecurrenceId(nullSafePropertyValue(vevent.getProperty(X_SHAREURL_OLD_RECURRENCE_ID)));
-			if(event.getRecurrenceId() != null) {
-				// restore original UID
-				event.setUid(StringUtils.substringBefore(event.getUid(), UW_SEPARATOR));
-			}
-		}
-		event.setRecurring(isEventRecurring(vevent));
-		if(Transp.TRANSPARENT.equals(vevent.getProperty(Transp.TRANSP))) {
-			event.setStatus(FreeBusyStatus.FREE);
-		}
-		return event;
-	}
-
+	}	
+	
 	String nullSafePropertyValue(Property property) {
 		if(property == null) {
 			return null;
@@ -932,11 +815,11 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	 * @param emailAddress
 	 * @return
 	 */
-	static String mailto(String emailAddress) {
+	public static String mailto(String emailAddress) {
 		return MAILTO_PREFIX + emailAddress;
 	}
 
-	static String removeMailto(String mailto) {
+	public static String removeMailto(String mailto) {
 		return StringUtils.remove(mailto, MAILTO_PREFIX);
 	}
 

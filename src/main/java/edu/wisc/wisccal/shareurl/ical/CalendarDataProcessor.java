@@ -30,7 +30,6 @@ import net.fortuna.ical4j.model.property.FreeBusy;
 
 import org.jasig.schedassist.model.ICalendarAccount;
 
-import edu.wisc.wisccal.shareurl.domain.simple.EventParticipant;
 import edu.wisc.wisccal.shareurl.web.IShareRequestDetails;
 import edu.wisc.wisccal.shareurl.web.ShareRequestDetails;
 
@@ -203,15 +202,6 @@ public interface CalendarDataProcessor {
 	 * @param account
 	 */
 	void removeParticipants(Calendar calendar, ICalendarAccount account);
-	
-	/**
-	 * Convert the ical4j {@link Calendar} argument to the simplified representation.
-	 * 
-	 * @param calendar 
-	 * @param removeParticipants if false, the result will not contain any {@link EventParticipant}s.
-	 * @return the simplified representation
-	 */
-	edu.wisc.wisccal.shareurl.domain.simple.Calendar simplify(Calendar calendar, boolean includeParticipants);
 	
 	/**
 	 * Mutative method to inspect all {@link VEvent} components in the agenda argument

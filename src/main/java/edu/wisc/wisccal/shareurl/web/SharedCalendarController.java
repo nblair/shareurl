@@ -51,6 +51,8 @@ import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
+import edu.wisc.wisccal.shareurl.domain.simple.SimpleCalendars;
+import edu.wisc.wisccal.shareurl.domain.simple.SimpleCalendarsImpl;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
 import edu.wisc.wisccal.shareurl.ical.EventParticipation;
@@ -132,6 +134,7 @@ public class SharedCalendarController {
 	private ICalendarAccountDao calendarAccountDao;
 	private IEventFilter eventFilter;
 	private CalendarDataProcessor calendarDataProcessor;
+	private SimpleCalendars simpleCalendars = new SimpleCalendarsImpl();
 	private AutomaticPublicShareService automaticPublicShareService;
 
 	/**
@@ -169,7 +172,18 @@ public class SharedCalendarController {
 	public void setCalendarDataProcessor(CalendarDataProcessor calendarDataProcessor) {
 		this.calendarDataProcessor = calendarDataProcessor;
 	}
-
+	/**
+	 * @return the simpleCalendars
+	 */
+	public SimpleCalendars getSimpleCalendars() {
+		return simpleCalendars;
+	}
+	/**
+	 * @param simpleCalendars the simpleCalendars to set
+	 */
+	public void setSimpleCalendars(SimpleCalendars simpleCalendars) {
+		this.simpleCalendars = simpleCalendars;
+	}
 	/**
 	 * @return the automaticPublicShareService
 	 */
@@ -251,7 +265,7 @@ public class SharedCalendarController {
 				VEvent matchingEvent = findMatchingEvent(agenda, requestDetails);
 				if(matchingEvent != null) {
 					if(ShareDisplayFormat.JSON.equals(display)) {
-						model.put("calendar", calendarDataProcessor.simplify(CalendarDataUtils.wrapEvent(matchingEvent), sharePreferences.isIncludeParticipants()));
+						model.put("calendar", simpleCalendars.simplify(CalendarDataUtils.wrapEvent(matchingEvent), sharePreferences.isIncludeParticipants()));
 					} else {
 						EventParticipation participation = calendarDataProcessor.getEventParticipation(matchingEvent, account);
 						// wrap the event with the participation bundled
@@ -281,7 +295,7 @@ public class SharedCalendarController {
 				
 				
 				if(ShareDisplayFormat.JSON.equals(display)) {
-					model.put("calendar", calendarDataProcessor.simplify(agenda, sharePreferences.isIncludeParticipants()));
+					model.put("calendar", simpleCalendars.simplify(agenda, sharePreferences.isIncludeParticipants()));
 				} else {
 					model.put("empty", components.size() == 0);
 					model.put("allEvents", allEvents);
@@ -573,7 +587,7 @@ public class SharedCalendarController {
 		if(displayFormat.isMarkupLanguage()) {
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
 				calendarDataProcessor.stripEventDetails(agenda, calendarAccount);
-				model.put("calendar", calendarDataProcessor.simplify(agenda, false));
+				model.put("calendar", simpleCalendars.simplify(agenda, false));
 			} else {
 				Calendar freebusy = calendarDataProcessor.convertToFreeBusy(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarAccount);
 				VFreeBusy vFreeBusy = (VFreeBusy) freebusy.getComponent(VFreeBusy.VFREEBUSY);
