@@ -102,12 +102,22 @@ public class CalendarEntry {
 	public void setTransparency(String transparency) {
 		this.transparency = transparency;
 	}
+	/**
+	 * 
+	 * @return FREE if transparent, BUSY otherwise
+	 */
 	public FreeBusyStatus getShowTimeAs() {
 		if(Transp.TRANSPARENT.getValue().equals(getTransparency())) {
 			return FreeBusyStatus.FREE;
 		}
 		return FreeBusyStatus.BUSY;
 	}
+	/**
+	 * Calls {@link #setTransparency(String)} with the appropriate value.
+	 * 
+	 * @see CalendarEntry#setTransparency(String)
+	 * @param freeBusyStatus
+	 */
 	public void setShowTimeAs(FreeBusyStatus freeBusyStatus) {
 		if(FreeBusyStatus.FREE.equals(freeBusyStatus)) {
 			setTransparency(Transp.TRANSPARENT.getValue());
@@ -117,8 +127,11 @@ public class CalendarEntry {
 		
 	}
 	/**
+	 * Use {@link #getShowTimeAs()} or {@link #getTransparency()} instead.
+	 * 
 	 * @return the status
 	 */
+	@Deprecated
 	public FreeBusyStatus getStatus() {
 		return getShowTimeAs();
 	}
