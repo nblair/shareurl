@@ -38,6 +38,8 @@
 		<url-pattern>*.html</url-pattern>
 		<url-pattern>/u/*</url-pattern>
         <url-pattern>/freebusy/*</url-pattern>
+        <!-- search view -->
+        <url-pattern>/search</url-pattern>
         <!-- landing post-login -->
         <url-pattern>/my-shares</url-pattern>
         <!-- webflow to manage a share -->
