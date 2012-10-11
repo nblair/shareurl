@@ -1,1 +1,0 @@
-ALTER TABLE shares ADD label varchar2(96)
