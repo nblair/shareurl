@@ -51,6 +51,7 @@ public class ShareRowMapper implements RowMapper<Share> {
 		} else {
 			share.setValid(false);
 		}
+		share.setLabel(rs.getString("LABEL"));
 		return share;
 	}
 

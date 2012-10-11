@@ -336,7 +336,7 @@ public class EditSharePreferencesController {
 		}
 		if(validateLabel(label)) {
 			Share candidate = identifyCandidate(shareKey, activeAccount);
-			if(candidate != null && !candidate.isRevocable() && !candidate.isGuessable()) {
+			if(candidate != null && candidate.isRevocable() && !candidate.isGuessable()) {
 				candidate = shareDao.setLabel(candidate, label);
 				model.addAttribute("share", candidate);
 			}
@@ -352,7 +352,10 @@ public class EditSharePreferencesController {
 	 * @return
 	 */
 	protected boolean validateLabel(String label) {
-		return StringUtils.isNotBlank(label) && label.length() < 96;
+		if(StringUtils.isBlank(label)) {
+			return true;
+		}
+		return label.length() < 96;
 	}
 	/**
 	 * 

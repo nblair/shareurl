@@ -21,6 +21,7 @@
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <title>WiscCal ShareURL - Manage ${share.key }</title>
 <rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
+<rs:resourceURL var="tickIcon" value="/rs/famfamfam/silk/1.3/tick.png"/>
 <style type="text/css">
 .key { color:green;}
 .large { font-size:120%;}
@@ -89,7 +90,7 @@ $(function() {
 	$('#setLabel').submit(function(event) {
         event.preventDefault();
         $('#lsubmit').attr('disabled', 'disabled');
-        postSetLabel();     
+        postSetLabel(this);     
     });
 });
 function getAvailablePrivacyFilters(share) {
@@ -182,7 +183,7 @@ function resetFilters(event) {
 	}
 };
 function renderSharePreferences(share, fadeIn) {
-	$('#shareDetails').empty();
+	$('#shareDetailsInner').empty();
 	var ul = $('<ul/>');
 	if(share.includeParticipants) {
 		$('<li><strong>Include Event Participants.</strong></li>').appendTo(ul);
@@ -198,9 +199,9 @@ function renderSharePreferences(share, fadeIn) {
 		}
 	}
 	if(fadeIn) {
-		ul.appendTo('#shareDetails').fadeIn();
+		ul.appendTo('#shareDetailsInner').fadeIn();
 	} else {
-		ul.appendTo('#shareDetails');
+		ul.appendTo('#shareDetailsInner');
 	}
 	renderShareUrlExample();
 };
@@ -287,15 +288,20 @@ function postAndRenderPreferences(url, form) {
 			},
 			"json");
 };
-function postSetLabel() {
-    var data = $('#setLabel').serializeObject();
+function postSetLabel(form) {
+	$('#labelindicator').empty();
+	$('<img src="<c:url value="/img/indicator.gif"/>"/>').appendTo('#labelindicator');
+    var data = $(form).serializeObject();
     data["shareKey"] = '${share.key}';
     $.post('<c:url value="/rest/set-label"/>',
             data,
             function(data) {
                 if(data.share) {
                     //update label text
-                    $('#labelinput').value(data.share.label);
+                    $('#labelinput').val(data.share.label);
+                    $('#labelindicator').empty();
+                    $('<img src="${tickIcon}"/>').appendTo('#labelindicator');
+                    $('#lsubmit').attr('disabled', '');
                 }
             },
             "json");
@@ -314,10 +320,11 @@ function postSetLabel() {
 <h2>Options for <span class="key">${share.key }</span></h2>
 <c:if test="${not share.guessable }">
 <form id="setLabel">
-<fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change"></fieldset>
+<fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" name="label" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change">&nbsp;<span id="labelindicator"></span></fieldset>
 </form>
 </c:if>
 <h3>This ShareURL will respond with:</h3>
+<div id="shareDetailsInner">
 <ul>
 <c:choose>
 <c:when test="${share.freeBusyOnly}">
@@ -338,6 +345,7 @@ function postSetLabel() {
 <li><strong>Including Event Participants.</strong></li>
 </c:if>
 </ul>
+</div>
 </div>
 
 <h2>Change Options for this ShareURL</h2>

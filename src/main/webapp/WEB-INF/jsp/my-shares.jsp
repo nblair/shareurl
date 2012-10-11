@@ -65,8 +65,10 @@ function refreshMyShares(fadeIn) {
 								var liText = '<li class="share"><a title="View Details and/or Edit Options for ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">Edit Options for ' + share.key;
 								if(share.guessable) {
 									liText += ' (Public ShareURL)';
-								}
-								liText += '</span></a>:&nbsp;<span class="details">Free Busy only.</span></li>';
+								} else if(share.label) {
+							    	liText += '&nbsp;<i>(' + share.label + ')</i>';
+							    }
+								liText += '</span></a><br/><span class="details">Free Busy only.</span></li>';
 								var li = $(liText);
 								if(fadeIn) {
 									li.appendTo(ul).fadeIn();
@@ -84,7 +86,7 @@ function refreshMyShares(fadeIn) {
 							    if(share.guessable) {
                                     liText += ' (Public ShareURL)';
                                 } else if(share.label) {
-							    	liText += '<i>(' + share.label + ')</i>';
+							    	liText += '&nbsp;<i>(' + share.label + ')</i>';
 							    }
 							    liText += '</span></a><br/><span class="details">' + details + '</span></li>';
 								$(liText).appendTo(ul);
@@ -99,7 +101,7 @@ function refreshMyShares(fadeIn) {
 								if(share.guessable) {
                                     liText += ' (Public ShareURL)';
                                 } else if(share.label) {
-                                    liText += '<i>(' + share.label + ')</i>';
+                                    liText += '&nbsp;<i>(' + share.label + ')</i>';
                                 }
                                 liText += '</span></a><br/><span class="details">' + details + '</span></li>';
 								$(liText).appendTo(ul);
