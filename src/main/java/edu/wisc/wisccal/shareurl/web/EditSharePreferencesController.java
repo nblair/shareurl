@@ -355,7 +355,7 @@ public class EditSharePreferencesController {
 		if(StringUtils.isBlank(label)) {
 			return true;
 		}
-		return label.length() < 96;
+		return label.length() < 64;
 	}
 	/**
 	 * 

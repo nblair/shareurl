@@ -302,6 +302,9 @@ function postSetLabel(form) {
                     $('#labelindicator').empty();
                     $('<img src="${tickIcon}"/>').appendTo('#labelindicator');
                     $('#lsubmit').attr('disabled', '');
+                } else {
+                	alert('Invalid label value; make sure your label is less than 64 characters.');
+                	$('#labelindicator').empty();
                 }
             },
             "json");
