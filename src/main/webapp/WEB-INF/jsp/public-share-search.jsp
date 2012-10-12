@@ -48,13 +48,11 @@ font-size:110% !important;
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
 <script type="text/javascript" src="${jqueryUiPath}"></script>
 <script type="text/javascript" src="<c:url value="/js/jquery.autocomplete.min.js"/>"></script>
-<script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(document).ready(function(){
 	$("#shareKey").autocomplete('<c:url value="/search"/>', {
 		scroll: true
 	});
-	$(':submit').lockSubmit();
 });
 </script>
 </head>
@@ -65,9 +63,13 @@ $(document).ready(function(){
 
 <div id="content" class="main col">
 
+<div class="alert">
+<p>Looking for WiscCal? <a href="https://wiscmail.wisc.edu/">Use this link to Log in to your WiscCal account!</a></p>
+</div>
+<hr/>
 <div id="searchInner">
 <div id="help" class="info">
-<p>Use this form to see someone's schedule; suggestions will appear as you type.</p>
+<p>Looking for someone's WiscCal agenda? Start typing the email address of the person you are looking for, suggestions will appear as you type.</p>
 </div>
 
 <div id="searchForm">
@@ -80,7 +82,8 @@ $(document).ready(function(){
 </div>
 <hr/>
 <p>
-<a href="https://wiscmail.wisc.edu/">Log in to your WiscCal account</a>
+<a href="http://kb.wisc.edu/helpdesk/">Not finding the person you are looking for?</a>
+</p>
 </div> <!-- content -->
 
 <%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
