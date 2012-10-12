@@ -305,6 +305,7 @@ function postSetLabel(form) {
                 } else {
                 	alert('Invalid label value; make sure your label is less than 64 characters.');
                 	$('#labelindicator').empty();
+                	$('#lsubmit').attr('disabled', '');
                 }
             },
             "json");
