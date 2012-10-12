@@ -59,7 +59,10 @@ public class PublicShareSearchController {
 	 * @return
 	 */
 	@RequestMapping
-	public String showForm() {
+	public String showForm(@RequestParam(required=false) String login, ModelMap model) {
+		if(login != null) {
+			model.put("showLogin", true);
+		}
 		return "public-share-search";
 	}
 	/**

@@ -53,6 +53,7 @@ $(document).ready(function(){
 	$("#shareKey").autocomplete('<c:url value="/search"/>', {
 		scroll: true
 	});
+	$(':input:visible:enabled:first').focus();
 });
 </script>
 </head>
@@ -62,11 +63,12 @@ $(document).ready(function(){
 <%@ include file="/WEB-INF/jsp/theme/body-start.jsp" %>
 
 <div id="content" class="main col">
-
+<c:if test="${showLogin }">
 <div class="alert">
 <p>Looking for WiscCal? <a href="https://wiscmail.wisc.edu/">Use this link to Log in to your WiscCal account!</a></p>
 </div>
 <hr/>
+</c:if>
 <div id="searchInner">
 <div id="help" class="info">
 <p>Looking for someone's WiscCal agenda? Start typing the email address of the person you are looking for, suggestions will appear as you type.</p>
