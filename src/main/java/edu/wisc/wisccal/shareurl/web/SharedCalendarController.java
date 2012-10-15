@@ -581,9 +581,9 @@ public class SharedCalendarController {
 			final ModelMap model, final ICalendarAccount calendarAccount) {
 		final ShareDisplayFormat displayFormat = requestDetails.getDisplayFormat();
 
-		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), false);
+		calendarDataProcessor.noRecurrence(agenda, requestDetails.getStartDate(), requestDetails.getEndDate(), true);
 		calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);
-
+		
 		if(displayFormat.isMarkupLanguage()) {
 			if(ShareDisplayFormat.JSON.equals(displayFormat)) {
 				calendarDataProcessor.stripEventDetails(agenda, calendarAccount);

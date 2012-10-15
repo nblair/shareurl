@@ -540,8 +540,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 					for(Object o: recurringPeriods) {
 						Period period = (Period) o;
 						VEvent recurrenceInstance = cheapRecurrenceCopy(event, period, preserveParticipants, true);
-						EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
-						eventMap.put(comboId, recurrenceInstance);
+						if(isWithinRange(recurrenceInstance, start, end)) {
+							EventCombinationId comboId = new EventCombinationId(recurrenceInstance);
+							eventMap.put(comboId, recurrenceInstance);
+						}
 					}
 					// remove the "parent" event" now that we have individual recurrence instances
 					if(!recurringPeriods.isEmpty()) {
@@ -569,7 +571,17 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		expandRecurrence(calendar, start, end, preserveParticipants);
 		breakRecurrence(calendar);
 	}
-
+	/**
+	 * 
+	 * @param event
+	 * @param start
+	 * @param end
+	 * @return true if this event is within the range specified by the 2 date arguments
+	 */
+	public static boolean isWithinRange(VEvent event, Date start, Date end) {
+		net.fortuna.ical4j.model.Date eventStart = event.getStartDate().getDate();
+		return eventStart.getTime() == start.getTime() || eventStart.getTime() == end.getTime() || (eventStart.after(start) && eventStart.before(end));
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#organizerOnly(net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.ICalendarAccount)
@@ -676,8 +688,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			Component c = (Component) i.next();
 			if(VEvent.VEVENT.equals(c.getName())) {
 				VEvent event = (VEvent) c;
-				if(requestDetails.getStartDate().after(event.getStartDate().getDate()) || 
-						requestDetails.getEndDate().before(event.getStartDate().getDate())) {
+				if(!isWithinRange(event, requestDetails.getStartDate(), requestDetails.getEndDate())) {
 					LOG.debug("removing event " + CalendarDataUtils.staticGetDebugId(event) + " since startdate falls outside of requestDetails window " + requestDetails);
 					i.remove();
 				}
