@@ -468,6 +468,44 @@ public class CalendarDataUtilsTest {
 	}
 	
 	@Test
+	public void testExpandRecurrenceGuestDeclinedSample() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/recurring-event-guest-declined-then-accepted.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		Assert.assertEquals(4, calendar.getComponents(VEvent.VEVENT).size());
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		utils.expandRecurrence(calendar, Tests.makeDate("20121015"), Tests.makeDate("20121018"), true);	
+	
+		Assert.assertEquals(3, calendar.getComponents(VEvent.VEVENT).size());
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("jfortune@wisctest.wisc.edu");
+		for(Object o: calendar.getComponents(VEvent.VEVENT)) {
+			VEvent event = (VEvent) o;
+			Assert.assertEquals(EventParticipation.ATTENDEE_ACCEPTED, utils.getEventParticipation(event, calendarAccount));
+		}
+	}
+	
+	@Test
+	public void testNoRecurrenceGuestDeclinedSample() throws IOException, ParserException {
+		ClassPathResource resource = new ClassPathResource("example-data/recurring-event-guest-declined-then-accepted.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		Assert.assertEquals(4, calendar.getComponents(VEvent.VEVENT).size());
+		
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		utils.noRecurrence(calendar, Tests.makeDate("20121015"), Tests.makeDate("20121018"), true);	
+	
+		Assert.assertEquals(3, calendar.getComponents(VEvent.VEVENT).size());
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("jfortune@wisctest.wisc.edu");
+		for(Object o: calendar.getComponents(VEvent.VEVENT)) {
+			VEvent event = (VEvent) o;
+			Assert.assertEquals(EventParticipation.ATTENDEE_ACCEPTED, utils.getEventParticipation(event, calendarAccount));
+		}
+	}
+	
+	@Test
 	public void testConvertToFreeBusyExampleRecurringDayEvent1() throws IOException, ParserException {
 		ClassPathResource resource = new ClassPathResource("example-data/recurring-day-event-1.ics");
 		CalendarBuilder builder = new CalendarBuilder();

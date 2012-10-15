@@ -22,6 +22,7 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.RRule;
@@ -364,6 +365,68 @@ public class SharedCalendarControllerTest {
 				Assert.assertTrue(expectedStarts.contains(event.getStartDate().getValue()));
 			}
 		}
+	}
+	
+	@Test
+	public void testHandleFreeBusyShareRecurrenceGuestDeclinedSample() throws ParseException, IOException, ParserException {
+		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
+		
+		ModelMap model = new ModelMap();
+		
+		ClassPathResource calendarData = new ClassPathResource("example-data/recurring-event-guest-declined-then-accepted.ics");
+		
+		Calendar calendar = new CalendarBuilder().build(calendarData.getInputStream());
+		
+		PathData pathData = new PathData();
+		pathData.setShareKey("12345abcde");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date startDate = df.parse("2012-10-15");
+		java.util.Date endDate = df.parse("2012-10-18");
+		pathData.setStartDate(startDate);
+		pathData.setEndDate(endDate);
+		pathData.setStartDate(startDate);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
+		
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("jfortune@wisctest.wisc.edu");
+		
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		controller.handleFreeBusyShare(calendar, requestDetails, response, model, calendarAccount);
+		
+		PeriodList periodList = (PeriodList) model.get("busyPeriods");
+		Assert.assertEquals(3, periodList.size());
+	}
+	
+	@Test
+	public void testHandleFreeBusyShareRecurrenceGuestDeclinedSampleWithTransp() throws ParseException, IOException, ParserException {
+		SharedCalendarController controller = new SharedCalendarController();
+		controller.setCalendarDataProcessor(new CalendarDataUtils());
+		
+		ModelMap model = new ModelMap();
+		
+		ClassPathResource calendarData = new ClassPathResource("example-data/recurring-event-guest-declined-then-accepted-and-transparent.ics");
+		
+		Calendar calendar = new CalendarBuilder().build(calendarData.getInputStream());
+		
+		PathData pathData = new PathData();
+		pathData.setShareKey("12345abcde");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date startDate = df.parse("2012-10-15");
+		java.util.Date endDate = df.parse("2012-10-18");
+		pathData.setStartDate(startDate);
+		pathData.setEndDate(endDate);
+		pathData.setStartDate(startDate);
+		ShareRequestDetails requestDetails = new ShareRequestDetails(pathData, Client.OTHER, ShareDisplayFormat.HTML, false, false, false);
+		
+		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
+		when(calendarAccount.getEmailAddress()).thenReturn("jfortune@wisctest.wisc.edu");
+		
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		controller.handleFreeBusyShare(calendar, requestDetails, response, model, calendarAccount);
+		
+		PeriodList periodList = (PeriodList) model.get("busyPeriods");
+		Assert.assertEquals(2, periodList.size());
 	}
 	
 	@Test
