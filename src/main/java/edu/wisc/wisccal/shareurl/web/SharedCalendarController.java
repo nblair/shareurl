@@ -415,6 +415,7 @@ public class SharedCalendarController {
 			}
 
 			Calendar agenda = obtainAgenda(account, requestDetails, share.getSharePreferences());
+			calendarDataProcessor.removeEmailAlarms(agenda);
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
 				return handleFreeBusyShare(agenda, requestDetails, response, model, account);

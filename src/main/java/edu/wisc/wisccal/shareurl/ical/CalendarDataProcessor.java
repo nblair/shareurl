@@ -213,4 +213,11 @@ public interface CalendarDataProcessor {
 	 */
 	void filterAgendaForDateRange(Calendar agenda, IShareRequestDetails requestDetails);
 	
+	/**
+	 * Mutative method to nspect all {@link VEvent} components in the calendar argument
+	 * and remove all {@link VAlarm}s with {@link Action#EMAIL} that may be attached.
+	 * 
+	 * @param calendar
+	 */
+	void removeEmailAlarms(Calendar calendar);
 }

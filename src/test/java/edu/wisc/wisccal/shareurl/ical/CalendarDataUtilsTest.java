@@ -32,9 +32,11 @@ import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.component.VAlarm;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.parameter.Value;
+import net.fortuna.ical4j.model.property.Action;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.FreeBusy;
@@ -582,5 +584,35 @@ public class CalendarDataUtilsTest {
 			periodList.addAll(fb.getPeriods());
 		}
 		Assert.assertEquals(0, periodList.size());
+	}
+	
+	@Test
+	public void testRemoveEmailAlarms() {
+		VEvent event = Tests.mockEvent("20121018-1200", "20121018-1300", "testRemoveEmailAlarms", false);
+		CalendarDataUtils utils = new CalendarDataUtils();	
+		Calendar calendar = CalendarDataUtils.wrapEvent(event);
+		// control test: no alarms
+		utils.removeEmailAlarms(calendar);
+		
+		Assert.assertEquals(0, event.getAlarms().size());
+		
+		// test 1 - DISPLAY alarm
+		VAlarm alarm1 = new VAlarm();
+		alarm1.getProperties().add(Action.DISPLAY);
+		
+		event.getAlarms().add(alarm1);
+		Assert.assertEquals(1, event.getAlarms().size());
+		utils.removeEmailAlarms(calendar);
+		Assert.assertEquals(1, event.getAlarms().size());
+		
+		// test 2 - EMAIL alarm
+		VAlarm alarm2 = new VAlarm();
+		alarm2.getProperties().add(Action.EMAIL);
+		
+		event.getAlarms().add(alarm2);
+		
+		Assert.assertEquals(2, event.getAlarms().size());
+		utils.removeEmailAlarms(calendar);
+		Assert.assertEquals(1, event.getAlarms().size());
 	}
 }

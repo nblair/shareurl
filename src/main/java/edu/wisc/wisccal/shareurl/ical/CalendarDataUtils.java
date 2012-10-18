@@ -42,12 +42,14 @@ import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
+import net.fortuna.ical4j.model.component.VAlarm;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.parameter.Value;
+import net.fortuna.ical4j.model.property.Action;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Created;
@@ -203,6 +205,25 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 							}
 						}
 						component.getProperties().add(new Summary(BUSY));
+					}
+				}
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.ical.CalendarDataProcessor#removeAllAlarms(net.fortuna.ical4j.model.Calendar)
+	 */
+	@Override
+	public void removeEmailAlarms(Calendar calendar) {
+		for(Iterator<?> i = calendar.getComponents().iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				ComponentList alarms = ((VEvent) component).getAlarms();
+				for(Iterator<?> j = alarms.iterator(); j.hasNext();) {
+					VAlarm alarm = (VAlarm) j.next();
+					if(Action.EMAIL.equals(alarm.getAction())) {
+						j.remove();
 					}
 				}
 			}
