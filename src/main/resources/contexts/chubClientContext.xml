@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+		<property name="contextPaths">
+			<list>
+				<value>edu.wisc.services.ebo.curricular.v1_4</value>
+				<value>edu.wisc.services.chub.soap.v1_4</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="client" class="edu.wisc.services.chub.v1_4.client.CurricularDataServiceClient">
+		<property name="marshaller" ref="marshaller" />
+		<property name="unmarshaller" ref="marshaller" />
+		<property name="destinationProvider">
+			<!-- NOTE the different DestinationProvider implementation from chub-client-common -->
+			<bean class="edu.wisc.services.chub.spring.FailSafeWsdl11DestinationProvider">
+				<property name="wsdl" value="${chub.wsdl.location}" />
+			</bean>
+		</property>
+		<property name="interceptors">
+			<bean class="org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor">
+				<property name="secureRequest" value="true" />
+				<property name="secureResponse" value="false" />
+				<property name="validateRequest" value="false" />
+				<property name="validateResponse" value="false" />
+				<property name="securementActions" value="UsernameToken" />
+				<property name="securementPasswordType" value="PasswordText" />
+				<property name="securementUsername" value="${chub.client.username}" />
+				<property name="securementPassword" value="${chub.client.password}" />
+			</bean>
+		</property>
+		<property name="messageSender">
+			<bean class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+				<property name="acceptGzipEncoding" value="false" />
+			</bean>
+		</property>
+	</bean>
+</beans>

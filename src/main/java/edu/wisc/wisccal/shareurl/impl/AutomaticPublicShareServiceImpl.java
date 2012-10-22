@@ -4,11 +4,21 @@
 
 package edu.wisc.wisccal.shareurl.impl;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import edu.wisc.services.chub.soap.v1_4.PersonQuery;
+import edu.wisc.services.chub.v1_4.CurricularDataService;
+import edu.wisc.services.chub.v1_4.QueryLimitExceededException;
+import edu.wisc.services.ebo.curricular.v1_4.Student;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
@@ -22,12 +32,15 @@ import edu.wisc.wisccal.shareurl.domain.Share;
  */
 @Service
 public class AutomaticPublicShareServiceImpl implements
-		AutomaticPublicShareService {
+AutomaticPublicShareService {
 
+	private Log log = LogFactory.getLog(this.getClass());
 	private static final String Y = "Y";
 	private IShareDao shareDao;
 	private OptOutDao optOutDao;
 	private ICalendarAccountDao calendarAccountDao;
+	private CurricularDataService curricularDataService;
+	private String pviAttributeName = "wiscedupvi";
 	private String mailAttributeName = "mail";
 	private String unsearchableAttributeName = "wisceducalunsearchable";
 	/**
@@ -62,6 +75,36 @@ public class AutomaticPublicShareServiceImpl implements
 	@Autowired
 	public void setOptOutDao(OptOutDao optOutDao) {
 		this.optOutDao = optOutDao;
+	}
+	/**
+	 * @return the curricularDataService
+	 */
+	public CurricularDataService getCurricularDataService() {
+		return curricularDataService;
+	}
+	/**
+	 * @param curricularDataService the curricularDataService to set
+	 */
+	public void setCurricularDataService(CurricularDataService curricularDataService) {
+		this.curricularDataService = curricularDataService;
+	}
+	/**
+	 * @return the optOutDao
+	 */
+	public OptOutDao getOptOutDao() {
+		return optOutDao;
+	}
+	/**
+	 * @return the pviAttributeName
+	 */
+	public String getPviAttributeName() {
+		return pviAttributeName;
+	}
+	/**
+	 * @param pviAttributeName the pviAttributeName to set
+	 */
+	public void setPviAttributeName(String pviAttributeName) {
+		this.pviAttributeName = pviAttributeName;
 	}
 	/**
 	 * @return the mailAttributeName
@@ -156,7 +199,7 @@ public class AutomaticPublicShareServiceImpl implements
 				&& !isUnsearchable(calendarAccount) && !hasFerpaHold(calendarAccount) 
 				&& !hasOptedOut(calendarAccount);
 	}
-	
+
 	/**
 	 * 
 	 * @param calendarAccount must not be null
@@ -165,14 +208,32 @@ public class AutomaticPublicShareServiceImpl implements
 	protected boolean isUnsearchable(ICalendarAccount calendarAccount) {
 		return Y.equals(calendarAccount.getAttributeValue(getUnsearchableAttributeName()));
 	}
-	
+
 	/**
-	 * TODO implement hasFerpaHold
-	 * 
+	 * @see CurricularDataService#getStudents(List)
 	 * @param calendarAccount
 	 * @return true if the account has a FERPA hold specifically on the email address attribute
 	 */
 	protected boolean hasFerpaHold(ICalendarAccount calendarAccount) {
+		String pvi = calendarAccount.getAttributeValue(getPviAttributeName());
+		if(StringUtils.isNotBlank(pvi)) {
+			PersonQuery q = new PersonQuery();
+			q.setPvi(pvi);
+			List<PersonQuery> queries = Arrays.asList(new PersonQuery[] { q });
+			try {
+				List<Student> students = curricularDataService.getStudents(queries);
+				if(students.size() == 1) {
+					Student student = students.get(0);
+					return student.getFerpaAttributes().isEmail();
+				}
+			} catch (QueryLimitExceededException e) {
+				throw new IllegalStateException("unexpected QueryLimitExceededException thrown in hasFerpaHold for " + calendarAccount, e);
+			}
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug(calendarAccount + " hasFerpaHold=false since no PVI attribute available set");
+			}
+		}
 		return false;
 	}
 }
