@@ -7,12 +7,17 @@ package edu.wisc.wisccal.shareurl.impl;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.naming.Name;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
+import org.jasig.schedassist.impl.ldap.HasDistinguishedName;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.stereotype.Service;
 
 import edu.wisc.services.chub.soap.v1_4.PersonQuery;
@@ -43,6 +48,20 @@ AutomaticPublicShareService {
 	private String pviAttributeName = "wiscedupvi";
 	private String mailAttributeName = "mail";
 	private String unsearchableAttributeName = "wisceducalunsearchable";
+	private Name primaryWiscmailBaseDn;
+	/**
+	 * Default constructor, best for use with IoC.
+	 */
+	public AutomaticPublicShareServiceImpl() {
+		this(null);
+	}
+	/**
+	 * Allows preset of {@link #getPrimaryWiscmailBaseDn()}.
+	 * @param primaryWiscmailBaseDn
+	 */
+	public AutomaticPublicShareServiceImpl(Name primaryWiscmailBaseDn) {
+		this.primaryWiscmailBaseDn = primaryWiscmailBaseDn;
+	}
 	/**
 	 * @return the calendarAccountDao
 	 */
@@ -85,6 +104,7 @@ AutomaticPublicShareService {
 	/**
 	 * @param curricularDataService the curricularDataService to set
 	 */
+	@Autowired
 	public void setCurricularDataService(CurricularDataService curricularDataService) {
 		this.curricularDataService = curricularDataService;
 	}
@@ -129,6 +149,19 @@ AutomaticPublicShareService {
 	 */
 	public void setUnsearchableAttributeName(String unsearchableAttributeName) {
 		this.unsearchableAttributeName = unsearchableAttributeName;
+	}
+	/**
+	 * @return the primaryWiscmailBaseDn
+	 */
+	public Name getPrimaryWiscmailBaseDn() {
+		return primaryWiscmailBaseDn;
+	}
+	/**
+	 * @param primaryWiscmailBaseDn the primaryWiscmailBaseDn to set
+	 */
+	@Value("${ldap.primaryWiscmailDomainBaseDn}")
+	public void setPrimaryWiscmailBaseDn(String primaryWiscmailBaseDn) {
+		this.primaryWiscmailBaseDn = new DistinguishedName(primaryWiscmailBaseDn);
 	}
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.AutomaticPublicShareService#getAutomaticPublicShare(java.lang.String)
@@ -182,22 +215,23 @@ AutomaticPublicShareService {
 	 */
 	protected ICalendarAccount locateEligibleAccountForEmailAddress(String emailAddress) {
 		ICalendarAccount result = calendarAccountDao.getCalendarAccount(getMailAttributeName(), emailAddress);
-		return isEligible(result) ? result : null;
+		return isEligibleForAutomaticPublicShare(result) ? result : null;
 	}
 	/**
 	 * Perform 3 eligibility checks:
 	 * <ol>
 	 * <li>Is the person eligible for calendar service? If not, return false.</li>
+	 * <li>Is 
 	 * <li>Has the person opted out? If so, return false.</li>
 	 * <li>Does the person have a FERPA hold on their email address? If so, return false.</li>
 	 * </ol>
 	 * @param calendarAccount
 	 * @return true if the account is eligible
 	 */
-	protected boolean isEligible(ICalendarAccount calendarAccount) {
+	protected boolean isEligibleForAutomaticPublicShare(ICalendarAccount calendarAccount) {
 		return calendarAccount != null && calendarAccount.isEligible() 
-				&& !isUnsearchable(calendarAccount) && !hasFerpaHold(calendarAccount) 
-				&& !hasOptedOut(calendarAccount);
+				&& !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount)
+				&& !hasFerpaHold(calendarAccount);
 	}
 
 	/**
@@ -206,7 +240,7 @@ AutomaticPublicShareService {
 	 * @return true if the account is "unsearchable"
 	 */
 	protected boolean isUnsearchable(ICalendarAccount calendarAccount) {
-		return Y.equals(calendarAccount.getAttributeValue(getUnsearchableAttributeName()));
+		return Y.equalsIgnoreCase(calendarAccount.getAttributeValue(getUnsearchableAttributeName()));
 	}
 
 	/**
@@ -215,25 +249,35 @@ AutomaticPublicShareService {
 	 * @return true if the account has a FERPA hold specifically on the email address attribute
 	 */
 	protected boolean hasFerpaHold(ICalendarAccount calendarAccount) {
-		String pvi = calendarAccount.getAttributeValue(getPviAttributeName());
-		if(StringUtils.isNotBlank(pvi)) {
-			PersonQuery q = new PersonQuery();
-			q.setPvi(pvi);
-			List<PersonQuery> queries = Arrays.asList(new PersonQuery[] { q });
-			try {
-				List<Student> students = curricularDataService.getStudents(queries);
-				if(students.size() == 1) {
-					Student student = students.get(0);
-					return student.getFerpaAttributes().isEmail();
+		if(calendarAccount instanceof HasDistinguishedName) {
+			final Name dn = ((HasDistinguishedName) calendarAccount).getDistinguishedName();
+			if(dn.startsWith(primaryWiscmailBaseDn)) {
+				String pvi = calendarAccount.getAttributeValue(getPviAttributeName());
+				if(StringUtils.isBlank(pvi)) {
+					throw new IllegalStateException(calendarAccount + " is within " + primaryWiscmailBaseDn + " but does not have a value for " + getPviAttributeName());
 				}
-			} catch (QueryLimitExceededException e) {
-				throw new IllegalStateException("unexpected QueryLimitExceededException thrown in hasFerpaHold for " + calendarAccount, e);
-			}
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug(calendarAccount + " hasFerpaHold=false since no PVI attribute available set");
+				
+				PersonQuery q = new PersonQuery();
+				q.setPvi(pvi);
+				List<PersonQuery> queries = Arrays.asList(new PersonQuery[] { q });
+				try {
+					List<Student> students = curricularDataService.getStudents(queries);
+					if(students.size() == 1) {
+						Student student = students.get(0);
+						return student.getFerpaAttributes().isEmail();
+					}
+					
+					return false;
+				} catch (QueryLimitExceededException e) {
+					throw new IllegalStateException("unexpected QueryLimitExceededException thrown in hasFerpaHold for " + calendarAccount, e);
+				}
+			} else {
+				if(log.isDebugEnabled()) {
+					log.debug("skipping PVI check for " + calendarAccount + " since it's outside " + primaryWiscmailBaseDn);
+				}
+				return false;
 			}
 		}
-		return false;
+		throw new IllegalStateException(calendarAccount + " is not an instance of HasDistinguishedName");
 	}
 }
