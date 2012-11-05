@@ -228,6 +228,7 @@ public class EditSharePreferencesController {
 				for(ISharePreference classPref: classPrefs) {
 					shareDao.removeSharePreference(candidate, classPref);
 				}
+				model.addAttribute("completedTheSet", "true");
 			} else {
 				candidate = shareDao.addSharePreference(candidate, sharePreference);
 			}
@@ -369,7 +370,7 @@ public class EditSharePreferencesController {
 			return allowedPrivacyFilterValues.contains(propertyValue);
 		}
 		
-		return allowedContentFilterPropertyNames.contains(propertyName);
+		return allowedContentFilterPropertyNames.contains(propertyName) && StringUtils.isNotBlank(propertyValue);
 	}
 		
 	/**

@@ -34,13 +34,12 @@ import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreferenc
 /**
  * Bean to represent the set of preferences associated with a {@link Share}.
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: SharePreferences.java 1677 2010-02-08 18:31:01Z npblair $
+ * @author Nicholas Blair
  */
 public class SharePreferences implements Serializable {
 
 	
-	private static final String COMMA = ", ";
+	public static final String FILTER_DISPLAY_SEPARATOR = ", OR ";
 	private static final Log LOG = LogFactory.getLog(SharePreferences.class);
 	/**
 	 * 
@@ -215,19 +214,19 @@ public class SharePreferences implements Serializable {
 			ISharePreference p = i.next();
 			display.append(p.getDisplayName());
 			if(i.hasNext()) {
-				display.append(COMMA);
+				display.append(FILTER_DISPLAY_SEPARATOR);
 			}
 		}
 		
 		prefs = getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
 		if(prefs.size() != 0 && display.length() != 0) {
-			display.append(COMMA);
+			display.append(FILTER_DISPLAY_SEPARATOR);
 		}
 		for(Iterator<ISharePreference> i = prefs.iterator(); i.hasNext();) {
 			ISharePreference p = i.next();
 			display.append(p.getDisplayName());
 			if(i.hasNext()) {
-				display.append(COMMA);
+				display.append(FILTER_DISPLAY_SEPARATOR);
 			}
 		}
 		

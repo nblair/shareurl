@@ -30,6 +30,8 @@
 .padding2 { padding: 2em; }
 .bordered { border: 1px solid #990000; }
 .clear { clear:both; }
+.fleft { float: left;}
+.fright {float:right;}
 .scBox { float: left; position: relative; width: 26%; margin: 0px 3px 0px 3px; border: 1px solid #666152; padding: 1.25em;}
 .removable { border: 1px solid #C7CEF9; background-color: #E2E6FF;}
 .resetHandle {position:relative; top:3px;}
@@ -37,6 +39,8 @@
 .sharelinktext { color: blue; font-size: 130%;}
 #sharelinktag { color: blue;}
 #examples { line-height:200%;}
+#privacySettingsHelp { width:35%;}
+#privacySettingsDetail { width:55%;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
 <c:url value="/rest/shareDetails" var="shareDetails">
@@ -92,6 +96,11 @@ $(function() {
         $('#lsubmit').attr('disabled', 'disabled');
         postSetLabel(this);     
     });
+	$('#justToday').click(function(e) {
+		$('#x').val(0);
+		$('#y').val(0);
+		renderShareUrlExample();
+	});
 });
 function getAvailablePrivacyFilters(share) {
 	var options = { "PUBLIC": "Public", "CONFIDENTIAL": "Show Date and Time Only", "PRIVATE": "Private" };
@@ -122,7 +131,7 @@ function renderShareControls(share, fade) {
 			$('#scFilters').hide();
 			$('#scIncludeParticipants').hide();
 		}
-		$('<form action="${toac }" method="post" id="toac"><fieldset><input type="submit" value="Convert to All Calendar"/></fieldset></form>').appendTo('#scCalendarData');
+		$('<form action="${toac }" method="post" id="toac"><fieldset><input type="submit" value="Include more meeting details"/></fieldset></form>').appendTo('#scCalendarData');
 		applySubmitHandlerIfPresent('#toac', '${toac}');
 	} else {
 		$('#scIncludeParticipants').empty();
@@ -142,7 +151,7 @@ function renderShareControls(share, fade) {
 		}
 		
 		$('#scFilters').empty();
-		$('<form action="${tofb }" method="post" id="tofb"><fieldset><input type="submit" value="Convert to Free Busy"/></fieldset></form>').appendTo('#scCalendarData');
+		$('<form action="${tofb }" method="post" id="tofb"><fieldset><input type="submit" value="Revert to Free/Busy only"/></fieldset></form>').appendTo('#scCalendarData');
 		applySubmitHandlerIfPresent('#tofb', '${tofb}');
 		
 		var options = getAvailablePrivacyFilters(share);
@@ -157,7 +166,7 @@ function renderShareControls(share, fade) {
 		
 		applySubmitHandlerIfPresent('#privacyFilter', '${addPrivacyFilter}');
 		$('<hr/>').appendTo('#scFilters');
-		$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
+		$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include events where:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
 		applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}');
 	}
 	
@@ -189,12 +198,12 @@ function renderSharePreferences(share, fadeIn) {
 		$('<li><strong>Include Event Participants.</strong></li>').appendTo(ul);
 	}
 	if(share.freeBusyOnly) {
-		$('<li>Free Busy only.</li>').appendTo(ul);
+		$('<li>Free/Busy data only.</li>').appendTo(ul);
 	} else {
 		if(share.eventFilterCount == 0) {
-			$('<li>All Calendar Data</li>').appendTo(ul);
+			$('<li>All Calendar event details.</li>').appendTo(ul);
 		} else {
-			$('<li><span class="removable">' + share.sharePreferences.filterDisplay + ' <img src="${revokeIcon}" title="Reset content filters" alt="Reset content filters" class="resetHandle"/></span></li>').appendTo(ul);
+			$('<li>Only events that match the following rules: <span class="removable">' + share.sharePreferences.filterDisplay + ' <img src="${revokeIcon}" title="Reset content filters" alt="Reset content filters" class="resetHandle"/></span></li>').appendTo(ul);
 			setupResetFiltersHandler();
 		}
 	}
@@ -255,7 +264,7 @@ function renderShareUrlExample() {
 			if(y - x > 180) {
 				y = x + 180;
 				$('#y').val(y);
-				alert("Your date range is greater than 180 days, which is the maximum allowed. It's been reset to " + y);
+				alert("Your date range is greater than 180 days, which is the maximum allowed. It's been reset to " + y + ".");
 			}
 			$('#dateRange').text('').fadeOut();
 			if(x != 0 || y != 0) {
@@ -283,6 +292,9 @@ function postAndRenderPreferences(url, form) {
 			function(data) {
 				if(data.share) {
 					renderSharePreferences(data.share, true);
+					if(data.completedTheSet) {
+						alert("The last privacy filter you added resulted in all possible values being included. The privacy filters have been removed, since including all values would has the same effect.");
+					}
 					renderShareControls(data.share, true);
 				}
 			},
@@ -327,20 +339,34 @@ function postSetLabel(form) {
 <fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" name="label" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change">&nbsp;<span id="labelindicator"></span></fieldset>
 </form>
 </c:if>
-<h3>This ShareURL will respond with:</h3>
+
+<div id="revoke" class="margin3 padding1">
+<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
+<input type="submit" class="revokebutton" value="Delete this ShareURL"/>
+</form:form>
+</div>
+</div>
+
+<hr/>
+
+<div id="privacySettings">
+<div id="privacySettingsUpper">
+<div id="privacySettingsDetail" class="fleft">
+<h2>Privacy Settings</h2>
+<p>This ShareURL will respond with:</p>
 <div id="shareDetailsInner">
 <ul>
 <c:choose>
 <c:when test="${share.freeBusyOnly}">
-<li>Free Busy only.</li>
+<li>Free/Busy data only.</li>
 </c:when>
 <c:otherwise>
 <c:choose>
 <c:when test="${share.eventFilterCount == 0}">
-<li>All calendar data.</li>
+<li>All Calendar event details.</li>
 </c:when>
 <c:otherwise>
-<li><span class="removable">${share.sharePreferences.filterDisplay}&nbsp;<img src="${revokeIcon}" title="Remove this attribute" alt="Remove this attribute" class="resetHandle"/></span></li>
+<li>Only events that match the following rules: <span class="removable">${share.sharePreferences.filterDisplay}&nbsp;<img src="${revokeIcon}" title="Remove this attribute" alt="Remove this attribute" class="resetHandle"/></span></li>
 </c:otherwise>
 </c:choose>
 </c:otherwise>
@@ -350,24 +376,25 @@ function postSetLabel(form) {
 </c:if>
 </ul>
 </div>
+</div> <!-- close privacySettingsDetail -->
+<div id="privacySettingsHelp" class="fright info">
+<p>'Free/Busy data only' will result in all identifying information from events being withheld from display.</p>
 </div>
-
-<h2>Change Options for this ShareURL</h2>
+<div class="clear"></div>
+</div> <!-- close privacySettingsUpper -->
 <div id="shareControls" class="bordered margin3 padding1">
 <div id="scCalendarData" class="scBox"></div>
 <div id="scFilters" class="scBox"></div>
 <div id="scIncludeParticipants" class="scBox"></div>
 <div class="clear"></div>
 </div> <!--  end id=shareControls -->
-
-<div id="revoke" class="bordered margin3 padding1">
-<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
-<input type="submit" class="revokebutton" value="Revoke this ShareURL"/>
-</form:form>
 </div>
 
-<div id="examples" class="margin3 padding1">
-<p>This ShareURL can be viewed with the following link:</p>
+<hr/>
+
+<div id="examples" class="margin3">
+<h2>Using your ShareURL</h2>
+<p>This ShareURL can be viewed with the following link. Use the form controls below to update the example for your use case:</p>
 <div class="sharelink">
 <a id="sharelinktag" href="${baseShareUrl }/dr(-14,30)?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="icsSuffix"></span><span id="queryParameters">?ical</span></span></a>
 </div>
@@ -385,6 +412,7 @@ function postSetLabel(form) {
 </p>
 
 <p><label for="x">I would like to see data from </label><input id="x" type="number" name="x" value="14" min="-999" max="999"/> days <select id="negatex"><option value="negate" selected="selected">back</option><option value="">forward</option></select> <label for="y">through </label><input id="y" type="number" name="y" value="30"  min="-999" max="999"/> days forward.</p>
+<p>OR, I would like to see data from <a id="justToday" href="#justToday">just "today"</a>.</p>
 <p>OR, <label for="datex">I would like to see data from specifically </label><input id="datex" type="text" name="datex"/><label for="datey"> through </label><input id="datey" type="text" name="datey"/></p>
 
 <p>I would like to see <a title="View ShareURL Options (Opens new window)" target="_new_help" href="http://kb.wisc.edu/wisccal/page.php?id=13322">all available options for ShareURLs&raquo;</a>, including options for web developers.</p>
