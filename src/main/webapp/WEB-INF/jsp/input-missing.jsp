@@ -26,7 +26,7 @@
 <p class="alert">
 The link you requested requires certain parameters that are missing.
 <br/>
-It's ok, just <a href="<c:url value="/my-shares"/>">&laquo;Return to My Shares</a> and try again.
+It's ok, just <a href="<c:url value="/my-shares"/>">Return to My Shares</a> and try again.
 </p>
 </div>
 <%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
