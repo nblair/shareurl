@@ -66,6 +66,7 @@
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
 <script type="text/javascript" src="${jqueryUiPath}"></script>
 <script type="text/javascript" src="<c:url value="/js/jquery.serializeObject.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/edit-share.js"/>"></script>
 <script type="text/javascript">
 $(function() {
 	$('.revokeform').submit(function(e) {
@@ -173,31 +174,6 @@ function renderShareControls(share, fade) {
 		applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}');
 	}
 };
-function renderShareControls2(share) {
-	//reset
-	$('#fbRadio').attr('checked', '');
-	$('#acRadio').attr('checked', '');
-	$('#filterRadio').attr('checked', '');
-	$('#scFreeBusy').removeClass('notselected');
-	$('#scAllCalendar').removeClass('notselected');
-	$('#scFilteredCalendar').removeClass('notselected');
-	
-	if(share.freeBusyOnly) {
-		$('#fbRadio').attr('checked', 'checked');
-		$('#scAllCalendar').addClass('notselected');
-		$('#scFilteredCalendar').addClass('notselected');
-	} else {
-		$('#scFreeBusy').addClass('notselected');
-		if(share.eventFilterCount > 0) {
-			$('#scAllCalendar').addClass('notselected');
-			$('#filterRadio').attr('checked', 'checked');
-		} else {
-			$('#scFilteredCalendar').addClass('notselected');
-			$('#acRadio').attr('checked', 'checked');
-		}
-		
-	}
-}
 function setupResetFiltersHandler() {
 	$('.resetHandle').unbind('click', resetFilters);
 	setTimeout(function() {
@@ -447,13 +423,13 @@ function postSetLabel(form) {
 <fieldset>
 <input id="filterRadio" type="radio" name="filtercalendar" value="true"><label for="filtercalendar"><strong>Include only the events that match the following:</strong></label>
 <p>Events with the following visibility:</p>
-<input type="checkbox" name="public"/>&nbsp;<label for="public">Public</label><br/>
-<input type="checkbox" name="confidential"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
-<input type="checkbox" name="private"/>&nbsp;<label for="private">Private</label><br/>
+<input type="checkbox" name="public" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
+<input type="checkbox" name="confidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
+<input type="checkbox" name="private" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
 <p>Or:</p>
 <span>Include only events with </span>
-<select><option value="title">Title</option><option value="location">Location</option><option value="descr">Description</option></select>
-<span>&nbsp;containing&nbsp;</span><input type="text" name="filterValue"/>&nbsp;<input type="submit" value="Add"/><br/>
+<select id="filterPropertyName"><option value="title">Title</option><option value="location">Location</option><option value="descr">Description</option></select>
+<span>&nbsp;containing&nbsp;</span><input type="text" name="filterValue"/>&nbsp;<input id="addFilter" type="submit" value="Add"/><br/>
 <input type="checkbox" name="includeParticipants"/>&nbsp;<label for="includeParticipants">Include Participants</label>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
 </fieldset>
 </form>
