@@ -22,6 +22,7 @@
 <title>WiscCal ShareURL - Manage ${share.key }</title>
 <rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
 <rs:resourceURL var="tickIcon" value="/rs/famfamfam/silk/1.3/tick.png"/>
+<rs:resourceURL var="helpIcon" value="/rs/famfamfam/silk/1.3/help.png"/>
 <style type="text/css">
 .key { color:green;}
 .large { font-size:120%;}
@@ -41,6 +42,7 @@
 #examples { line-height:200%;}
 #privacySettingsHelp { width:35%;}
 #privacySettingsDetail { width:55%;}
+.notselected {opacity:0.75;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
 <c:url value="/rest/shareDetails" var="shareDetails">
@@ -91,6 +93,7 @@ $(function() {
 	
 	setupResetFiltersHandler();
 	renderShareControls(initShare, false);
+	renderShareControls2(initShare);
 	$('#setLabel').submit(function(event) {
         event.preventDefault();
         $('#lsubmit').attr('disabled', 'disabled');
@@ -169,8 +172,32 @@ function renderShareControls(share, fade) {
 		$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include events where:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
 		applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}');
 	}
-	
 };
+function renderShareControls2(share) {
+	//reset
+	$('#fbRadio').attr('checked', '');
+	$('#acRadio').attr('checked', '');
+	$('#filterRadio').attr('checked', '');
+	$('#scFreeBusy').removeClass('notselected');
+	$('#scAllCalendar').removeClass('notselected');
+	$('#scFilteredCalendar').removeClass('notselected');
+	
+	if(share.freeBusyOnly) {
+		$('#fbRadio').attr('checked', 'checked');
+		$('#scAllCalendar').addClass('notselected');
+		$('#scFilteredCalendar').addClass('notselected');
+	} else {
+		$('#scFreeBusy').addClass('notselected');
+		if(share.eventFilterCount > 0) {
+			$('#scAllCalendar').addClass('notselected');
+			$('#filterRadio').attr('checked', 'checked');
+		} else {
+			$('#scFilteredCalendar').addClass('notselected');
+			$('#acRadio').attr('checked', 'checked');
+		}
+		
+	}
+}
 function setupResetFiltersHandler() {
 	$('.resetHandle').unbind('click', resetFilters);
 	setTimeout(function() {
@@ -296,6 +323,7 @@ function postAndRenderPreferences(url, form) {
 						alert("The last privacy filter you added resulted in all possible values being included. The privacy filters have been removed, since including all values would has the same effect.");
 					}
 					renderShareControls(data.share, true);
+					renderShareControls2(data.share);
 				}
 			},
 			"json");
@@ -309,7 +337,7 @@ function postSetLabel(form) {
             data,
             function(data) {
                 if(data.share) {
-                    //update label text
+                    // update label text
                     $('#labelinput').val(data.share.label);
                     $('#labelindicator').empty();
                     $('<img src="${tickIcon}"/>').appendTo('#labelindicator');
@@ -382,13 +410,58 @@ function postSetLabel(form) {
 </div>
 <div class="clear"></div>
 </div> <!-- close privacySettingsUpper -->
+
 <div id="shareControls" class="bordered margin3 padding1">
 <div id="scCalendarData" class="scBox"></div>
 <div id="scFilters" class="scBox"></div>
 <div id="scIncludeParticipants" class="scBox"></div>
 <div class="clear"></div>
 </div> <!--  end id=shareControls -->
+
+<div id="shareControls2">
+<div id="scFreeBusy" class="bordered padding1 margin3">
+<form>
+<fieldset>
+<input id="fbRadio" type="radio" name="freebusyonly" value="true"/><label for="freebusyonly"><strong>Free/Busy only</strong></label>
+</fieldset>
+</form>
+<p>Free/Busy only ShareURLs display only the start and end times for periods that you are busy, all other meeting details are withheld.</p>
 </div>
+<div id="scAllCalendar" class="bordered padding1 margin3">
+<form>
+<fieldset>
+<input id="acRadio" type="radio" name="allcalendar" value="true"/><label for="allcalendar"><strong>Include more event details:</strong></label>
+<ul>
+<li>Meeting Title</li>
+<li>Meeting Location</li>
+<li>Meeting Details</li>
+<li>Extended Calendar Properties</li>
+</ul>
+<input type="checkbox" name="includeParticipants"/>&nbsp;<label for="includeParticipants">Include Participants</label>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
+</fieldset>
+</form>
+
+</div>
+<div id="scFilteredCalendar" class="bordered padding1 margin3">
+<form>
+<fieldset>
+<input id="filterRadio" type="radio" name="filtercalendar" value="true"><label for="filtercalendar"><strong>Include only the events that match the following:</strong></label>
+<p>Events with the following visibility:</p>
+<input type="checkbox" name="public"/>&nbsp;<label for="public">Public</label><br/>
+<input type="checkbox" name="confidential"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
+<input type="checkbox" name="private"/>&nbsp;<label for="private">Private</label><br/>
+<p>Or:</p>
+<span>Include only events with </span>
+<select><option value="title">Title</option><option value="location">Location</option><option value="descr">Description</option></select>
+<span>&nbsp;containing&nbsp;</span><input type="text" name="filterValue"/>&nbsp;<input type="submit" value="Add"/><br/>
+<input type="checkbox" name="includeParticipants"/>&nbsp;<label for="includeParticipants">Include Participants</label>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
+</fieldset>
+</form>
+</div>
+</div> <!-- end shareControls2 -->
+
+
+</div> <!--  end privacySettings -->
 
 <hr/>
 
