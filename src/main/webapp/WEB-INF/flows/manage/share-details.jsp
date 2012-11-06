@@ -40,8 +40,6 @@
 .sharelinktext { color: blue; font-size: 130%;}
 #sharelinktag { color: blue;}
 #examples { line-height:200%;}
-#privacySettingsHelp { width:35%;}
-#privacySettingsDetail { width:55%;}
 .notselected {opacity:0.75;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
@@ -51,6 +49,7 @@
 
 <c:url value="/rest/includeP" var="includeP"/>
 <c:url value="/rest/excludeP" var="excludeP"/>
+
 <c:url value="/rest/toac" var="toac"/>
 <c:url value="/rest/tofb" var="tofb"/>
 <c:url value="/rest/addPrivacyFilter" var="addPrivacyFilter"/>
@@ -61,6 +60,18 @@
 <c:if test="${share.guessable}">
 <c:set var="revokeMessage" value="Your Public ShareURL will revert to the default (Free/Busy Only). Are you sure?"/>
 </c:if>
+
+<c:choose>
+<c:when test="${share.includeParticipants}">
+<c:set var="includeParticipantsCheckedValue" value="checked"/>
+<c:set var="defaultParticipantsAction" value="${excludeP}"/>
+</c:when>
+<c:otherwise>
+<c:set var="includeParticipantsCheckedValue" value=""/>
+<c:set var="defaultParticipantsAction" value="${includeP}"/>
+</c:otherwise>
+</c:choose>
+
 <rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
 <link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}" media="all"/>
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
@@ -77,6 +88,7 @@ $(function() {
 			$('.revokeform').submit();
 		}
 	});
+	setupFormHandlers();
 	$("#datex").datepicker({ dateFormat: 'yy-mm-dd' });
 	$("#datey").datepicker({ dateFormat: 'yy-mm-dd' });
 	$('#clientselect').change(function(e) { renderShareUrlExample(); });
@@ -93,8 +105,8 @@ $(function() {
 			} };
 	
 	setupResetFiltersHandler();
-	renderShareControls(initShare, false);
-	renderShareControls2(initShare);
+	//renderShareControls(initShare, false);
+	renderShareControls(initShare);
 	$('#setLabel').submit(function(event) {
         event.preventDefault();
         $('#lsubmit').attr('disabled', 'disabled');
@@ -116,15 +128,22 @@ function getAvailablePrivacyFilters(share) {
 	});
 	return options;
 };
-function applySubmitHandlerIfPresent(element, url) {
-	var el = $(element);
-	if(el) {
-		el.submit(function(event) {
-			event.preventDefault();
-			postAndRenderPreferences(url, element);
-		});
-	}
-};
+function setupFormHandlers() {
+	applySubmitHandlerIfPresent('#tofb', '${tofb}', '#labelindicatorfb');
+	applySubmitHandlerIfPresent('#toac', '${toac}', '#labelindicatorac');
+	applySubmitHandlerIfPresent('#includeP1', '${includeP}', '#labelindicatorip');
+	
+	$('#fbRadio').click(function() {
+	    $('#tofb').submit();
+	});
+	$('#acRadio').click(function() {
+	    $('#toac').submit();
+	});
+	$('#ip').click(function() {
+	    $('#includeP1').submit();
+	});
+}
+/*
 function renderShareControls(share, fade) {
 	$('#scCalendarData').empty();
 	if(share.freeBusyOnly) {
@@ -174,6 +193,7 @@ function renderShareControls(share, fade) {
 		applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}');
 	}
 };
+*/
 function setupResetFiltersHandler() {
 	$('.resetHandle').unbind('click', resetFilters);
 	setTimeout(function() {
@@ -188,7 +208,8 @@ function resetFilters(event) {
 				function(data) {
 					if(data.share) {
 						renderSharePreferences(data.share, true);
-						renderShareControls(data.share, true);
+						//renderShareControls(data.share, true);
+						renderShareControls(data.share);
 					}
 				},
 				"json");
@@ -196,87 +217,14 @@ function resetFilters(event) {
 };
 function renderSharePreferences(share, fadeIn) {
 	$('#shareDetailsInner').empty();
-	var ul = $('<ul/>');
-	if(share.includeParticipants) {
-		$('<li><strong>Include Event Participants.</strong></li>').appendTo(ul);
+	
+	if(!share.freeBusyOnly && share.eventFilterCount > 0) {
+		var ul = $('<ul/>');
+		$('<li>Only events that match the following rules: <span class="removable">' + share.sharePreferences.filterDisplay + ' <img src="${revokeIcon}" title="Reset content filters" alt="Reset content filters" class="resetHandle"/></span></li>').appendTo(ul);
+		setupResetFiltersHandler();
 	}
-	if(share.freeBusyOnly) {
-		$('<li>Free/Busy data only.</li>').appendTo(ul);
-	} else {
-		if(share.eventFilterCount == 0) {
-			$('<li>All Calendar event details.</li>').appendTo(ul);
-		} else {
-			$('<li>Only events that match the following rules: <span class="removable">' + share.sharePreferences.filterDisplay + ' <img src="${revokeIcon}" title="Reset content filters" alt="Reset content filters" class="resetHandle"/></span></li>').appendTo(ul);
-			setupResetFiltersHandler();
-		}
-	}
-	if(fadeIn) {
-		ul.appendTo('#shareDetailsInner').fadeIn();
-	} else {
-		ul.appendTo('#shareDetailsInner');
-	}
-	renderShareUrlExample();
-};
-function renderShareUrlExample() {
-	var c = $("#clientselect option:selected").val();
-	if('native' == c || 'google' == c) {
-		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('').fadeOut();
-		$('#queryParameters').text('?ical').fadeIn();
-	} else if ('browser' == c) {
-		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('').fadeOut();
-	} else if ('news' == c) {
-		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('').fadeOut();
-		$('#queryParameters').text('?rss').fadeIn();
-	} else if ('json' == c) {
-		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('').fadeOut();
-		$('#queryParameters').text('?json').fadeIn();
-	} else if ('ics' == c) {
-		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('.ics').fadeIn();
-	} else if ('iphone' == c) {
-		$('#queryParameters').text('').fadeOut();
-		$('#icsSuffix').text('').fadeOut();
-		$('#queryParameters').text('?mobileconfig').fadeIn();
-	}
-	var datex = $('#datex').val();
-	var datey = $('#datey').val();
-	if(datex != '' && datey != '') {
-		$('#x').val('');
-		$('#y').val('');
-		$('#dateRange').text('').fadeOut();
-		var qp = $('#queryParameters').text();
-		if(qp == ''){
-			qp = '?start=' + datex + '&end=' + datey;
-		} else {
-			qp += '&start=' + datex + '&end=' + datey;
-		}
-		$('#queryParameters').text('').fadeOut();
-		$('#queryParameters').text(qp).fadeIn();
-	} else {
-		var x = $('#x').val();
-		var y = $('#y').val();
-		if(x != '' && y != '') {
-			var negate = $("#negatex option:selected").val();
-			if(negate == 'negate') {
-				x = -x;
-			}
-			if(y - x > 180) {
-				y = x + 180;
-				$('#y').val(y);
-				alert("Your date range is greater than 180 days, which is the maximum allowed. It's been reset to " + y + ".");
-			}
-			$('#dateRange').text('').fadeOut();
-			if(x != 0 || y != 0) {
-				$('#dateRange').text('/dr(' + x + ',' + y + ')').fadeIn();
-			}
-		}
-	}
-	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#icsSuffix').text() + $('#queryParameters').text());
-};
+}
+
 function refreshDetails(fadeIn) {
 	$.get('${shareDetails}',
 			{ },
@@ -287,7 +235,10 @@ function refreshDetails(fadeIn) {
 			},
 			"json");
 };
-function postAndRenderPreferences(url, form) {
+function postAndRenderPreferences(url, form, indicator) {
+	$('.ind').empty();
+	//$(indicator).empty();
+	$('<img src="<c:url value="/img/indicator.gif"/>"/>').appendTo(indicator);
 	var data = $(form).serializeObject();
 	data["shareKey"] = '${share.key}';
 	$.post(url,
@@ -298,8 +249,11 @@ function postAndRenderPreferences(url, form) {
 					if(data.completedTheSet) {
 						alert("The last privacy filter you added resulted in all possible values being included. The privacy filters have been removed, since including all values would has the same effect.");
 					}
-					renderShareControls(data.share, true);
-					renderShareControls2(data.share);
+					$(indicator).empty();
+                    $('<img src="${tickIcon}"/>').appendTo(indicator);
+					renderShareControls(data.share);
+				} else {
+					$(indicator).empty();
 				}
 			},
 			"json");
@@ -336,93 +290,56 @@ function postSetLabel(form) {
 
 <div id="content" class="main col">
 
-<div id="shareDetails">
-<h2>Options for <span class="key">${share.key }</span></h2>
-<c:if test="${not share.guessable }">
-<form id="setLabel">
-<fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" name="label" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change">&nbsp;<span id="labelindicator"></span></fieldset>
-</form>
-</c:if>
-
-<div id="revoke" class="margin3 padding1">
-<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
-<input type="submit" class="revokebutton" value="Delete this ShareURL"/>
-</form:form>
+<div id="shareDetails" class="margin3">
+<p><strong>You are editing the privacy settings for:</strong></p>
+<p class="key large padding1">${viewhelper:getVirtualServerAddress(pageContext.request)}${baseShareUrl }</p>
+<p>The settings you select below will determine what calendar data will be accessible through your ShareURL.
+To allow different access levels for different audiences, you can create multiple ShareURLs with different options.</p>
 </div>
-</div>
-
-<hr/>
-
-<div id="privacySettings">
-<div id="privacySettingsUpper">
-<div id="privacySettingsDetail" class="fleft">
-<h2>Privacy Settings</h2>
-<p>This ShareURL will respond with:</p>
-<div id="shareDetailsInner">
-<ul>
-<c:choose>
-<c:when test="${share.freeBusyOnly}">
-<li>Free/Busy data only.</li>
-</c:when>
-<c:otherwise>
-<c:choose>
-<c:when test="${share.eventFilterCount == 0}">
-<li>All Calendar event details.</li>
-</c:when>
-<c:otherwise>
-<li>Only events that match the following rules: <span class="removable">${share.sharePreferences.filterDisplay}&nbsp;<img src="${revokeIcon}" title="Remove this attribute" alt="Remove this attribute" class="resetHandle"/></span></li>
-</c:otherwise>
-</c:choose>
-</c:otherwise>
-</c:choose>
-<c:if test="${share.includeParticipants}">
-<li><strong>Including Event Participants.</strong></li>
-</c:if>
-</ul>
-</div>
-</div> <!-- close privacySettingsDetail -->
-<div id="privacySettingsHelp" class="fright info">
-<p>'Free/Busy data only' will result in all identifying information from events being withheld from display.</p>
-</div>
-<div class="clear"></div>
-</div> <!-- close privacySettingsUpper -->
-
-<div id="shareControls" class="bordered margin3 padding1">
-<div id="scCalendarData" class="scBox"></div>
-<div id="scFilters" class="scBox"></div>
-<div id="scIncludeParticipants" class="scBox"></div>
-<div class="clear"></div>
-</div> <!--  end id=shareControls -->
 
 <div id="shareControls2">
+
+<c:if test="${not share.guessable }">
+<div class="margin3 padding1">
+<form id="setLabel">
+<fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" name="label" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change">&nbsp;<span id="labelindicator" class="ind"></span></fieldset>
+<p>Adding a label can help you remember how you intend to use this ShareURL or with whom you have shared it's address. Your label will be visible to you only.</p>
+</form>
+</div>
+</c:if>
+
 <div id="scFreeBusy" class="bordered padding1 margin3">
-<form>
+<form action="${tofb }" method="post" id="tofb">
 <fieldset>
-<input id="fbRadio" type="radio" name="freebusyonly" value="true"/><label for="freebusyonly"><strong>Free/Busy only</strong></label>
+<input id="fbRadio" type="radio" name="freebusyonly" value="true"/><label for="freebusyonly"><strong>Free/Busy only</strong></label>&nbsp;<span id="labelindicatorfb" class="ind"></span>
 </fieldset>
 </form>
+<div id="scFreeBusyInner">
 <p>Free/Busy only ShareURLs display only the start and end times for periods that you are busy, all other meeting details are withheld.</p>
 </div>
+</div> <!-- end scFreeBusy -->
+
 <div id="scAllCalendar" class="bordered padding1 margin3">
-<form>
+
+<form action="${toac }" method="post" id="toac">
 <fieldset>
-<input id="acRadio" type="radio" name="allcalendar" value="true"/><label for="allcalendar"><strong>Include more event details:</strong></label>
-<ul>
-<li>Meeting Title</li>
-<li>Meeting Location</li>
-<li>Meeting Details</li>
-<li>Extended Calendar Properties</li>
-</ul>
-<input type="checkbox" name="includeParticipants"/>&nbsp;<label for="includeParticipants">Include Participants</label>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
+<input id="acRadio" type="radio" name="allcalendar" value="true"/><label for="allcalendar"><strong>Include more event detail</strong></label>&nbsp;<span id="labelindicatorac" class="ind"></span>
+<p>ShareURLs using this setting display meeting title, location, and details along with start and end times. Meeting participants are withheld by default.
 </fieldset>
 </form>
 
-</div>
-<div id="scFilteredCalendar" class="bordered padding1 margin3">
-<form>
+<div id="scAllCalendarInner">
+
+<form action="${defaultParticipantsAction}" method="post" id="includeP1">
 <fieldset>
-<input id="filterRadio" type="radio" name="filtercalendar" value="true"><label for="filtercalendar"><strong>Include only the events that match the following:</strong></label>
-<p>Events with the following visibility:</p>
+<input id="ip" type="checkbox" name="includeParticipants" checked="${includeParticipantsCheckedValue }"/>&nbsp;<label for="includeParticipants">Include attendees and organizer on group appointments</label>&nbsp;<span id="labelindicatorip" class="ind"></span>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
+</fieldset>
+</form>
+
+<div id="filters" class="padding2">
+<form>
+<p>Limit results to include only events with the following <a href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>:</p>
+<fieldset>
 <input type="checkbox" name="public" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
 <input type="checkbox" name="confidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
 <input type="checkbox" name="private" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
@@ -430,14 +347,23 @@ function postSetLabel(form) {
 <span>Include only events with </span>
 <select id="filterPropertyName"><option value="title">Title</option><option value="location">Location</option><option value="descr">Description</option></select>
 <span>&nbsp;containing&nbsp;</span><input type="text" name="filterValue"/>&nbsp;<input id="addFilter" type="submit" value="Add"/><br/>
-<input type="checkbox" name="includeParticipants"/>&nbsp;<label for="includeParticipants">Include Participants</label>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
 </fieldset>
 </form>
 </div>
+
+</div> <!-- end scAllCalendarInner -->
+</div> <!-- end scAllCalendar -->
+
+<div id="revoke" class="margin3 padding1">
+<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
+<input type="submit" class="revokebutton" value="Delete this ShareURL"/>
+</form:form>
+</div>
+
 </div> <!-- end shareControls2 -->
 
 
-</div> <!--  end privacySettings -->
+<!--  </div> --> <!--  end privacySettings -->
 
 <hr/>
 
