@@ -18,11 +18,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="-1">
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
 <title>WiscCal ShareURL - Manage ${share.key }</title>
 <rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
 <rs:resourceURL var="tickIcon" value="/rs/famfamfam/silk/1.3/tick.png"/>
 <rs:resourceURL var="helpIcon" value="/rs/famfamfam/silk/1.3/help.png"/>
+<rs:resourceURL var="alertIcon" value="/rs/famfamfam/silk/1.3/exclamation.png"/>
 <style type="text/css">
 .key { color:green;}
 .large { font-size:120%;}
@@ -61,17 +64,6 @@
 <c:set var="revokeMessage" value="Your Public ShareURL will revert to the default (Free/Busy Only). Are you sure?"/>
 </c:if>
 
-<c:choose>
-<c:when test="${share.includeParticipants}">
-<c:set var="includeParticipantsCheckedValue" value="checked"/>
-<c:set var="defaultParticipantsAction" value="${excludeP}"/>
-</c:when>
-<c:otherwise>
-<c:set var="includeParticipantsCheckedValue" value=""/>
-<c:set var="defaultParticipantsAction" value="${includeP}"/>
-</c:otherwise>
-</c:choose>
-
 <rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
 <link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}" media="all"/>
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
@@ -105,7 +97,6 @@ $(function() {
 			} };
 	
 	setupResetFiltersHandler();
-	//renderShareControls(initShare, false);
 	renderShareControls(initShare);
 	$('#setLabel').submit(function(event) {
         event.preventDefault();
@@ -141,6 +132,14 @@ function setupFormHandlers() {
 	});
 	$('#ip').click(function() {
 	    $('#includeP1').submit();
+	});
+	
+	applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}', '#labelindicatorcf', function(responsedata) {
+		/*
+		var o = $('<li></li>');
+		o.html(responsedata.newContentFilterDisplayName);
+		o.appendTo('#contentFilters');
+		*/
 	});
 }
 /*
@@ -208,8 +207,8 @@ function resetFilters(event) {
 				function(data) {
 					if(data.share) {
 						renderSharePreferences(data.share, true);
-						//renderShareControls(data.share, true);
 						renderShareControls(data.share);
+						renderFilterPreferences(data.share, '${revokeIcon}');
 					}
 				},
 				"json");
@@ -235,31 +234,35 @@ function refreshDetails(fadeIn) {
 			},
 			"json");
 };
-function postAndRenderPreferences(url, form, indicator) {
+function postAndRenderPreferences(url, form, indicator, callback) {
 	$('.ind').empty();
-	//$(indicator).empty();
 	$('<img src="<c:url value="/img/indicator.gif"/>"/>').appendTo(indicator);
-	var data = $(form).serializeObject();
-	data["shareKey"] = '${share.key}';
+	var formdata = $(form).serializeObject();
+	formdata["shareKey"] = '${share.key}';
 	$.post(url,
-			data,
-			function(data) {
-				if(data.share) {
-					renderSharePreferences(data.share, true);
-					if(data.completedTheSet) {
+			formdata,
+			function(responsedata) {
+				if(responsedata.share) {
+					//renderSharePreferences(responsedata.share, true);
+					if(responsedata.completedTheSet) {
 						alert("The last privacy filter you added resulted in all possible values being included. The privacy filters have been removed, since including all values would has the same effect.");
 					}
 					$(indicator).empty();
                     $('<img src="${tickIcon}"/>').appendTo(indicator);
-					renderShareControls(data.share);
+					renderShareControls(responsedata.share);
+					renderFilterPreferences(responsedata.share, '${revokeIcon}');
+					if(callback && typeof(callback) == 'function') {
+						callback(responsedata);
+					}
 				} else {
 					$(indicator).empty();
+					$('<img src="${alertIcon}"/>').appendTo(indicator);
 				}
 			},
 			"json");
 };
 function postSetLabel(form) {
-	$('#labelindicator').empty();
+	$('.ind').empty();
 	$('<img src="<c:url value="/img/indicator.gif"/>"/>').appendTo('#labelindicator');
     var data = $(form).serializeObject();
     data["shareKey"] = '${share.key}';
@@ -330,9 +333,9 @@ To allow different access levels for different audiences, you can create multipl
 
 <div id="scAllCalendarInner">
 
-<form action="${defaultParticipantsAction}" method="post" id="includeP1">
+<form action="${includeP}" method="post" id="includeP1">
 <fieldset>
-<input id="ip" type="checkbox" name="includeParticipants" checked="${includeParticipantsCheckedValue }"/>&nbsp;<label for="includeParticipants">Include attendees and organizer on group appointments</label>&nbsp;<span id="labelindicatorip" class="ind"></span>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
+<input id="ip" type="checkbox" name="includeParticipants" <c:if test="${share.includeParticipants }">checked="checked"</c:if>/>&nbsp;<label for="includeParticipants">Include attendees and organizer on group appointments</label>&nbsp;<span id="labelindicatorip" class="ind"></span>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
 </fieldset>
 </form>
 
@@ -340,15 +343,19 @@ To allow different access levels for different audiences, you can create multipl
 <form>
 <p>Limit results to include only events with the following <a href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>:</p>
 <fieldset>
-<input type="checkbox" name="public" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
-<input type="checkbox" name="confidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
-<input type="checkbox" name="private" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
-<p>Or:</p>
-<span>Include only events with </span>
-<select id="filterPropertyName"><option value="title">Title</option><option value="location">Location</option><option value="descr">Description</option></select>
-<span>&nbsp;containing&nbsp;</span><input type="text" name="filterValue"/>&nbsp;<input id="addFilter" type="submit" value="Add"/><br/>
+<input id="publicClass" type="checkbox" name="public" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
+<input id="confidClass" type="checkbox" name="confidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
+<input id="privateClass" type="checkbox" name="private" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
 </fieldset>
 </form>
+<form action="${addContentFilter}" method="post" id="contentFilter">
+<fieldset>
+<span>Include only events with </span>
+<select id="propertyName" name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select>
+<span>&nbsp;containing&nbsp;</span><input type="text" name="propertyValue"/>&nbsp;<input id="addFilter" type="submit" value="Add"/>&nbsp;<span id="labelindicatorcf" class="ind"></span><br/>
+</fieldset>
+</form>
+<ul id="contentFilters"><c:forEach items="${share.sharePreferences.filterPreferences }" var="pref"><li><span class="removable">${pref.displayName }&nbsp;<img class="revokeHandle" src="${revokeIcon }" title="Remove this filter"/></span></li></c:forEach></ul>
 </div>
 
 </div> <!-- end scAllCalendarInner -->

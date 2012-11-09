@@ -1,16 +1,17 @@
 
-function applySubmitHandlerIfPresent(element, url, indicator) {
+function applySubmitHandlerIfPresent(element, url, indicator, callback) {
 	var el = $(element);
 	if(el) {
 		el.submit(function(event) {
 			event.preventDefault();
-			postAndRenderPreferences(url, element, indicator);
+			postAndRenderPreferences(url, element, indicator, callback);
 		});
 	}
 };
 
 function renderShareControls(share) {
 	resetPrivacyControls();
+	$('#contentFilters').empty();
 	
 	if(share.freeBusyOnly) {
 		$('#fbRadio').attr('checked', 'checked');
@@ -22,6 +23,39 @@ function renderShareControls(share) {
 		enableAllCalendar();
 		if(share.includeParticipants) {
 			$('#ip').attr('checked', 'checked');
+		}
+		if(!$.isEmptyObject(share.sharePreferences.classificationFilters)) {
+			var checkConfid = false;
+			var checkPublic = false;
+			var checkPrivate = false;
+			$.each(share.sharePreferences.classificationFilters, function(i, obj) {
+				if(obj.value == 'PUBLIC') {
+					checkPublic = true;
+				} else if (obj.value = 'CONFIDENTIAL') {
+					checkConfid = true;
+				} else if (obj.value = 'PRIVATE') {
+					checkPrivate = true;
+				}
+			});
+			if(checkPublic) { $('#publicClass').attr('checked', 'checked');}
+			if(checkConfid) { $('#confidClass').attr('checked', 'checked');}
+			if(checkPrivate) { $('#privateClass').attr('checked', 'checked');}
+		} else {
+			$('#publicClass').attr('checked', 'checked');
+			$('#confidClass').attr('checked', 'checked');
+			$('#privateClass').attr('checked', 'checked');
+		}
+	}
+}
+function renderFilterPreferences(share, revokeIconPath) {
+	if(!share.freeBusyOnly) {
+		if(!$.isEmptyObject(share.sharePreferences.contentFilters)) {
+			$.each(share.sharePreferences.contentFilters, function(obj) {
+				alert(obj);
+				$('<li><span class="removable">' + obj.displayName + '<img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></span></li>').appendTo('#contentFilters');
+			});
+		} else {
+			$('<li>No filters: all events returned.</li>').appendTo('#contentFilters');
 		}
 	}
 }
