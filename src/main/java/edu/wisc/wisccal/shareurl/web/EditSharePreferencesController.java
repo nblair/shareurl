@@ -164,38 +164,22 @@ public class EditSharePreferencesController {
 	 * @return the json view
 	 */
 	@RequestMapping(value="/includeP", method=RequestMethod.POST)
-	public String includeParticipants(@RequestParam String shareKey, ModelMap model) {
+	public String includeParticipants(@RequestParam String shareKey, @RequestParam(required=false) String includeParticipants, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
 			log.debug("handling includeParticipants request for " + activeAccount);
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate != null && !candidate.isFreeBusyOnly() && !candidate.isIncludeParticipants()) {
+		if(candidate == null || candidate.isFreeBusyOnly()) {
+			return JSON_VIEW;
+		}
+		
+		if("on".equalsIgnoreCase(includeParticipants) && !candidate.isIncludeParticipants()) {
 			candidate = shareDao.addSharePreference(candidate, new IncludeParticipantsPreference(true));
 			model.addAttribute("share", candidate);
-		}
-		return JSON_VIEW;
-	}
-	
-	/**
-	 * Remove the {@link IncludeParticipantsPreference}, if set.
-	 * 
-	 * @param shareKey
-	 * @param model
-	 * @return the json view
-	 */
-	@RequestMapping(value="/excludeP", method=RequestMethod.POST)
-	public String excludeParticipants(@RequestParam String shareKey, ModelMap model) {
-		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
-		if(log.isDebugEnabled()) {
-			log.debug("handling excludeParticipants request for " + activeAccount);
-		}
-		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate != null && !candidate.isFreeBusyOnly() && candidate.isIncludeParticipants()) {
-			ISharePreference pref = candidate.getSharePreferences().getPreferenceByType(IncludeParticipantsPreference.INCLUDE_PARTICIPANTS);
-			candidate = shareDao.removeSharePreference(candidate, pref);
+		} else if (!"on".equalsIgnoreCase(includeParticipants) && candidate.isIncludeParticipants()) {
+			candidate = shareDao.removeSharePreference(candidate, new IncludeParticipantsPreference(true));
 			model.addAttribute("share", candidate);
 		}
 		return JSON_VIEW;
@@ -286,6 +270,7 @@ public class EditSharePreferencesController {
 			ISharePreference sharePreference = SharePreferences.construct(PropertyMatchPreference.PROPERTY_MATCH, propertyName, propertyValue);
 			candidate = shareDao.addSharePreference(candidate, sharePreference);
 			model.addAttribute("share", candidate);
+			model.addAttribute("newContentFilterDisplayName", sharePreference.getDisplayName());
 		}
 		return JSON_VIEW;
 	}
