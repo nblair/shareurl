@@ -41,14 +41,14 @@ function renderShareControls(share) {
 		}
 	}
 }
-function renderFilterPreferences(share, revokeIconPath, formAction) {
+function renderFilterPreferences(share, revokeIconPath, formAction, displayEmptySet) {
 	$('#contentFilters').empty();
 	if(!share.freeBusyOnly) {
 		if(!$.isEmptyObject(share.sharePreferences.propertyMatchPreferences)) {
 			$.each(share.sharePreferences.propertyMatchPreferences, function(i, obj) {
 				$('<li><span class="removable">' + obj.displayName + '</span>&nbsp;<form class="removeContentFilter inlineblock" action="' + formAction + '" method="post"><fieldset><input type="hidden" name="propertyName" value="' + obj.key + '"/><input type="hidden" name="propertyValue" value="' + obj.value + '"/></fieldset><img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></form></li>').appendTo('#contentFilters');
 			});
-		} else {
+		} else if (displayEmptySet){
 			$('<li>No filters: all events returned.</li>').appendTo('#contentFilters');
 		}
 	} 

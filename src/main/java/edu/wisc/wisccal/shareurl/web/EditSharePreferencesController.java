@@ -210,7 +210,7 @@ public class EditSharePreferencesController {
 			final boolean includePrivateB = checkboxParameterToBoolean(includePrivate);
 			if(!includePublicB && !includeConfid && !includePrivateB) {
 				//unchecking all 3 is invalid state
-				model.addAttribute("error", "You cannot un-check all 3 visibility filters, doing so would suppress all events. Consider using Free/Busy only or deleting the ShareURL.");
+				model.addAttribute("error", "You must have at least one Visibility entry checked.");
 				return JSON_VIEW;
 			}
 			Set<ISharePreference> desired = constructDesiredPrivacyPreferences(includePublicB,
@@ -230,7 +230,6 @@ public class EditSharePreferencesController {
 					candidate = shareDao.addSharePreference(candidate, newPref);
 				}
 			}
-			
 			model.addAttribute("share", candidate);
 		}
 		return JSON_VIEW;
@@ -332,6 +331,7 @@ public class EditSharePreferencesController {
 				candidate = shareDao.removeSharePreference(candidate, sharePreference);
 			}
 			model.addAttribute("share", candidate);
+			model.addAttribute("removeContentFilter", true);
 		}
 		return JSON_VIEW;
 	}

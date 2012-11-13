@@ -97,7 +97,7 @@ $(function() {
 				"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
 				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
 			} };
-	
+	var lastShare = initShare;
 	renderShareControls(initShare);
 	$('#setLabel').submit(function(event) {
         event.preventDefault();
@@ -157,16 +157,22 @@ function postAndRenderPreferences(url, form, indicator, callback) {
 			formdata,
 			function(responsedata) {
 				if(responsedata.share) {
+					lastShare = responsedata.share;
 					$(indicator).empty();
                     $('<img src="${tickIcon}"/>').appendTo(indicator);
 					renderShareControls(responsedata.share);
-					renderFilterPreferences(responsedata.share, '${revokeIcon}', '${removeContentFilter}');
+					renderFilterPreferences(responsedata.share, '${revokeIcon}', '${removeContentFilter}', responsedata.removeContentFilter);
 					if(callback && typeof(callback) == 'function') {
 						callback(responsedata);
 					}
 				} else {
 					$(indicator).empty();
 					$('<img src="${alertIcon}"/>').appendTo(indicator);
+					if(responsedata.error) {
+						alert(responsedata.error);
+					}
+					renderShareControls(lastShare);
+					renderFilterPreferences(lastShare, '${revokeIcon}', '${removeContentFilter}', false);
 				}
 			},
 			"json");
