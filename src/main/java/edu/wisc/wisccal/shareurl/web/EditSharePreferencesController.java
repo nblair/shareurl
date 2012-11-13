@@ -195,7 +195,8 @@ public class EditSharePreferencesController {
 	 * @return the json view
 	 */
 	@RequestMapping(value="/addPrivacyFilter", method=RequestMethod.POST)
-	public String addPrivacyFilter(@RequestParam String shareKey, @RequestParam String privacyValue, ModelMap model) {
+	public String addPrivacyFilter(@RequestParam String shareKey, @RequestParam(required=false) String includePublic, 
+			@RequestParam(required=false) String includeConfidential, @RequestParam(required=false) String includePrivate, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
@@ -203,23 +204,55 @@ public class EditSharePreferencesController {
 		}
 		
 		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, Clazz.CLASS, privacyValue)) {
-			ISharePreference sharePreference = SharePreferences.construct(AccessClassificationMatchPreference.CLASS_ATTRIBUTE, Clazz.CLASS, privacyValue);
-			if(newPrivacyFilterWouldCompleteTheSet(candidate, sharePreference)) {
-				// customer has requested this share include PUBLIC, CONFIDENTIAL, and PRIVATE
-				// do them a favor and remove those preferences
-				Set<ISharePreference> classPrefs = candidate.getSharePreferences().getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
-				for(ISharePreference classPref: classPrefs) {
-					shareDao.removeSharePreference(candidate, classPref);
+		if(candidate != null && !candidate.isFreeBusyOnly()) {
+			final boolean includePublicB = checkboxParameterToBoolean(includePublic);
+			final boolean includeConfid = checkboxParameterToBoolean(includeConfidential);
+			final boolean includePrivateB = checkboxParameterToBoolean(includePrivate);
+			if(!includePublicB && !includeConfid && !includePrivateB) {
+				//unchecking all 3 is invalid state
+				model.addAttribute("error", "You cannot un-check all 3 visibility filters, doing so would suppress all events. Consider using Free/Busy only or deleting the ShareURL.");
+				return JSON_VIEW;
+			}
+			Set<ISharePreference> desired = constructDesiredPrivacyPreferences(includePublicB,
+					includeConfid, includePrivateB);
+			final int desiredSize = desired.size();
+			Set<ISharePreference> existing = candidate.getSharePreferences().getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
+			final int existingSize = existing.size();
+			if(desiredSize == 0 & existingSize != 0) {
+				for(ISharePreference classPref: existing) {
+					candidate = shareDao.removeSharePreference(candidate, classPref);
 				}
-				model.addAttribute("completedTheSet", "true");
-			} else {
-				candidate = shareDao.addSharePreference(candidate, sharePreference);
+			} else if (desired.size() > 0) {
+				for(ISharePreference classPref: existing) {
+					candidate = shareDao.removeSharePreference(candidate, classPref);
+				}
+				for(ISharePreference newPref: desired) {
+					candidate = shareDao.addSharePreference(candidate, newPref);
+				}
 			}
 			
 			model.addAttribute("share", candidate);
 		}
 		return JSON_VIEW;
+	}
+	
+	protected Set<ISharePreference> constructDesiredPrivacyPreferences(boolean includePublic, boolean includeConfidential, boolean includePrivate) {
+		if(includePublic && includeConfidential && includePrivate) {
+			return Collections.emptySet();
+		}
+		
+		Set<ISharePreference> results = new HashSet<ISharePreference>();
+		if(includePublic) {
+			results.add(SharePreferences.construct(AccessClassificationMatchPreference.CLASS_ATTRIBUTE, Clazz.CLASS, Clazz.PUBLIC.getValue()));
+		}
+		if(includeConfidential) {
+			results.add(SharePreferences.construct(AccessClassificationMatchPreference.CLASS_ATTRIBUTE, Clazz.CLASS, Clazz.CONFIDENTIAL.getValue()));
+		}
+		if(includePrivate) {
+			results.add(SharePreferences.construct(AccessClassificationMatchPreference.CLASS_ATTRIBUTE, Clazz.CLASS, Clazz.PRIVATE.getValue()));
+		}
+		
+		return results;
 	}
 	
 	/**
@@ -271,6 +304,34 @@ public class EditSharePreferencesController {
 			candidate = shareDao.addSharePreference(candidate, sharePreference);
 			model.addAttribute("share", candidate);
 			model.addAttribute("newContentFilterDisplayName", sharePreference.getDisplayName());
+		}
+		return JSON_VIEW;
+	}
+	/**
+	 * Add a "content" filter
+	 * 
+	 * @see PropertyMatchPreference
+	 * @param shareKey
+	 * @param propertyName
+	 * @param propertyValue
+	 * @param model
+	 * @return the json view
+	 */
+	@RequestMapping(value="/removeContentFilter", method=RequestMethod.POST)
+	public String removeContentFilter(@RequestParam String shareKey, @RequestParam String propertyName, @RequestParam String propertyValue, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling removeContentFilter request for " + activeAccount);
+		}
+		
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, propertyName, propertyValue)) {
+			ISharePreference sharePreference = SharePreferences.construct(PropertyMatchPreference.PROPERTY_MATCH, propertyName, propertyValue);
+			if(candidate.getSharePreferences().getPreferences().contains(sharePreference)) {
+				candidate = shareDao.removeSharePreference(candidate, sharePreference);
+			}
+			model.addAttribute("share", candidate);
 		}
 		return JSON_VIEW;
 	}
@@ -379,5 +440,13 @@ public class EditSharePreferencesController {
 		
 		return null;
 	}
-	
+
+	/**
+	 * 
+	 * @param value
+	 * @return
+	 */
+	boolean checkboxParameterToBoolean(String value) {
+		return "on".equalsIgnoreCase(value);
+	}
 }
