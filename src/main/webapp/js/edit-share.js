@@ -2,6 +2,7 @@
 function applySubmitHandlerIfPresent(element, url, indicator, callback) {
 	var el = $(element);
 	if(el) {
+		el.unbind('submit');
 		el.submit(function(event) {
 			event.preventDefault();
 			postAndRenderPreferences(url, element, indicator, callback);
@@ -11,7 +12,6 @@ function applySubmitHandlerIfPresent(element, url, indicator, callback) {
 
 function renderShareControls(share) {
 	resetPrivacyControls();
-	$('#contentFilters').empty();
 	
 	if(share.freeBusyOnly) {
 		$('#fbRadio').attr('checked', 'checked');
@@ -25,21 +25,15 @@ function renderShareControls(share) {
 			$('#ip').attr('checked', 'checked');
 		}
 		if(!$.isEmptyObject(share.sharePreferences.classificationFilters)) {
-			var checkConfid = false;
-			var checkPublic = false;
-			var checkPrivate = false;
 			$.each(share.sharePreferences.classificationFilters, function(i, obj) {
-				if(obj.value == 'PUBLIC') {
-					checkPublic = true;
-				} else if (obj.value = 'CONFIDENTIAL') {
-					checkConfid = true;
-				} else if (obj.value = 'PRIVATE') {
-					checkPrivate = true;
+				if(obj == 'PUBLIC') {
+					 $('#publicClass').attr('checked', 'checked');
+				} else if (obj == 'CONFIDENTIAL') {
+					$('#confidClass').attr('checked', 'checked');
+				} else if (obj == 'PRIVATE') {
+					$('#privateClass').attr('checked', 'checked');
 				}
 			});
-			if(checkPublic) { $('#publicClass').attr('checked', 'checked');}
-			if(checkConfid) { $('#confidClass').attr('checked', 'checked');}
-			if(checkPrivate) { $('#privateClass').attr('checked', 'checked');}
 		} else {
 			$('#publicClass').attr('checked', 'checked');
 			$('#confidClass').attr('checked', 'checked');
@@ -47,17 +41,18 @@ function renderShareControls(share) {
 		}
 	}
 }
-function renderFilterPreferences(share, revokeIconPath) {
+function renderFilterPreferences(share, revokeIconPath, formAction) {
+	$('#contentFilters').empty();
 	if(!share.freeBusyOnly) {
-		if(!$.isEmptyObject(share.sharePreferences.contentFilters)) {
-			$.each(share.sharePreferences.contentFilters, function(obj) {
-				alert(obj);
-				$('<li><span class="removable">' + obj.displayName + '<img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></span></li>').appendTo('#contentFilters');
+		if(!$.isEmptyObject(share.sharePreferences.propertyMatchPreferences)) {
+			$.each(share.sharePreferences.propertyMatchPreferences, function(i, obj) {
+				$('<li><span class="removable">' + obj.displayName + '</span>&nbsp;<form class="removeContentFilter inlineblock" action="' + formAction + '" method="post"><fieldset><input type="hidden" name="propertyName" value="' + obj.key + '"/><input type="hidden" name="propertyValue" value="' + obj.value + '"/></fieldset><img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></form></li>').appendTo('#contentFilters');
 			});
 		} else {
 			$('<li>No filters: all events returned.</li>').appendTo('#contentFilters');
 		}
-	}
+	} 
+	
 }
 function resetPrivacyControls() {
 	$('#fbRadio').attr('checked', '');

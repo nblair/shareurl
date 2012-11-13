@@ -39,7 +39,7 @@ import edu.wisc.wisccal.shareurl.support.ProblematicRecurringEventSharePreferenc
 public class SharePreferences implements Serializable {
 
 	
-	public static final String FILTER_DISPLAY_SEPARATOR = ", OR ";
+	public static final String FILTER_DISPLAY_SEPARATOR = ", ";
 	private static final Log LOG = LogFactory.getLog(SharePreferences.class);
 	/**
 	 * 
@@ -105,6 +105,9 @@ public class SharePreferences implements Serializable {
 		return new HashSet<ISharePreference>(preferences);
 	}
 	
+	public Set<ISharePreference> getPropertyMatchPreferences() {
+		return getPreferencesByType(PropertyMatchPreference.PROPERTY_MATCH);
+	}
 	/**
 	 * Never null, but potentially empty.
 	 * 

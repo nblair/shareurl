@@ -38,12 +38,13 @@
 .fright {float:right;}
 .scBox { float: left; position: relative; width: 26%; margin: 0px 3px 0px 3px; border: 1px solid #666152; padding: 1.25em;}
 .removable { border: 1px solid #C7CEF9; background-color: #E2E6FF;}
-.resetHandle {position:relative; top:3px;}
+.revokeHandle {position:relative; top:3px;}
 .sharelink { border: 1px dotted #C7CEF9; background-color: #E2E6FF; padding: 0.5em 0.5em 0.5em 1em;}
 .sharelinktext { color: blue; font-size: 130%;}
 #sharelinktag { color: blue;}
 #examples { line-height:200%;}
 .notselected {opacity:0.75;}
+.inlineblock {display:inline-block;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
 <c:url value="/rest/shareDetails" var="shareDetails">
@@ -57,6 +58,7 @@
 <c:url value="/rest/tofb" var="tofb"/>
 <c:url value="/rest/addPrivacyFilter" var="addPrivacyFilter"/>
 <c:url value="/rest/addContentFilter" var="addContentFilter"/>
+<c:url value="/rest/removeContentFilter" var="removeContentFilter"/>
 <c:url value="/rest/resetFilters" var="resetFilters"/>
 
 <c:set var="revokeMessage" value="This ShareURL will be permanently deleted. Are you sure?"/>
@@ -96,7 +98,6 @@ $(function() {
 				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
 			} };
 	
-	setupResetFiltersHandler();
 	renderShareControls(initShare);
 	$('#setLabel').submit(function(event) {
         event.preventDefault();
@@ -109,21 +110,10 @@ $(function() {
 		renderShareUrlExample();
 	});
 });
-function getAvailablePrivacyFilters(share) {
-	var options = { "PUBLIC": "Public", "CONFIDENTIAL": "Show Date and Time Only", "PRIVATE": "Private" };
-	if($.isEmptyObject(share.sharePreferences.classificationFilters)) {
-		return options;
-	}
-	$.each(share.sharePreferences.classificationFilters, function() {
-		delete options[this];
-	});
-	return options;
-};
 function setupFormHandlers() {
 	applySubmitHandlerIfPresent('#tofb', '${tofb}', '#labelindicatorfb');
 	applySubmitHandlerIfPresent('#toac', '${toac}', '#labelindicatorac');
 	applySubmitHandlerIfPresent('#includeP1', '${includeP}', '#labelindicatorip');
-	
 	$('#fbRadio').click(function() {
 	    $('#tofb').submit();
 	});
@@ -134,106 +124,30 @@ function setupFormHandlers() {
 	    $('#includeP1').submit();
 	});
 	
-	applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}', '#labelindicatorcf', function(responsedata) {
-		/*
-		var o = $('<li></li>');
-		o.html(responsedata.newContentFilterDisplayName);
-		o.appendTo('#contentFilters');
-		*/
+	applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}', '#labelindicatorcf', function() {
+		setupRemoveContentFilterForms();
 	});
+	applySubmitHandlerIfPresent('#privacyFilter', '${addPrivacyFilter}', '#labelindicatorcl');
+	$('#publicClass').click(function() {
+	    $('#privacyFilter').submit();
+	});
+	$('#confidClass').click(function() {
+	    $('#privacyFilter').submit();
+	});
+	$('#privateClass').click(function() {
+	    $('#privacyFilter').submit();
+	});
+	setupRemoveContentFilterForms();
 }
-/*
-function renderShareControls(share, fade) {
-	$('#scCalendarData').empty();
-	if(share.freeBusyOnly) {
-		if(fade) {
-			$('#scFilters').fadeOut();
-			$('#scIncludeParticipants').fadeOut();
-		} else {
-			$('#scFilters').hide();
-			$('#scIncludeParticipants').hide();
-		}
-		$('<form action="${toac }" method="post" id="toac"><fieldset><input type="submit" value="Include more meeting details"/></fieldset></form>').appendTo('#scCalendarData');
-		applySubmitHandlerIfPresent('#toac', '${toac}');
-	} else {
-		$('#scIncludeParticipants').empty();
-		if(share.includeParticipants) {
-			$('<form action="${excludeP }" method="post" id="excludeP"><fieldset><input type="submit" value="Exclude Participants"/></fieldset></form>').appendTo('#scIncludeParticipants');
-			applySubmitHandlerIfPresent('#excludeP', '${excludeP}');
-		} else {
-			$('<form action="${includeP }" method="post" id="includeP"><fieldset><input type="submit" value="Include Participants"/></fieldset></form>').appendTo('#scIncludeParticipants');
-			applySubmitHandlerIfPresent('#includeP', '${includeP}');
-		}
-		if(fade) {
-			$('#scFilters').fadeIn();
-			$('#scIncludeParticipants').fadeIn();
-		} else {
-			$('#scFilters').show();
-			$('#scIncludeParticipants').show();
-		}
-		
-		$('#scFilters').empty();
-		$('<form action="${tofb }" method="post" id="tofb"><fieldset><input type="submit" value="Revert to Free/Busy only"/></fieldset></form>').appendTo('#scCalendarData');
-		applySubmitHandlerIfPresent('#tofb', '${tofb}');
-		
-		var options = getAvailablePrivacyFilters(share);
-		$('<form action="" method="post" id="privacyFilter"><fieldset><label for="privacyValue">Include:&nbsp;</label><select id="privacyOptions" name="privacyValue"></select><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
-		
-		$.each(options, function(key, value) {
-			var o = $('<option></option>');
-			o.val(key);
-			o.html(value);
-			o.appendTo('#privacyOptions');
-		});
-		
-		applySubmitHandlerIfPresent('#privacyFilter', '${addPrivacyFilter}');
-		$('<hr/>').appendTo('#scFilters');
-		$('<form action="" method="post" id="contentFilter"><fieldset><label for="propertyName">Include events where:&nbsp;</label><select name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select><label for="propertyValue">&nbsp;contains&nbsp;</label><input type="text" name="propertyValue"/><input type="submit" value="Save Filter"/></fieldset></form>').appendTo('#scFilters');
-		applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}');
-	}
-};
-*/
-function setupResetFiltersHandler() {
-	$('.resetHandle').unbind('click', resetFilters);
-	setTimeout(function() {
-		$('.resetHandle').bind('click', resetFilters);
-	}, 1000);
-};
-function resetFilters(event) {
-	var confirmed = confirm('Reset all Content Filters for this ShareURL?');
-	if(confirmed) {
-		$.post('${resetFilters}',
-				{ "shareKey": "${share.key}"} ,
-				function(data) {
-					if(data.share) {
-						renderSharePreferences(data.share, true);
-						renderShareControls(data.share);
-						renderFilterPreferences(data.share, '${revokeIcon}');
-					}
-				},
-				"json");
-	}
-};
-function renderSharePreferences(share, fadeIn) {
-	$('#shareDetailsInner').empty();
-	
-	if(!share.freeBusyOnly && share.eventFilterCount > 0) {
-		var ul = $('<ul/>');
-		$('<li>Only events that match the following rules: <span class="removable">' + share.sharePreferences.filterDisplay + ' <img src="${revokeIcon}" title="Reset content filters" alt="Reset content filters" class="resetHandle"/></span></li>').appendTo(ul);
-		setupResetFiltersHandler();
-	}
+function setupRemoveContentFilterForms() {
+	applySubmitHandlerIfPresent('.removeContentFilter', '${removeContentFilter}', '#labelindicatorcf', function() {
+		setupRemoveContentFilterForms();
+	});
+	$('.revokeHandle').click(function(event) {
+		var anchor = $(this);
+		anchor.parent('form').submit();
+	})
 }
-
-function refreshDetails(fadeIn) {
-	$.get('${shareDetails}',
-			{ },
-			function(data) {
-				if(data.share) {
-					renderSharePreferences(data.share, fadeIn);
-				}
-			},
-			"json");
-};
 function postAndRenderPreferences(url, form, indicator, callback) {
 	$('.ind').empty();
 	$('<img src="<c:url value="/img/indicator.gif"/>"/>').appendTo(indicator);
@@ -243,14 +157,10 @@ function postAndRenderPreferences(url, form, indicator, callback) {
 			formdata,
 			function(responsedata) {
 				if(responsedata.share) {
-					//renderSharePreferences(responsedata.share, true);
-					if(responsedata.completedTheSet) {
-						alert("The last privacy filter you added resulted in all possible values being included. The privacy filters have been removed, since including all values would has the same effect.");
-					}
 					$(indicator).empty();
                     $('<img src="${tickIcon}"/>').appendTo(indicator);
 					renderShareControls(responsedata.share);
-					renderFilterPreferences(responsedata.share, '${revokeIcon}');
+					renderFilterPreferences(responsedata.share, '${revokeIcon}', '${removeContentFilter}');
 					if(callback && typeof(callback) == 'function') {
 						callback(responsedata);
 					}
@@ -270,7 +180,6 @@ function postSetLabel(form) {
             data,
             function(data) {
                 if(data.share) {
-                    // update label text
                     $('#labelinput').val(data.share.label);
                     $('#labelindicator').empty();
                     $('<img src="${tickIcon}"/>').appendTo('#labelindicator');
@@ -340,12 +249,12 @@ To allow different access levels for different audiences, you can create multipl
 </form>
 
 <div id="filters" class="padding2">
-<form>
-<p>Limit results to include only events with the following <a href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>:</p>
+<form action="${addPrivacyFilter}" method="post" id="privacyFilter">
+<p>Limit results to include only events with the following <a href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>&nbsp;<span id="labelindicatorcl" class="ind"></span>:</p>
 <fieldset>
-<input id="publicClass" type="checkbox" name="public" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
-<input id="confidClass" type="checkbox" name="confidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
-<input id="privateClass" type="checkbox" name="private" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
+<input id="publicClass" type="checkbox" name="includePublic" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
+<input id="confidClass" type="checkbox" name="includeConfidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
+<input id="privateClass" type="checkbox" name="includePrivate" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
 </fieldset>
 </form>
 <form action="${addContentFilter}" method="post" id="contentFilter">
@@ -355,7 +264,11 @@ To allow different access levels for different audiences, you can create multipl
 <span>&nbsp;containing&nbsp;</span><input type="text" name="propertyValue"/>&nbsp;<input id="addFilter" type="submit" value="Add"/>&nbsp;<span id="labelindicatorcf" class="ind"></span><br/>
 </fieldset>
 </form>
-<ul id="contentFilters"><c:forEach items="${share.sharePreferences.filterPreferences }" var="pref"><li><span class="removable">${pref.displayName }&nbsp;<img class="revokeHandle" src="${revokeIcon }" title="Remove this filter"/></span></li></c:forEach></ul>
+<ul id="contentFilters">
+<c:forEach items="${share.sharePreferences.propertyMatchPreferences }" var="pref" varStatus="status">
+<li><span class="removable">${pref.displayName }</span>&nbsp;<form class="removeContentFilter inlineblock" action="${removeContentFilter}" method="post" id="removeContentFilter${status.index}"><fieldset><input type="hidden" name="propertyName" value="${pref.key}"/><input type="hidden" name="propertyValue" value="${pref.value}"/></fieldset><img class="revokeHandle" src="${revokeIcon }" title="Remove this filter"/></form></li>
+</c:forEach>
+</ul>
 </div>
 
 </div> <!-- end scAllCalendarInner -->
