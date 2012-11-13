@@ -140,9 +140,13 @@ function setupFormHandlers() {
 	setupRemoveContentFilterForms();
 }
 function setupRemoveContentFilterForms() {
-	applySubmitHandlerIfPresent('.removeContentFilter', '${removeContentFilter}', '#labelindicatorcf', function() {
-		setupRemoveContentFilterForms();
+	$('.removeContentFilter').each(function(i) {
+		applySubmitHandlerIfPresent($(this), '${removeContentFilter}', '#labelindicatorcf', function() {
+			setupRemoveContentFilterForms();
+		});
 	});
+	
+	$('.revokeHandle').unbind('click');
 	$('.revokeHandle').click(function(event) {
 		var anchor = $(this);
 		anchor.parent('form').submit();
