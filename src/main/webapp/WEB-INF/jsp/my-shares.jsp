@@ -180,7 +180,7 @@ traditional ShareURLs with different options.</p>
 <p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string. One has been automatically registered for you.</p>
 <c:if test="${!empty ineligibleStatus}">
 <c:set var="createSubmitText" value="Enable my Public ShareURL"/>
-<p><strong>Your account is automatically excluded from having a Public ShareURL by default for the following reason: ${ineligibleStatus.display}</strong></p>
+<p><strong>${ineligibleStatus.display}</strong></p>
 </c:if>
 <div class="fcontainer">
 <div class="publicshareform fleft">

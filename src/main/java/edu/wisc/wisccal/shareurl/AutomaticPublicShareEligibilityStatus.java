@@ -12,10 +12,10 @@ package edu.wisc.wisccal.shareurl;
 public enum AutomaticPublicShareEligibilityStatus {
 
 	ELIGIBLE("N/A"),
-	CALENDAR_INELIGIBLE("This account is ineligible for Calendar service."),
-	CALENDAR_UNSEARCHABLE("This account has been marked as hidden from search via 'CalDAV discovery.'"),
+	CALENDAR_INELIGIBLE("Public ShareURL has not been enabled for your account because it is ineligible for Calendar service."),
+	CALENDAR_UNSEARCHABLE("Public ShareURL has not been enabled for your account because it has been hidden from 'search by CalDAV discovery.'"),
 	OPTED_OUT("N/A"),
-	HAS_FERPA_HOLD("This account has requested privacy for the Email Address attribute through FERPA.");
+	HAS_FERPA_HOLD("Public ShareURL has not been enabled for your account because you have requested privacy protection for your email address through FERPA.");
 	
 	private String display;
 	

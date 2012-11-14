@@ -45,6 +45,7 @@
 #examples { line-height:200%;}
 .notselected {opacity:0.75;}
 .inlineblock {display:inline-block;}
+#includeParticipantsHelp {font-size:80%;}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl"/>
 <c:url value="/rest/shareDetails" var="shareDetails">
@@ -74,6 +75,15 @@
 <script type="text/javascript" src="<c:url value="/js/edit-share.js"/>"></script>
 <script type="text/javascript">
 $(function() {
+	$("#includeParticipantsHelp").dialog({ autoOpen: false, 
+		buttons: { Ok: function() { $( this ).dialog( "close" ); } } ,
+		modal: true,
+		width: 500
+	});
+	$('#ipTrigger').click(function(e) {
+		e.preventDefault();
+	    $("#includeParticipantsHelp").dialog( "open" );
+	});
 	$('.revokeform').submit(function(e) {
 		e.preventDefault();
 		var confirmed = confirm('${revokeMessage}');
@@ -254,13 +264,13 @@ To allow different access levels for different audiences, you can create multipl
 
 <form action="${includeP}" method="post" id="includeP1">
 <fieldset>
-<input id="ip" type="checkbox" name="includeParticipants" <c:if test="${share.includeParticipants }">checked="checked"</c:if>/>&nbsp;<label for="includeParticipants">Include attendees and organizer on group appointments</label>&nbsp;<span id="labelindicatorip" class="ind"></span>&nbsp;<a href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
+<input id="ip" type="checkbox" name="includeParticipants" <c:if test="${share.includeParticipants }">checked="checked"</c:if>/>&nbsp;<label for="includeParticipants">Include attendees and organizer on group appointments</label>&nbsp;<span id="labelindicatorip" class="ind"></span>&nbsp;<a id="ipTrigger" href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
 </fieldset>
 </form>
 
 <div id="filters" class="padding2">
 <form action="${addPrivacyFilter}" method="post" id="privacyFilter">
-<p>Limit results to include only events with the following <a href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>&nbsp;<span id="labelindicatorcl" class="ind"></span>:</p>
+<p>Limit results to include only events with the following <a target="_new_visibilityHelp" href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>&nbsp;<span id="labelindicatorcl" class="ind"></span>:</p>
 <fieldset>
 <input id="publicClass" type="checkbox" name="includePublic" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
 <input id="confidClass" type="checkbox" name="includeConfidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
@@ -323,7 +333,12 @@ To allow different access levels for different audiences, you can create multipl
 <p>I would like to see <a title="View ShareURL Options (Opens new window)" target="_new_help" href="http://kb.wisc.edu/wisccal/page.php?id=13322">all available options for ShareURLs&raquo;</a>, including options for web developers.</p>
 
 </div>
-
+<div id="includeParticipantsHelp" title="Include Participants Help">
+<p>This setting controls whether or not the name and email address for meeting participants (attendees, organizer) is included in the data for group events displayed by your ShareURL.</p>
+<br/>
+<p>Consider this option carefully: <strong>if you meet with students regularly, you should not enable this setting</strong>. This setting is best used
+on Traditional ShareURLs that are not shared with a wide audience. The WiscCal team recommends you avoid using this setting on your Public ShareURL.</p>
+</div>
 </div> <!-- content -->
 <%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
 </body>
