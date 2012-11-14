@@ -176,15 +176,21 @@ traditional ShareURLs with different options.</p>
 </div>
 </c:when>
 <c:when test="${not hasGuessable}">
+<c:set var="createSubmitText" value="Make my Public ShareURL customizable"/>
 <p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string. One has been automatically registered for you.</p>
+<c:if test="${!empty ineligibleStatus}">
+<c:set var="createSubmitText" value="Enable my Public ShareURL"/>
+<p><strong>Your account is automatically excluded from having a Public ShareURL by default for the following reason: ${ineligibleStatus.display}</strong></p>
+</c:if>
 <div class="fcontainer">
 <div class="publicshareform fleft">
 <form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
-<input id="psubmit" type="submit" value="Make my Public ShareURL customizable"/>
+<input id="psubmit" type="submit" value="${createSubmitText }"/>
 </fieldset>
 </form>
 </div>
+<c:if test="${empty ineligibleStatus }">
 <div class="publicshareform fleft" style="padding-left: 1.5em;">
 <form action="<c:url value="/rest/opt-out"/>" method="post" id="optout">
 <fieldset>
@@ -192,6 +198,7 @@ traditional ShareURLs with different options.</p>
 </fieldset>
 </form>
 </div>
+</c:if>
 </div>
 </c:when>
 <c:otherwise>

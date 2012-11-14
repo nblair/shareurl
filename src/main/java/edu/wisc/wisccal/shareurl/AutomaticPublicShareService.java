@@ -31,6 +31,12 @@ public interface AutomaticPublicShareService {
 	/**
 	 * 
 	 * @param calendarAccount
+	 * @return the {@link AutomaticPublicShareEligibilityStatus} for the account
+	 */
+	AutomaticPublicShareEligibilityStatus getEligibilityStatus(ICalendarAccount calendarAccount);
+	/**
+	 * 
+	 * @param calendarAccount
 	 * @return true if {@link #optOut(ICalendarAccount)} has been called previously (and is still effective)
 	 */
 	boolean hasOptedOut(ICalendarAccount calendarAccount);

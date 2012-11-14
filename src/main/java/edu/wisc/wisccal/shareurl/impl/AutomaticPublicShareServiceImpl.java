@@ -24,6 +24,7 @@ import edu.wisc.services.chub.soap.v1_4.PersonQuery;
 import edu.wisc.services.chub.v1_4.CurricularDataService;
 import edu.wisc.services.chub.v1_4.QueryLimitExceededException;
 import edu.wisc.services.ebo.curricular.v1_4.Student;
+import edu.wisc.wisccal.shareurl.AutomaticPublicShareEligibilityStatus;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
@@ -180,6 +181,30 @@ AutomaticPublicShareService {
 			return share;
 		}
 		return null;
+	}
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.AutomaticPublicShareService#getEligibilityStatus(org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public AutomaticPublicShareEligibilityStatus getEligibilityStatus(
+			ICalendarAccount calendarAccount) {
+		if(calendarAccount == null || !calendarAccount.isEligible() ) {
+			return AutomaticPublicShareEligibilityStatus.CALENDAR_INELIGIBLE;
+		}
+		
+		if(isUnsearchable(calendarAccount)) {
+			return AutomaticPublicShareEligibilityStatus.CALENDAR_UNSEARCHABLE;
+		}
+		
+		if(hasOptedOut(calendarAccount)) {
+			return AutomaticPublicShareEligibilityStatus.OPTED_OUT;
+		}
+		
+		if(hasFerpaHold(calendarAccount)) {
+			return AutomaticPublicShareEligibilityStatus.HAS_FERPA_HOLD;
+		}
+		
+		return AutomaticPublicShareEligibilityStatus.ELIGIBLE;
 	}
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.AutomaticPublicShareService#optOut(org.jasig.schedassist.model.ICalendarAccount)

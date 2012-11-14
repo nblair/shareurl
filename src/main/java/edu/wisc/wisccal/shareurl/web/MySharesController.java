@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.emory.mathcs.backport.java.util.Collections;
+import edu.wisc.wisccal.shareurl.AutomaticPublicShareEligibilityStatus;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -78,6 +79,10 @@ public class MySharesController  {
 			LOG.debug("displaying manage share form for " + activeAccount + ", format=" + format);
 		}
 		model.put("optedOut", automaticPublicShareService.hasOptedOut(activeAccount));
+		AutomaticPublicShareEligibilityStatus eligibilityStatus = automaticPublicShareService.getEligibilityStatus(activeAccount);
+		if(eligibilityStatus.isIneligibleFromExternalSource()) {
+			model.put("ineligibleStatus", eligibilityStatus);
+		}
 		List<Share> shares = shareDao.retrieveByOwner(activeAccount);
 		Collections.sort(shares, new Comparator<Share>() {
 			@Override
