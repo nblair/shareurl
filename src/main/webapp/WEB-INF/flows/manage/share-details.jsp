@@ -95,12 +95,12 @@ $(function() {
 	setupFormHandlers();
 	$("#datex").datepicker({ dateFormat: 'yy-mm-dd' });
 	$("#datey").datepicker({ dateFormat: 'yy-mm-dd' });
-	$('#clientselect').change(function(e) { renderShareUrlExample(); });
-	$('#x').change(function(e) { renderShareUrlExample(); });
-	$('#negatex').change(function(e) { renderShareUrlExample(); });
-	$('#y').change(function(e) { renderShareUrlExample(); });
-	$('#datex').change(function(e) { renderShareUrlExample(); });
-	$('#datey').change(function(e) { renderShareUrlExample(); });
+	$('#clientselect').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
+	$('#x').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
+	$('#negatex').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
+	$('#y').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
+	$('#datex').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
+	$('#datey').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
 	var initShare = { "freeBusyOnly": ${share.freeBusyOnly}, 
 			"includeParticipants": ${share.includeParticipants}, 
 			"sharePreferences": {
@@ -117,7 +117,7 @@ $(function() {
 	$('#justToday').click(function(e) {
 		$('#x').val(0);
 		$('#y').val(0);
-		renderShareUrlExample();
+		renderShareUrlExample('${baseShareUrl}');
 	});
 });
 function setupFormHandlers() {

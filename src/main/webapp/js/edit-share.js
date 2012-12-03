@@ -82,7 +82,7 @@ function disableAllCalendar() {
 	$('.classFilterCheckbox').attr('disabled', 'disabled');
 }
 
-function renderShareUrlExample() {
+function renderShareUrlExample(baseShareUrl) {
 	var c = $("#clientselect option:selected").val();
 	if('native' == c || 'google' == c) {
 		$('#queryParameters').text('').fadeOut();
@@ -140,5 +140,5 @@ function renderShareUrlExample() {
 			}
 		}
 	}
-	$('#sharelinktag').attr('href', '${baseShareUrl}' + $('#dateRange').text() + $('#icsSuffix').text() + $('#queryParameters').text());
+	$('#sharelinktag').attr('href', baseShareUrl + $('#dateRange').text() + $('#icsSuffix').text() + $('#queryParameters').text());
 };
