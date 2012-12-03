@@ -84,7 +84,7 @@ $(document).ready(function(){
 </div>
 <hr/>
 <p>
-<a href="http://kb.wisc.edu/helpdesk/">Not finding the person you are looking for?</a>
+<a href="https://kb.wisc.edu/helpdesk/page.php?id=27557">Not finding the person you are looking for?</a>
 </p>
 </div> <!-- content -->
 
