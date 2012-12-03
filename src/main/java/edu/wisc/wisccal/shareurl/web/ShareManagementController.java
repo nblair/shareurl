@@ -105,6 +105,10 @@ public class ShareManagementController {
 		if(log.isDebugEnabled()) {
 			log.debug("handling optOutPublic request for " + activeAccount);
 		}
+		Share customized = shareDao.retrieveGuessableShare(activeAccount);
+		if(customized != null) {
+			shareDao.revokeShare(customized);
+		}
 		automaticPublicShareService.optOut(activeAccount);
 		model.addAttribute("success", true);
 		return "redirect:/my-shares";

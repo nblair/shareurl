@@ -96,6 +96,9 @@ public class MySharesController  {
 		for(Share share: shares) {
 			if(share.isGuessable()) {
 				model.put("hasGuessable", true);
+				if(!share.isFreeBusyOnly()) {
+					model.put("guessableModified", true);
+				}
 				break;
 			}
 		}

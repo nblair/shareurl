@@ -46,6 +46,16 @@ $(function() {
         $('#tsubmit').attr('disabled', 'disabled');
         postCreateTraditional();     
     });
+	<c:if test="${guessableModified}">
+	$('.optoutform').submit(function(event) {
+		event.preventDefault();
+		var confirmed = confirm('Your Public ShareURL has been customized; if you opt out these customizations will be lost. Are you sure you want to opt-out?');
+		if(confirmed) {
+			$(this).unbind();
+			$(this).submit();
+		}
+	});
+	</c:if>
 });
 
 function refreshMyShares(fadeIn) {
@@ -155,8 +165,7 @@ function postCreateTraditional() {
 <div id="controls" class="info">
 <p>
 <span class="large">Traditional ShareURLs</span> use a randomly generated string of letters and numbers to identify your account. 
-These are intended for the privacy-conscious that don't like to or cannot advertise their email address. You can have several different
-traditional ShareURLs with different options.</p>
+You can have several different traditional ShareURLs with different options.</p>
 <form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
 <fieldset>
 <input id="tsubmit" type="submit" value="Create a new Traditional ShareURL"/>
@@ -183,7 +192,7 @@ traditional ShareURLs with different options.</p>
 <p><strong>${ineligibleStatus.display}</strong></p>
 </c:if>
 <div class="fcontainer">
-<div class="publicshareform fleft">
+<div class="publicshareform fleft" style="padding-right: 1.5em;">
 <form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
 <input id="psubmit" type="submit" value="${createSubmitText }"/>
@@ -191,8 +200,8 @@ traditional ShareURLs with different options.</p>
 </form>
 </div>
 <c:if test="${empty ineligibleStatus }">
-<div class="publicshareform fleft" style="padding-left: 1.5em;">
-<form action="<c:url value="/rest/opt-out"/>" method="post" id="optout">
+<div class="publicshareform fleft">
+<form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
 <fieldset>
 <input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
 </fieldset>
@@ -203,6 +212,13 @@ traditional ShareURLs with different options.</p>
 </c:when>
 <c:otherwise>
 <p><span class="large">Your Public ShareURL is customizable</span>, use the link below to change how much of your calendar data is displayed.</p>
+<div class="publicshareform">
+<form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
+<fieldset>
+<input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
+</fieldset>
+</form>
+</div>
 </c:otherwise>
 </c:choose>
 </div> <!-- end id=guessableInner -->
