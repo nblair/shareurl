@@ -30,9 +30,10 @@
 	<security:http entry-point-ref="authenticationFilterEntryPoint" use-expressions="true" >
 		<security:form-login login-processing-url="/mailplus_security_check" login-page="/login-choice.html" authentication-failure-url="/login-choice.html?login_error=1"/>
 
-		<security:intercept-url pattern="/generate" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 		<security:intercept-url pattern="/my-shares" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
-		<security:intercept-url pattern="/manage" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
+		<security:intercept-url pattern="/manage.html" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
+		<security:intercept-url pattern="/revoke.html" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
+		<security:intercept-url pattern="/rest/**" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 		<security:intercept-url pattern="/delegate-search.html" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 		<security:intercept-url pattern="/delegate-login.html" access="hasRole('ROLE_CALENDAR_ELIGIBLE')" />
 

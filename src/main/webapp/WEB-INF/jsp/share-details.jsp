@@ -295,7 +295,11 @@ To allow different access levels for different audiences, you can create multipl
 </div> <!-- end scAllCalendar -->
 
 <div id="revoke" class="margin3 padding1">
-<form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform">
+<c:url var="revokeUrl" value="revoke.html">
+<c:param name="id" value="${share.key }"/>
+</c:url>
+<%-- <form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform"> --%>
+<form:form action="${revokeUrl}" cssClass="revokeform" method="post">
 <input type="submit" class="revokebutton" value="Delete this ShareURL"/>
 </form:form>
 </div>

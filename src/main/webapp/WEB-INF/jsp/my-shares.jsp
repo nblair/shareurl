@@ -62,7 +62,7 @@ function refreshMyShares(fadeIn) {
 						for(var i = 0; i < data.shares.length; i++) {
 							var share = data.shares[i];
 							if(share.freeBusyOnly) {
-								var liText = '<li class="share"><a title="View Details and/or Edit Privacy Options for ' + share.key +'" href="manage?id=' + share.key + '"><span class="key large">Edit Privacy Options for ' + share.key;
+								var liText = '<li class="share"><a title="View Details and/or Edit Privacy Options for ' + share.key +'" href="manage.html?id=' + share.key + '"><span class="key large">Edit Privacy Options for ' + share.key;
 								if(share.guessable) {
 									liText += ' (Public ShareURL)';
 								} else if(share.label) {
@@ -81,7 +81,7 @@ function refreshMyShares(fadeIn) {
 									details += ', Include Participants';
 								}
 								details += '.';
-								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key + '" href="manage?id=' + share.key + '">';
+								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key + '" href="manage.html?id=' + share.key + '">';
 							    liText += '<span class="key large">Edit Options for ' + share.key;
 							    if(share.guessable) {
                                     liText += ' (Public ShareURL)';
@@ -96,7 +96,7 @@ function refreshMyShares(fadeIn) {
 									details += ', Include Participants';
 								}
 								details += '.';
-								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage?id=' + share.key + '">';
+								var liText = '<li class="share"><a title="View Details and/or Manage ' + share.key +'" href="manage.html?id=' + share.key + '">';
 								liText += '<span class="key large">Edit Privacy Settings for ' + share.key;
 								if(share.guessable) {
                                     liText += ' (Public ShareURL)';
@@ -215,7 +215,7 @@ traditional ShareURLs with different options.</p>
 <c:if test="${not empty shares}">
 <ul>
 <c:forEach items="${shares}" var="share">
-<c:url var="manageUrl" value="manage">
+<c:url var="manageUrl" value="manage.html">
 <c:param name="id" value="${share.key}"/>
 </c:url>
 <c:choose>

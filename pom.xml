@@ -26,9 +26,9 @@
 			</snapshots>
 		</repository>
 		<repository>
-        	<id>code.doit-public-releases</id>
-            <url>https://code.doit.wisc.edu/maven/content/repositories/public-releases/</url>
-        </repository>
+			<id>code.doit-public-releases</id>
+			<url>https://code.doit.wisc.edu/maven/content/repositories/public-releases/</url>
+		</repository>
 	</repositories>
 
 	<properties>

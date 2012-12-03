@@ -42,8 +42,6 @@
         <url-pattern>/search</url-pattern>
         <!-- landing post-login -->
         <url-pattern>/my-shares</url-pattern>
-        <!-- webflow to manage a share -->
-        <url-pattern>/manage</url-pattern>
         <!-- parent path for shareurl management REST API -->
 		<url-pattern>/rest/*</url-pattern>
 		<!-- login controllers -->

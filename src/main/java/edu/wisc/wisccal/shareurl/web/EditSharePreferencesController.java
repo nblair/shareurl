@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.Location;
@@ -42,6 +44,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.support.WebContentGenerator;
 
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
@@ -60,8 +63,9 @@ import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
  * @author Nicholas Blair
  */
 @Controller
-@RequestMapping("/rest")
-public class EditSharePreferencesController {
+public class EditSharePreferencesController extends WebContentGenerator {
+
+	private static final String ON = "on";
 
 	private static final String JSON_VIEW = "jsonView";
 
@@ -83,7 +87,52 @@ public class EditSharePreferencesController {
 	public void setShareDao(IShareDao shareDao) {
 		this.shareDao = shareDao;
 	}
-
+	/**
+	 * 
+	 * @param shareKey
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/manage.html") 
+	public String display(@RequestParam(required=false, value="id") String shareKey, ModelMap model, HttpServletResponse response) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling shareDetails request for " + activeAccount);
+		}
+		if(StringUtils.isBlank(shareKey)) {
+			return "input-missing";
+		}
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		if(candidate != null) {
+			model.addAttribute("share", candidate);
+			preventCaching(response);
+			return "share-details";
+		}
+		
+		return "redirect:/error-404.jsp";
+	}
+	/**
+	 * 
+	 * @param shareKey
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/revoke.html", method=RequestMethod.POST) 
+	public String revoke(@RequestParam(value="id") String shareKey, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling shareDetails request for " + activeAccount);
+		}
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		if(candidate != null) {	
+			shareDao.revokeShare(candidate);
+		}
+		return "redirect:/my-shares";
+	}
+	
+	
 	/**
 	 * Get details for the share identified by shareKey, if and only if
 	 * the share is owned by the current authenticated user.
@@ -92,7 +141,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/shareDetails", method=RequestMethod.GET)
+	@RequestMapping(value="/rest/shareDetails", method=RequestMethod.GET)
 	public String getShareDetails(@RequestParam String shareKey, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -112,7 +161,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/toac", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/toac", method=RequestMethod.POST)
 	public String toAllCalendar(@RequestParam String shareKey, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -135,7 +184,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/tofb", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/tofb", method=RequestMethod.POST)
 	public String toFreeBusy(@RequestParam String shareKey, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -163,7 +212,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/includeP", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/includeP", method=RequestMethod.POST)
 	public String includeParticipants(@RequestParam String shareKey, @RequestParam(required=false) String includeParticipants, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -175,10 +224,10 @@ public class EditSharePreferencesController {
 			return JSON_VIEW;
 		}
 		
-		if("on".equalsIgnoreCase(includeParticipants) && !candidate.isIncludeParticipants()) {
+		if(ON.equalsIgnoreCase(includeParticipants) && !candidate.isIncludeParticipants()) {
 			candidate = shareDao.addSharePreference(candidate, new IncludeParticipantsPreference(true));
 			model.addAttribute("share", candidate);
-		} else if (!"on".equalsIgnoreCase(includeParticipants) && candidate.isIncludeParticipants()) {
+		} else if (!ON.equalsIgnoreCase(includeParticipants) && candidate.isIncludeParticipants()) {
 			candidate = shareDao.removeSharePreference(candidate, new IncludeParticipantsPreference(true));
 			model.addAttribute("share", candidate);
 		}
@@ -194,7 +243,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/addPrivacyFilter", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/addPrivacyFilter", method=RequestMethod.POST)
 	public String addPrivacyFilter(@RequestParam String shareKey, @RequestParam(required=false) String includePublic, 
 			@RequestParam(required=false) String includeConfidential, @RequestParam(required=false) String includePrivate, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -255,31 +304,6 @@ public class EditSharePreferencesController {
 	}
 	
 	/**
-	 * 
-	 * @param share
-	 * @param preference
-	 * @return true if adding the {@link ISharePreference} would result in the share having all 3 values for CLASS property.
-	 */
-	protected boolean newPrivacyFilterWouldCompleteTheSet(Share share, ISharePreference preference) {
-		Set<ISharePreference> classPrefs = share.getSharePreferences().getPreferencesByType(AccessClassificationMatchPreference.CLASS_ATTRIBUTE);
-		if(classPrefs.size() != 2) {
-			return false;
-		}
-		
-		Set<String> currentValues = new HashSet<String>();
-		for(ISharePreference classPref : classPrefs) {
-			currentValues.add(classPref.getValue());
-		}
-		
-		currentValues.add(preference.getValue());
-		
-		if(currentValues.equals(new HashSet<String>(allowedPrivacyFilterValues))) {
-			return true;
-		}
-		
-		return false;
-	}
-	/**
 	 * Add a "content" filter
 	 * 
 	 * @see PropertyMatchPreference
@@ -289,7 +313,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/addContentFilter", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/addContentFilter", method=RequestMethod.POST)
 	public String addContentFilter(@RequestParam String shareKey, @RequestParam String propertyName, @RequestParam String propertyValue, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -316,7 +340,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return the json view
 	 */
-	@RequestMapping(value="/removeContentFilter", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/removeContentFilter", method=RequestMethod.POST)
 	public String removeContentFilter(@RequestParam String shareKey, @RequestParam String propertyName, @RequestParam String propertyValue, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -343,7 +367,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(value="/resetFilters", method=RequestMethod.POST)
+	@RequestMapping(value="/rest/resetFilters", method=RequestMethod.POST)
 	public String resetContentFilters(@RequestParam String shareKey, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -374,7 +398,7 @@ public class EditSharePreferencesController {
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(value="/set-label",method=RequestMethod.POST) 
+	@RequestMapping(value="/rest/set-label",method=RequestMethod.POST) 
 	public String setLabel(@RequestParam String shareKey, @RequestParam String label, ModelMap model) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
@@ -447,6 +471,6 @@ public class EditSharePreferencesController {
 	 * @return
 	 */
 	boolean checkboxParameterToBoolean(String value) {
-		return "on".equalsIgnoreCase(value);
+		return ON.equalsIgnoreCase(value);
 	}
 }
