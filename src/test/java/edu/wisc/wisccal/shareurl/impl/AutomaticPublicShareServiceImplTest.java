@@ -41,11 +41,11 @@ public class AutomaticPublicShareServiceImplTest {
 		AutomaticPublicShareServiceImpl service = new AutomaticPublicShareServiceImpl();
 		ICalendarAccount account = mock(ICalendarAccount.class);
 		when(account.getCalendarUniqueId()).thenReturn("uniqueid1");
-		when(account.getEmailAddress()).thenReturn("bbadger@wisc.edu");
+		when(account.getEmailAddress()).thenReturn("bbadger@resources.wisc.edu");
 		when(account.isEligible()).thenReturn(true);
 		
 		ICalendarAccountDao calendarAccountDao = mock(ICalendarAccountDao.class);
-		when(calendarAccountDao.getCalendarAccount(service.getMailAttributeName(), "bbadger@wisc.edu")).thenReturn(account);
+		when(calendarAccountDao.getCalendarAccount(service.getMailAttributeName(), "bbadger@resources.wisc.edu")).thenReturn(account);
 		
 		OptOutDao optOutDao = mock(OptOutDao.class);
 		when(optOutDao.isOptOut(account)).thenReturn(false);
@@ -53,13 +53,11 @@ public class AutomaticPublicShareServiceImplTest {
 		service.setCalendarAccountDao(calendarAccountDao);
 		service.setOptOutDao(optOutDao);
 		
-		try {
-			service.getAutomaticPublicShare("bbadger@wisc.edu");
-			Assert.fail("expected IllegalStateException for mock that doesn't implement HasDistinguishedName");
-		} catch(IllegalStateException e) {
-			// success
-		}
-		
+		Share share = service.getAutomaticPublicShare("bbadger@resources.wisc.edu");
+		Assert.assertNotNull("expected not null for mock that doesn't implement HasDistinguishedName (resource)", share);
+		Assert.assertTrue(share.isFreeBusyOnly());
+		Assert.assertEquals("bbadger@resources.wisc.edu", share.getKey());
+		Assert.assertFalse(share.isRevocable());
 	}
 	/**
 	 * Simulate {@link AutomaticPublicShareServiceImpl#getAutomaticPublicShare(String)} for an eligible account.

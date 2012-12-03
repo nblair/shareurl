@@ -302,7 +302,14 @@ AutomaticPublicShareService {
 				}
 				return false;
 			}
+		} else {
+			// there is an ICalendarAccount implementation that does not implement HasDistinguishedName
+			// IDelegateCalendarAccount, a.k.a "resources"
+			// we don't have to check resource accounts for FERPA holds
+			if(log.isDebugEnabled()) {
+				log.debug("skipping hasFerpaHold check for " + calendarAccount + " since it is not a HasDistinguishedName (it's likely a resource)");
+			}
+			return false;
 		}
-		throw new IllegalStateException(calendarAccount + " is not an instance of HasDistinguishedName");
 	}
 }
