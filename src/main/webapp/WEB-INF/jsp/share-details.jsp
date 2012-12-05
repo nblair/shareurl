@@ -92,6 +92,14 @@ $(function() {
 			$('.revokeform').submit();
 		}
 	});
+	$('.optoutform').submit(function(event) {
+		event.preventDefault();
+		var confirmed = confirm('Your Public ShareURL has been customized; if you opt out these customizations will be lost. Are you sure you want to opt-out?');
+		if(confirmed) {
+			$(this).unbind();
+			$(this).submit();
+		}
+	});
 	setupFormHandlers();
 	$("#datex").datepicker({ dateFormat: 'yy-mm-dd' });
 	$("#datey").datepicker({ dateFormat: 'yy-mm-dd' });
@@ -295,6 +303,15 @@ To allow different access levels for different audiences, you can create multipl
 </div> <!-- end scAllCalendar -->
 
 <div id="revoke" class="margin3 padding1">
+<c:choose>
+<c:when test="${share.guessable}">
+<form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
+<fieldset>
+<input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
+</fieldset>
+</form>
+</c:when>
+<c:otherwise>
 <c:url var="revokeUrl" value="revoke.html">
 <c:param name="id" value="${share.key }"/>
 </c:url>
@@ -302,6 +319,8 @@ To allow different access levels for different audiences, you can create multipl
 <form:form action="${revokeUrl}" cssClass="revokeform" method="post">
 <input type="submit" class="revokebutton" value="Delete this ShareURL"/>
 </form:form>
+</c:otherwise>
+</c:choose>
 </div>
 
 </div> <!-- end shareControls2 -->

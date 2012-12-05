@@ -164,11 +164,11 @@ function postCreateTraditional() {
 <div id="content" class="main col">
 <div id="controls" class="info">
 <p>
-<span class="large">Traditional ShareURLs</span> use a randomly generated string of letters and numbers to identify your account. 
-You can have several different traditional ShareURLs with different options.</p>
+<span class="large">Traditional ShareURLs</span> use a randomly generated string of letters and numbers to identify your account. You can create as many ShareURLs as you need, each with its own privacy settings. 
+This allows you to share different information with different people. Click the button below to create a new traditional ShareURL.</p>
 <form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
 <fieldset>
-<input id="tsubmit" type="submit" value="Create a new Traditional ShareURL"/>
+<input id="tsubmit" type="submit" value="Create a new ShareURL"/>
 </fieldset>
 </form>
 <hr/>
@@ -186,12 +186,12 @@ You can have several different traditional ShareURLs with different options.</p>
 </c:when>
 <c:when test="${not hasGuessable}">
 <c:set var="createSubmitText" value="Make my Public ShareURL customizable"/>
-<p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string. One has been automatically registered for you.</p>
-<c:if test="${!empty ineligibleStatus}">
+<p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.</p>
+<div class="fcontainer">
+<c:choose>
+<c:when test="${!empty ineligibleStatus}">
 <c:set var="createSubmitText" value="Enable my Public ShareURL"/>
 <p><strong>${ineligibleStatus.display}</strong></p>
-</c:if>
-<div class="fcontainer">
 <div class="publicshareform fleft" style="padding-right: 1.5em;">
 <form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
@@ -199,6 +199,15 @@ You can have several different traditional ShareURLs with different options.</p>
 </fieldset>
 </form>
 </div>
+</c:when>
+<c:otherwise>
+<p>A Public ShareURL has been automatically registered for you.</p>
+</c:otherwise>
+</c:choose>
+
+<%-- 
+
+--%>
 <c:if test="${empty ineligibleStatus }">
 <div class="publicshareform fleft">
 <form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">

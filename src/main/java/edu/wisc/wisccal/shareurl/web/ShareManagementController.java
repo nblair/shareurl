@@ -77,10 +77,8 @@ public class ShareManagementController {
 		if(log.isDebugEnabled()) {
 			log.debug("handling createPublic request for " + activeAccount);
 		}
-		SharePreferences preferences = new SharePreferences();
-		preferences.addPreference(new FreeBusyPreference());
 		try {
-			Share share = shareDao.generateGuessableShare(activeAccount, preferences);
+			Share share = shareDao.generateGuessableShare(activeAccount);
 			model.addAttribute("share", share);
 			model.addAttribute("success", true);
 		} catch (GuessableShareAlreadyExistsException e) {

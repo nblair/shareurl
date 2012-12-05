@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareDao;
+import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -106,7 +107,16 @@ IShareDao {
 			return storeNewShare(key, ownerUniqueId, preferences);
 		}
 	}
-
+	/* (non-Javadoc)
+	 * @see edu.wisc.wisccal.shareurl.IShareDao#generateGuessableShare(org.jasig.schedassist.model.ICalendarAccount)
+	 */
+	@Override
+	public Share generateGuessableShare(ICalendarAccount account)
+			throws GuessableShareAlreadyExistsException {
+		SharePreferences defaultPrefs = new SharePreferences();
+		defaultPrefs.addPreference(new FreeBusyPreference());
+		return generateGuessableShare(account, defaultPrefs);
+	}
 	/**
 	 * Insert a new record in the shares table, and persist
 	 * the {@link SharePreferences}

@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.jasig.schedassist.model.ICalendarAccount;
 
+import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -42,6 +43,15 @@ public interface IShareDao {
 	 */
 	Share generateNewShare(ICalendarAccount account, SharePreferences preferences);
 	
+	/**
+	 * Create a new "guessable" {@link Share} for the specified {@link ICalendarAccount}.
+	 * Provides a default set of {@link SharePreferences} - {@link FreeBusyPreference} should
+	 * be the only one by default.
+	 * 
+	 * @param account
+	 * @return the new {@link Share}
+	 */
+	Share generateGuessableShare(ICalendarAccount account) throws GuessableShareAlreadyExistsException;
 	/**
 	 * Create a new "guessable" {@link Share} for the specified {@link ICalendarAccount}
 	 * and {@link SharePreferences}.

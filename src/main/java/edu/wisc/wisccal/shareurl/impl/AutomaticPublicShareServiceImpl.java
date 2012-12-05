@@ -28,6 +28,7 @@ import edu.wisc.wisccal.shareurl.AutomaticPublicShareEligibilityStatus;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
+import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.NonRevocablePreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 
@@ -176,6 +177,7 @@ AutomaticPublicShareService {
 			share.setOwnerCalendarUniqueId(calendarAccount.getCalendarUniqueId());
 			share.setValid(true);
 			share.getSharePreferences().addPreference(new FreeBusyPreference());
+			share.getSharePreferences().addPreference(new GuessableSharePreference());
 			// mark to prevent revokeShare from working
 			share.getSharePreferences().addPreference(new NonRevocablePreference());
 			return share;

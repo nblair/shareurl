@@ -46,6 +46,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.WebContentGenerator;
 
+import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
+import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
@@ -74,6 +76,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	private final List<String> allowedContentFilterPropertyNames = Collections.unmodifiableList(Arrays.asList(new String[] { Location.LOCATION, Summary.SUMMARY, Description.DESCRIPTION }));
 	private final List<String> allowedPrivacyFilterValues = Collections.unmodifiableList(Arrays.asList(new String[] { Clazz.PRIVATE.getValue(), Clazz.CONFIDENTIAL.getValue(), Clazz.PUBLIC.getValue()} ));
 	private IShareDao shareDao;
+	private AutomaticPublicShareService automaticPublicShareService;
 	/**
 	 * @return the shareDao
 	 */
@@ -86,6 +89,20 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	@Autowired
 	public void setShareDao(IShareDao shareDao) {
 		this.shareDao = shareDao;
+	}
+	/**
+	 * @return the automaticPublicShareService
+	 */
+	public AutomaticPublicShareService getAutomaticPublicShareService() {
+		return automaticPublicShareService;
+	}
+	/**
+	 * @param automaticPublicShareService the automaticPublicShareService to set
+	 */
+	@Autowired
+	public void setAutomaticPublicShareService(
+			AutomaticPublicShareService automaticPublicShareService) {
+		this.automaticPublicShareService = automaticPublicShareService;
 	}
 	/**
 	 * 
@@ -126,7 +143,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 			log.debug("handling shareDetails request for " + activeAccount);
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
-		if(candidate != null) {	
+		if(candidate != null && candidate.isRevocable()) {	
 			shareDao.revokeShare(candidate);
 		}
 		return "redirect:/my-shares";
@@ -160,9 +177,10 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	 * @param shareKey
 	 * @param model
 	 * @return the json view
+	 * @throws GuessableShareAlreadyExistsException 
 	 */
 	@RequestMapping(value="/rest/toac", method=RequestMethod.POST)
-	public String toAllCalendar(@RequestParam String shareKey, ModelMap model) {
+	public String toAllCalendar(@RequestParam String shareKey, ModelMap model) throws GuessableShareAlreadyExistsException {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
@@ -170,6 +188,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null && candidate.isFreeBusyOnly()) {
+			candidate = justInTimeReplace(candidate, activeAccount);
 			ISharePreference freeBusyPref = candidate.getSharePreferences().getPreferenceByType(FreeBusyPreference.FREE_BUSY);
 			candidate = shareDao.removeSharePreference(candidate, freeBusyPref);
 			model.addAttribute("share", candidate);
@@ -242,10 +261,11 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	 * @param privacyValue
 	 * @param model
 	 * @return the json view
+	 * @throws GuessableShareAlreadyExistsException 
 	 */
 	@RequestMapping(value="/rest/addPrivacyFilter", method=RequestMethod.POST)
 	public String addPrivacyFilter(@RequestParam String shareKey, @RequestParam(required=false) String includePublic, 
-			@RequestParam(required=false) String includeConfidential, @RequestParam(required=false) String includePrivate, ModelMap model) {
+			@RequestParam(required=false) String includeConfidential, @RequestParam(required=false) String includePrivate, ModelMap model) throws GuessableShareAlreadyExistsException {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
@@ -461,10 +481,33 @@ public class EditSharePreferencesController extends WebContentGenerator {
 				return s;
 			}
 		}
+		Share publicShare = automaticPublicShareService.getAutomaticPublicShare(activeAccount.getEmailAddress());
+		if(publicShare != null && publicShare.getKey().equals(shareKey)) {
+			return publicShare;
+		}
 		
 		return null;
 	}
 
+	/**
+	 * If the share in question {@link Share#isGuessable()} and has {@link Share#isRevocable()} equal to false, 
+	 * call the shareDao and generate the guessable and return it.
+	 * 
+	 * @param share
+	 * @param account 
+	 * @return
+	 * @throws GuessableShareAlreadyExistsException 
+	 */
+	protected Share justInTimeReplace(Share share, ICalendarAccount account) throws GuessableShareAlreadyExistsException {
+		if(share.isGuessable() && !share.isRevocable()) {
+			if(log.isDebugEnabled()) {
+				log.debug("calling just-in-time replace for " + share);
+			}
+			return shareDao.generateGuessableShare(account);
+		}
+		
+		return share;
+	}
 	/**
 	 * 
 	 * @param value

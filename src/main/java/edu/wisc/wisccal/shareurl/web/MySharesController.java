@@ -1,24 +1,22 @@
 /*******************************************************************************
-*  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*******************************************************************************/
+ *  Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *******************************************************************************/
 package edu.wisc.wisccal.shareurl.web;
 
-import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -29,7 +27,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collections;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareEligibilityStatus;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
@@ -72,7 +70,7 @@ public class MySharesController  {
 	 * @return
 	 */
 	@RequestMapping("/my-shares")
-	public String showView(ModelMap model, @RequestParam(required=false, defaultValue="") String format) {
+	public String showView(ModelMap model, @RequestParam(required=false, defaultValue="") String format, @RequestParam(required=false, value="ineligible") AutomaticPublicShareEligibilityStatus eligibleOverride) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(LOG.isDebugEnabled()) {
@@ -80,28 +78,40 @@ public class MySharesController  {
 		}
 		model.put("optedOut", automaticPublicShareService.hasOptedOut(activeAccount));
 		AutomaticPublicShareEligibilityStatus eligibilityStatus = automaticPublicShareService.getEligibilityStatus(activeAccount);
-		if(eligibilityStatus.isIneligibleFromExternalSource()) {
-			model.put("ineligibleStatus", eligibilityStatus);
+		if(eligibleOverride != null) {
+			model.put("ineligibleStatus", eligibleOverride);
+		} else {
+			
+			if(eligibilityStatus.isIneligibleFromExternalSource()) {
+				model.put("ineligibleStatus", eligibilityStatus);
+			}
 		}
 		List<Share> shares = shareDao.retrieveByOwner(activeAccount);
-		Collections.sort(shares, new Comparator<Share>() {
-			@Override
-			public int compare(Share o1, Share o2) {
-				return new CompareToBuilder().append(!o1.isGuessable(), !o2.isGuessable()).append(o1.getKey(), o2.getKey()).toComparison();
-			}
-		});
-		boolean activeIsDelegate = currentUser.isDelegate();
-		model.put("activeIsDelegate", activeIsDelegate);
-		model.put("shares", shares);
+		boolean hasGuessable = false;
+		boolean guessableModified = false;
 		for(Share share: shares) {
 			if(share.isGuessable()) {
-				model.put("hasGuessable", true);
+				hasGuessable = true;
 				if(!share.isFreeBusyOnly()) {
-					model.put("guessableModified", true);
+					guessableModified = true;
 				}
 				break;
 			}
 		}
+		model.put("hasGuessable", hasGuessable);
+		model.put("guessableModified", guessableModified);
+		if(!hasGuessable && !guessableModified && eligibilityStatus.equals(AutomaticPublicShareEligibilityStatus.ELIGIBLE)) {
+			// add the person's public share to the list of shares
+			Share autoPublic = automaticPublicShareService.getAutomaticPublicShare(activeAccount.getEmailAddress());
+			if(autoPublic != null) {
+				shares.add(autoPublic);
+			}
+		}
+		Collections.sort(shares, new MySharesDisplayComparator());
+		model.put("shares", shares);
+		
+		boolean activeIsDelegate = currentUser.isDelegate();
+		model.put("activeIsDelegate", activeIsDelegate);
 		
 		if("json".equals(format)) {
 			return "jsonView";
