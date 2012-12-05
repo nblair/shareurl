@@ -282,9 +282,9 @@ This allows you to share different information with different people. Click the 
 <div class="alert" id="footnotewarning">
 <p>
 <strong>Security note</strong><br/>
-The intent of this WiscCal feature is to allow you to share your WiscCal calendar data publicly.
+The intent of this WiscCal feature is to allow you to share your WiscCal calendar data in a manner that does not require authentication.
 All information that you store in WiscCal, or that other faculty, staff, or students submit to your calendar, 
-will be viewable by any external user. The University of Wisconsin-Madison assumes no responsibility for how you 
+may be viewable by any external user. The University of Wisconsin-Madison assumes no responsibility for how you 
 share this information or how it is used.
 </p>
 </div>
