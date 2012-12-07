@@ -123,6 +123,8 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null) {
 			model.addAttribute("share", candidate);
+			// also grab eligibility
+			model.addAttribute("ineligibleStatus", automaticPublicShareService.getEligibilityStatus(activeAccount));
 			preventCaching(response);
 			return "share-details";
 		}

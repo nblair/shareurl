@@ -131,7 +131,7 @@ function postCreatePublic() {
 				if(data.success) {
 					refreshMyShares(true);
 					$('#guessableInner').empty();
-					$('<p><span class="large">Your Public ShareURL is now customizable</span>, use the link below to change how much of your calendar data is displayed</p>')
+					$('<p><span class="large">Your Public ShareURL is now enabled</span>, use the link below to change how much of your calendar data is displayed</p>')
 						.appendTo('#guessableInner').fadeIn();
 				} else {
 					alert('failed to create public share: ' + data.message);
@@ -185,17 +185,26 @@ This allows you to share different information with different people. Click the 
 </div>
 </c:when>
 <c:when test="${not hasGuessable}">
-<c:set var="createSubmitText" value="Make my Public ShareURL customizable"/>
-<p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.</p>
+
+<p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.
+Most WiscCal accounts are automatically assigned a Public ShareURL; <a target="_new_help" href="https://helpdesk.wisc.edu/wisccal/page.php?id=27557">see the documentation to learn who may be excluded</a>.</p>
 <div class="fcontainer">
 <c:choose>
 <c:when test="${!empty ineligibleStatus}">
-<c:set var="createSubmitText" value="Enable my Public ShareURL"/>
-<p><strong>${ineligibleStatus.display}</strong></p>
+
+<c:choose>
+<c:when test="${ineligibleStatus eq 'CALENDAR_UNSEARCHABLE'}">
+<p><strong>A Public ShareURL has not been enabled for your account because it has been <a target="_new_help" href="https://helpdesk.wisc.edu/wisccal/page.php?id=24383">hidden from 'search by CalDAV discovery.'</a></strong></p>
+</c:when>
+<c:when test="${ineligibleStatus eq 'HAS_FERPA_HOLD'}">
+<p><strong>A Public ShareURL has not been created for your account because you have requested privacy protection for your email address via FERPA.</strong></p>
+</c:when>
+</c:choose>
+
 <div class="publicshareform fleft" style="padding-right: 1.5em;">
 <form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
 <fieldset>
-<input id="psubmit" type="submit" value="${createSubmitText }"/>
+<input id="psubmit" type="submit" value="Create a Public ShareURL"/>
 </fieldset>
 </form>
 </div>
@@ -205,9 +214,6 @@ This allows you to share different information with different people. Click the 
 </c:otherwise>
 </c:choose>
 
-<%-- 
-
---%>
 <c:if test="${empty ineligibleStatus }">
 <div class="publicshareform fleft">
 <form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
@@ -220,7 +226,9 @@ This allows you to share different information with different people. Click the 
 </div>
 </c:when>
 <c:otherwise>
-<p><span class="large">Your Public ShareURL is customizable</span>, use the link below to change how much of your calendar data is displayed.</p>
+<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>
+
+<c:if test="${not ineligibleStatus.ineligibleFromExternalSource }">
 <div class="publicshareform">
 <form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
 <fieldset>
@@ -228,6 +236,8 @@ This allows you to share different information with different people. Click the 
 </fieldset>
 </form>
 </div>
+</c:if>
+
 </c:otherwise>
 </c:choose>
 </div> <!-- end id=guessableInner -->

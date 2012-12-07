@@ -64,7 +64,14 @@
 
 <c:set var="revokeMessage" value="This ShareURL will be permanently deleted. Are you sure?"/>
 <c:if test="${share.guessable}">
+<c:choose>
+<c:when test="${ ineligibleStatus.ineligibleFromExternalSource}">
+<c:set var="revokeMessage" value="Are you sure you wish to disable your Public ShareURL?"/>
+</c:when>
+<c:otherwise>
 <c:set var="revokeMessage" value="Your Public ShareURL will revert to the default (Free/Busy Only). Are you sure?"/>
+</c:otherwise>
+</c:choose>
 </c:if>
 
 <rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
@@ -84,6 +91,7 @@ $(function() {
 		e.preventDefault();
 	    $("#includeParticipantsHelp").dialog( "open" );
 	});
+	
 	$('.revokeform').submit(function(e) {
 		e.preventDefault();
 		var confirmed = confirm('${revokeMessage}');
@@ -92,6 +100,7 @@ $(function() {
 			$('.revokeform').submit();
 		}
 	});
+	
 	$('.optoutform').submit(function(event) {
 		event.preventDefault();
 		var confirmed = confirm('Your Public ShareURL has been customized; if you opt out these customizations will be lost. Are you sure you want to opt-out?');
@@ -304,7 +313,7 @@ To allow different access levels for different audiences, you can create multipl
 
 <div id="revoke" class="margin3 padding1">
 <c:choose>
-<c:when test="${share.guessable}">
+<c:when test="${share.guessable && not ineligibleStatus.ineligibleFromExternalSource}">
 <form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
 <fieldset>
 <input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
@@ -315,7 +324,7 @@ To allow different access levels for different audiences, you can create multipl
 <c:url var="revokeUrl" value="revoke.html">
 <c:param name="id" value="${share.key }"/>
 </c:url>
-<%-- <form:form action="${flowExecutionUrl}&_eventId=revoke" cssClass="revokeform"> --%>
+
 <form:form action="${revokeUrl}" cssClass="revokeform" method="post">
 <input type="submit" class="revokebutton" value="Delete this ShareURL"/>
 </form:form>
