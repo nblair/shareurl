@@ -70,7 +70,7 @@ public class MySharesController  {
 	 * @return
 	 */
 	@RequestMapping("/my-shares")
-	public String showView(ModelMap model, @RequestParam(required=false, defaultValue="") String format, @RequestParam(required=false, value="ineligible") AutomaticPublicShareEligibilityStatus eligibleOverride) {
+	public String showView(ModelMap model, @RequestParam(required=false, defaultValue="") String format) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(LOG.isDebugEnabled()) {
@@ -78,13 +78,8 @@ public class MySharesController  {
 		}
 		model.put("optedOut", automaticPublicShareService.hasOptedOut(activeAccount));
 		AutomaticPublicShareEligibilityStatus eligibilityStatus = automaticPublicShareService.getEligibilityStatus(activeAccount);
-		if(eligibleOverride != null) {
-			model.put("ineligibleStatus", eligibleOverride);
-		} else {
-			
-			if(eligibilityStatus.isIneligibleFromExternalSource()) {
-				model.put("ineligibleStatus", eligibilityStatus);
-			}
+		if(eligibilityStatus.isIneligibleFromExternalSource()) {
+			model.put("ineligibleStatus", eligibilityStatus);
 		}
 		List<Share> shares = shareDao.retrieveByOwner(activeAccount);
 		boolean hasGuessable = false;
