@@ -103,7 +103,7 @@ $(function() {
 	
 	$('.optoutform').submit(function(event) {
 		event.preventDefault();
-		var confirmed = confirm('Your Public ShareURL has been customized; if you opt out these customizations will be lost. Are you sure you want to opt-out?');
+		var confirmed = confirm('Any customizations to your Public ShareURL will be lost if you opt out. Are you sure you want to opt out?');
 		if(confirmed) {
 			$(this).unbind();
 			$(this).submit();

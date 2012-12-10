@@ -187,7 +187,7 @@ This allows you to share different information with different people. Click the 
 <c:when test="${not hasGuessable}">
 
 <p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.
-Most WiscCal accounts are automatically assigned a Public ShareURL; <a target="_new_help" href="https://helpdesk.wisc.edu/wisccal/page.php?id=27557">see the documentation to learn who may be excluded</a>.</p>
+All accounts are automatically assigned a Public ShareURL - with a few <a target="_new_help" href="https://helpdesk.wisc.edu/wisccal/page.php?id=27557">exceptions</a>.</p>
 <div class="fcontainer">
 <c:choose>
 <c:when test="${!empty ineligibleStatus}">
