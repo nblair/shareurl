@@ -108,6 +108,10 @@ public class SharePreferences implements Serializable {
 	public Set<ISharePreference> getPropertyMatchPreferences() {
 		return getPreferencesByType(PropertyMatchPreference.PROPERTY_MATCH);
 	}
+	
+	public Set<ISharePreference> getCalendarMatchPreferences(){
+		return getPreferencesByType(CalendarMatchPreference.CALENDAR_MATCH);
+	}
 	/**
 	 * Never null, but potentially empty.
 	 * 
@@ -168,6 +172,16 @@ public class SharePreferences implements Serializable {
 		}
 		// preference not present, default is false
 		return false;
+	}
+	
+	/**
+	 * Short cut to determine if this share has a CALENDAR_MATCH preference.
+	 * 
+	 * @return true if a calendarMatch pref exists, false otherwise
+	 */
+	public boolean isCalendarSelect() {
+		Set<ISharePreference> prefs = getPreferencesByType(CalendarMatchPreference.CALENDAR_MATCH);
+		return (prefs.size() > 0);
 	}
 	/**
 	 * 
@@ -248,6 +262,22 @@ public class SharePreferences implements Serializable {
 		}
 		return results;
 	}
+	
+	
+	public List<ContentFilter> getCalendarFilters(){
+		Map<String, CalendarFilterImpl> map = new HashMap<String, CalendarFilterImpl>();
+		Set<ISharePreference> filterPreferences = getPreferencesByType(CalendarMatchPreference.CALENDAR_MATCH);
+		for(final ISharePreference pref: filterPreferences){
+			CalendarFilterImpl filter = map.get(pref.getKey());
+			if(filter == null){
+				map.put(pref.getKey(), new CalendarFilterImpl(pref));
+			}else{
+				filter.addMatchValue(pref.getValue());
+			}
+		}
+		return new ArrayList<ContentFilter>(map.values());
+	}
+	
 	/**
 	 * 
 	 * @return
@@ -308,6 +338,9 @@ public class SharePreferences implements Serializable {
 			return new PropertyMatchPreference(preferenceKey, preferenceValue);
 		} else if (IncludeParticipantsPreference.INCLUDE_PARTICIPANTS.equals(preferenceType)) {
 			return new IncludeParticipantsPreference(Boolean.parseBoolean(preferenceValue));
+		}else if( CalendarMatchPreference.CALENDAR_MATCH.equals(preferenceType)){
+			LOG.debug("new CalendarMatchPreference(preferenceKey="+preferenceKey+", preferenceValue="+preferenceValue+")");
+			return new CalendarMatchPreference(preferenceKey, preferenceValue);
 		} else {
 			LOG.warn("could not match any preference types for type=" + preferenceType + ", key=" + preferenceKey + ", value=" + preferenceValue + ", returning null");
 			return null;
@@ -340,6 +373,43 @@ public class SharePreferences implements Serializable {
 		 * (non-Javadoc)
 		 * @see edu.wisc.wisccal.shareurl.domain.ContentFilter#getMatchValue()
 		 */
+		@Override
+		public List<String> getMatchValues() {
+			return matchValues;
+		}
+		
+		/**
+		 * 
+		 * @param value
+		 * @return
+		 */
+		public void addMatchValue(String value) {
+			matchValues.add(value);
+		}
+	}
+	/**
+	 * 
+	 * @author ctcudd
+	 *
+	 */
+	static class CalendarFilterImpl implements ContentFilter {
+		private final ISharePreference preference;
+		private final List<String> matchValues = new ArrayList<String>();
+		
+		/**
+		 * 
+		 * @param preference
+		 */
+		CalendarFilterImpl(ISharePreference preference){
+			this.preference = preference;
+			addMatchValue(preference.getValue());
+		}
+		
+		@Override
+		public String getPropertyName() {
+			return preference.getKey();
+		}
+
 		@Override
 		public List<String> getMatchValues() {
 			return matchValues;

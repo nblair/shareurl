@@ -69,6 +69,9 @@ public class EventFilterImpl implements IEventFilter {
 	@Override
 	public Calendar filterEvents(final Calendar original, final SharePreferences preferences) {
 		final Set<ISharePreference> filterPreferences = preferences.getFilterPreferences();
+		
+		log.info("filterEvents prefrernces = "+ preferences.toString());
+		
 		if(filterPreferences.size() == 0 || preferences.isFreeBusyOnly()) {
 			// return original unfiltered calendar if no preferences exist or is freebusy only
 			return original;

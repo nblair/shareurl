@@ -5,7 +5,9 @@
 package edu.wisc.wisccal.shareurl.impl;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.naming.Name;
 
@@ -176,6 +178,13 @@ AutomaticPublicShareService {
 			share.setKey(emailAddress);
 			share.setOwnerCalendarUniqueId(calendarAccount.getCalendarUniqueId());
 			share.setValid(true);
+			Set<String> msolAddresses = new HashSet<String>();
+			String temp = calendarAccount.getAttributeValue("wiscedumsolupn");
+			log.debug("msoladdress found = "+temp);
+			msolAddresses.add(temp);
+			
+			share.setCalAddresses(msolAddresses);
+			
 			share.getSharePreferences().addPreference(new FreeBusyPreference());
 			share.getSharePreferences().addPreference(new GuessableSharePreference());
 			// mark to prevent revokeShare from working

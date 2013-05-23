@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
@@ -13,81 +12,102 @@
        					http://www.springframework.org/schema/util 
        					http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
-	<bean id="primaryPropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations" ref="propertyFileList"/>
-    </bean>
+	<import resource="classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml" />
+	
+	<bean id="primaryPropertyPlaceholderConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations" ref="propertyFileList" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+	</bean>
 	<util:list id="propertyFileList">
 		<value>classpath:integration.properties</value>
+<!-- 		<value>classpath:support.properties</value>  -->
 	</util:list>
-	
-	<context:annotation-config/>
-	
-	<context:component-scan base-package="edu.wisc.wisccal.shareurl"/>
-	<context:component-scan base-package="org.jasig.schedassist.impl.caldav"/>
-    
-    <bean id="caldavCalendarDataDao" class="edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl"/>
-    
+
+	<context:annotation-config />
+	<context:component-scan base-package="edu.wisc.wisccal.shareurl" />
+	<context:component-scan base-package="org.jasig.schedassist.impl.caldav" />
+
+	<bean id="caldavCalendarDataDao"
+		class="edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl" />
+
+
 	<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
 		<property name="jndiName" value="java:comp/env/jdbc/ShareUrlDatabase" />
 	</bean>
-	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-  		<property name="dataSource" ref="dataSource"/>
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 	<tx:annotation-driven transaction-manager="txManager" />
-	
+
 	<bean id="caldavHost" class="java.net.URI">
-		<constructor-arg><value>${caldav.host}</value></constructor-arg>
+		<constructor-arg>
+			<value>${caldav.host}</value>
+		</constructor-arg>
 	</bean>
-	<bean id="caldavDialect" class="org.jasig.schedassist.impl.caldav.oracle.OracleCommsCaldavDialectImpl">
-		<property name="accountHomePrefix" value="${caldav.dialect.accountHomePrefix}"/>
-		<property name="accountHomeSuffix" value="${caldav.dialect.accountHomeSuffix}"/>
-		<property name="caldavHost" ref="caldavHost"/>
+	<bean id="caldavDialect"
+		class="org.jasig.schedassist.impl.caldav.oracle.OracleCommsCaldavDialectImpl">
+		<property name="accountHomePrefix" value="${caldav.dialect.accountHomePrefix}" />
+		<property name="accountHomeSuffix" value="${caldav.dialect.accountHomeSuffix}" />
+		<property name="caldavHost" ref="caldavHost" />
 		<!-- eventUtils is not used, but need a reference -->
 		<property name="eventUtils">
 			<bean class="org.jasig.schedassist.model.DefaultEventUtilsImpl">
 				<constructor-arg>
-					<bean class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
+					<bean class="org.jasig.schedassist.NullAffiliationSourceImpl" />
 				</constructor-arg>
 			</bean>
 		</property>
 	</bean>
-	
-	<bean id="methodInterceptor" class="org.jasig.schedassist.impl.caldav.NoopHttpMethodInterceptorImpl"/>
-	<bean id="credentialsProviderFactory" class="org.jasig.schedassist.impl.caldav.oracle.OracleCommsCredentialsProviderFactoryImpl"/>
-	<!--	
-	<bean id="credentialsProviderFactory" class="org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderFactoryImpl"/>
-	-->
-	
+
+	<bean id="methodInterceptor"
+		class="org.jasig.schedassist.impl.caldav.NoopHttpMethodInterceptorImpl" />
+	<bean id="credentialsProviderFactory"
+		class="org.jasig.schedassist.impl.caldav.oracle.OracleCommsCredentialsProviderFactoryImpl" />
+	<!-- <bean id="credentialsProviderFactory" class="org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderFactoryImpl"/> -->
+
 	<bean id="caldavAdminAuthScope" class="org.apache.http.auth.AuthScope">
-    	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>
-    	<constructor-arg index="1"><value>${caldav.admin.authscope.port}</value></constructor-arg>
-    	<constructor-arg index="2"><value>${caldav.admin.authscope.realm}</value></constructor-arg>
-    	<constructor-arg index="3" value="BASIC"/>
-    </bean>
-    <bean id="httpHost" class="org.apache.http.HttpHost">
-    	<constructor-arg index="0" value="${caldav.admin.authscope.host}"/>
-    	<constructor-arg index="1" value="${caldav.admin.authscope.port}"/>
-    	<constructor-arg index="2" value="${caldav.host.scheme}"/>
-    </bean>
-    <bean id="schemeRegistry" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-   		<property name="staticMethod" value="org.jasig.schedassist.impl.caldav.SchemeRegistryProvider.createSchemeRegistry"/>
-   		<property name="arguments">
-   			<array>
-   				<value>${caldav.host.scheme}</value>
-   				<value>${caldav.admin.authscope.port}</value>
-   				<value>${caldav.host.ssl:false}</value>
-   			</array>
-   		</property>
- 	</bean>
-    <bean id="clientConnectionManager" class="org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager">
-    	<constructor-arg ref="schemeRegistry"/>
-    	<constructor-arg index="1" value="${caldav.http.connectionTimeout}"/>
-    	<constructor-arg index="2" value="MILLISECONDS"/>
-    	<property name="defaultMaxPerRoute" value="${caldav.http.defaultMaxConnectionsPerHost}"/>
-    	<property name="maxTotal" value="${caldav.http.maxTotalConnections}"/>
-    </bean>
-    <bean id="httpClient" class="org.apache.http.impl.client.DefaultHttpClient">
-    	<constructor-arg ref="clientConnectionManager"/>
-    </bean> 
-	
+		<constructor-arg index="0">
+			<value>${caldav.admin.authscope.host}</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value>${caldav.admin.authscope.port}</value>
+		</constructor-arg>
+		<constructor-arg index="2">
+			<value>${caldav.admin.authscope.realm}</value>
+		</constructor-arg>
+		<constructor-arg index="3" value="BASIC" />
+	</bean>
+	<bean id="httpHost" class="org.apache.http.HttpHost">
+		<constructor-arg index="0"
+			value="${caldav.admin.authscope.host}" />
+		<constructor-arg index="1"
+			value="${caldav.admin.authscope.port}" />
+		<constructor-arg index="2" value="${caldav.host.scheme}" />
+	</bean>
+	<bean id="schemeRegistry"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod"
+			value="org.jasig.schedassist.impl.caldav.SchemeRegistryProvider.createSchemeRegistry" />
+		<property name="arguments">
+			<array>
+				<value>${caldav.host.scheme}</value>
+				<value>${caldav.admin.authscope.port}</value>
+				<value>${caldav.host.ssl:false}</value>
+			</array>
+		</property>
+	</bean>
+	<bean id="clientConnectionManager"
+		class="org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager">
+		<constructor-arg ref="schemeRegistry" />
+		<constructor-arg index="1"
+			value="${caldav.http.connectionTimeout}" />
+		<constructor-arg index="2" value="MILLISECONDS" />
+		<property name="defaultMaxPerRoute" value="${caldav.http.defaultMaxConnectionsPerHost}" />
+		<property name="maxTotal" value="${caldav.http.maxTotalConnections}" />
+	</bean>
+	<bean id="httpClient" class="org.apache.http.impl.client.DefaultHttpClient">
+		<constructor-arg ref="clientConnectionManager" />
+	</bean>
 </beans>

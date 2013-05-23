@@ -86,7 +86,7 @@ public class FreeBusyReadURLController  {
 	 * @param calendarDataDao the calendarDataDao to set
 	 */
 	@Autowired
-	public void setCalendarDataDao(ICalendarDataDao calendarDataDao) {
+	public void setCalendarDataDao(@Qualifier("caldavCalendarDataDao") ICalendarDataDao calendarDataDao) {
 		this.calendarDataDao = calendarDataDao;
 	}
 	/**

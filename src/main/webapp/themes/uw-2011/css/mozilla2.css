@@ -1,24 +1,28 @@
-#nav1 > li, .submenu ul, #nav2_col, #content {
+#nav1>li,.submenu ul,#nav2_col,#content {
 	float: left;
 }
+
 #tools li {
 	display: -moz-inline-stack;
 }
 
-#nav1 > li {list-style: none;}
+#nav1>li {
+	list-style: none;
+}
 
 #connect {
 	margin-top: 0px;
 }
 
-
-#content:after, #col1:after, #connect:after, #footer_links:after {
-    content: ".";
-    display: block;
-    height: 0;
-    font-size: 0;
-    clear: both;
-    visibility: hidden;
+#content:after,#col1:after,#connect:after,#footer_links:after {
+	content: ".";
+	display: block;
+	height: 0;
+	font-size: 0;
+	clear: both;
+	visibility: hidden;
 }
 
-.submenu_more, #col1 {clear: both;}
+.submenu_more,#col1 {
+	clear: both;
+}

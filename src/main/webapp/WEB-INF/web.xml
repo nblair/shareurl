@@ -1,7 +1,6 @@
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    version="2.5">
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
 
 	<context-param>
 		<param-name>log4jConfigLocation</param-name>
@@ -27,22 +26,22 @@
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-	
+
 	<servlet>
-        <servlet-name>shareurl</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
+		<servlet-name>shareurl</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
 		<servlet-name>shareurl</servlet-name>
 		<url-pattern>*.html</url-pattern>
 		<url-pattern>/u/*</url-pattern>
-        <url-pattern>/freebusy/*</url-pattern>
-        <!-- search view -->
-        <url-pattern>/search</url-pattern>
-        <!-- landing post-login -->
-        <url-pattern>/my-shares</url-pattern>
-        <!-- parent path for shareurl management REST API -->
+		<url-pattern>/freebusy/*</url-pattern>
+		<!-- search view -->
+		<url-pattern>/search</url-pattern>
+		<!-- landing post-login -->
+		<url-pattern>/my-shares</url-pattern>
+		<!-- parent path for shareurl management REST API -->
 		<url-pattern>/rest/*</url-pattern>
 		<!-- login controllers -->
 		<url-pattern>/security_check</url-pattern>
@@ -79,15 +78,11 @@
 	<jsp-config>
 		<taglib>
 			<taglib-uri>/oevent</taglib-uri>
-			<taglib-location>
-				/WEB-INF/tld/oevent.tld
-			</taglib-location>
+			<taglib-location>/WEB-INF/tld/oevent.tld</taglib-location>
 		</taglib>
 		<taglib>
 			<taglib-uri>/viewhelper</taglib-uri>
-			<taglib-location>
-				/WEB-INF/tld/viewhelper.tld
-			</taglib-location>
+			<taglib-location>/WEB-INF/tld/viewhelper.tld</taglib-location>
 		</taglib>
 	</jsp-config>
 </web-app>

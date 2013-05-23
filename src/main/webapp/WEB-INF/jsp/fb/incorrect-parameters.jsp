@@ -13,19 +13,20 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 --%>
-<%@ include file="/WEB-INF/jsp/includes.jsp" %>
+<%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" type="text/css" href="<c:url value="/css/extras.css"/>" media="all"/>
+<link rel="stylesheet" type="text/css"
+	href="<c:url value="/css/extras.css"/>" media="all" />
 <title>Free Busy Parameter Format error</title>
 </head>
 <body>
-<p class="alert">
-<c:out value="${message}"/>
-</p>
-<!-- 
+	<p class="alert">
+		<c:out value="${message}" />
+	</p>
+	<!-- 
 
 this file has to be larger than 512 bytes, thanks-> http://support.microsoft.com/kb/q218155/
 

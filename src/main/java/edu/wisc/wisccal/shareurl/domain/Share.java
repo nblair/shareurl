@@ -16,11 +16,18 @@
 package edu.wisc.wisccal.shareurl.domain;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+
+import com.microsoft.exchange.types.FolderIdType;
 
 /**
  * Bean representing the mapping between a unique key
@@ -41,6 +48,13 @@ public class Share implements Serializable {
 	private SharePreferences sharePreferences = new SharePreferences();
 	private boolean valid = true;
 
+	private Set<String> calAddresses;
+	
+	private Map<String, String> msolCals;
+	private Map<String, String> wiscCals;
+	private Map<String, String> allCals;
+
+	
 	/**
 	 * @return the key
 	 */
@@ -103,6 +117,10 @@ public class Share implements Serializable {
 		this.sharePreferences = sharePreferences;
 	}
 
+	public boolean isCalendarSelect(){
+		return this.sharePreferences.isCalendarSelect();
+	}
+	
 	/**
 	 * @see SharePreferences#isFreeBusyOnly()
 	 * @return true if this share is a "Free Busy Only" share
@@ -176,6 +194,34 @@ public class Share implements Serializable {
 			.append("label", this.label)
 			.append("sharePreferences", sharePreferences)
 			.toString();
+	}
+	public Set getCalAddresses() {
+		return calAddresses;
+	}
+	public void setCalAddresses(Set calAddresses) {
+		this.calAddresses = calAddresses;
+	}
+
+	public Map<String, String> getMsolCals() {
+		return msolCals;
+	}
+	public void setMsolCals(Map<String, String> msolCals) {
+		this.msolCals = msolCals;
+	}
+	public Map<String, String> getWiscCals() {
+		return wiscCals;
+	}
+	public void setWiscCals(Map<String, String> wiscCals) {
+		this.wiscCals = wiscCals;
+	}
+	public Map<String, String> getAllCals() {
+		Map<String, String> c = new HashMap<String, String>();
+		c.putAll(getWiscCals());
+		c.putAll(getMsolCals());
+		return c;
+	}
+	public void setAllCals(Map<String, String> allCals) {
+		this.allCals = allCals;
 	}
 	
 }

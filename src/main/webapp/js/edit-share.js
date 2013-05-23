@@ -7,6 +7,8 @@ function applySubmitHandlerIfPresent(element, url, indicator, callback) {
 			event.preventDefault();
 			postAndRenderPreferences(url, element, indicator, callback);
 		});
+	}else{
+		alert("not found");
 	}
 };
 
@@ -40,17 +42,48 @@ function renderShareControls(share) {
 			$('#privateClass').attr('checked', 'checked');
 		}
 	}
+	
+	if(share.calendarSelect){
+		$('#csRadio').attr('checked','checked');
+		enableCalendarSelect();
+		disableCalendarDefault();
+	}else{
+		$('#cdRadio').attr('checked','checked');
+		enableCalendarDefault();
+		disableCalendarSelect();		
+	}
+	
+}
+
+function renderFilterCalendarPreferences(share, revokeIconPath, formAction, displayEmptySet) {
+	$('#calendarFilters').empty();
+	if(!share.freeBusyOnly) {
+		//if calendarMatch prefs exist
+		if(!$.isEmptyObject(share.sharePreferences.calendarMatchPreferences)) {
+			$.each(share.sharePreferences.calendarMatchPreferences, function(i, obj) {
+				$('<li><span class="removable">' + obj.displayName + '</span>&nbsp;<form class="removeCalendarFilter inlineblock" action="' + formAction + '" method="post"><fieldset><input type="hidden" name="calendarName" value="' + obj.key + '"/><input type="hidden" name="calendarId" value="' + obj.value + '"/></fieldset><img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></form></li>').appendTo('#calendarFilters');
+			});
+		} else if (displayEmptySet){
+			$('<li>No filters: all events returned.</li>').appendTo('#calendarFilters');
+		}
+		
+	}
 }
 function renderFilterPreferences(share, revokeIconPath, formAction, displayEmptySet) {
 	$('#contentFilters').empty();
+	
 	if(!share.freeBusyOnly) {
+		//if propertymatchprefs exist
 		if(!$.isEmptyObject(share.sharePreferences.propertyMatchPreferences)) {
+			
+			//iterate over propMatch prefs
 			$.each(share.sharePreferences.propertyMatchPreferences, function(i, obj) {
 				$('<li><span class="removable">' + obj.displayName + '</span>&nbsp;<form class="removeContentFilter inlineblock" action="' + formAction + '" method="post"><fieldset><input type="hidden" name="propertyName" value="' + obj.key + '"/><input type="hidden" name="propertyValue" value="' + obj.value + '"/></fieldset><img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></form></li>').appendTo('#contentFilters');
 			});
 		} else if (displayEmptySet){
 			$('<li>No filters: all events returned.</li>').appendTo('#contentFilters');
 		}
+		
 	} 
 	
 }
@@ -59,7 +92,39 @@ function resetPrivacyControls() {
 	$('#acRadio').attr('checked', '');
 	$('#scFreeBusyInner').removeClass('notselected');
 	$('#scAllCalendarInner').removeClass('notselected');
+	
+	//ctcudd
+	$('#csRadio').attr('checked', '');
+	$('#cdRadio').attr('checked', '');
+	$('#scCalDefaultInner').removeClass('notselected');
+	$('#scCalSelectInner').removeClass('notselected');
 }
+
+function enableCalendarDefault(){
+	//noop?
+}
+
+function disableCalendarDefault(){
+	$('#cdRadio').attr('checked', '');
+	$('#scCalDefaultInner').addClass('notselected');
+}
+function enableCalenarSelect(){
+	$('#calSelectFilters').attr('disabled', '');
+	$('.calSelectDDL').attr('disabled', '');
+	$('.calSelectButton').attr('disabled', '');
+}
+function disableCalendarSelect(){
+	$('#csRadio').attr('checked', '');
+	$('#scCalSelectInner').addClass('notselected');
+	
+	$('#calSelectFilters').attr('disabled', 'disabled');
+	$('.calSelectDDL').attr('disabled', 'disabled');
+	$('.calSelectButton').attr('disabled', 'disabled');
+}
+
+
+
+
 function enableFreeBusy() {
 	// noop?
 }

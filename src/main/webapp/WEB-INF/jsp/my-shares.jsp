@@ -13,25 +13,57 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 --%>
-<%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+<%@ include file="/WEB-INF/jsp/includes.jsp"%>
+<%@ taglib prefix="security"
+	uri="http://www.springframework.org/security/tags"%>
 <!DOCTYPE html>
 <html>
 <head>
-<%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
-<rs:resourceURL var="keyImg" value="/rs/famfamfam/silk/1.3/key.png"/>
+<%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
+<rs:resourceURL var="keyImg" value="/rs/famfamfam/silk/1.3/key.png" />
 <style type="text/css">
-.key { color:green;}
-.large { font-size:120%;}
-li.share { list-style-image: url(${keyImg});padding-bottom: 1em;}
-li.share a:hover{ text-decoration: underline;color:green;}
-.details { font-style:italic;}
-#footnotewarning { font-size:65%;margin: 0 3em 0 3em;}
-.fcontainer {overflow:hidden;width:100%;}
-.fleft {float:left;}
-.fright {float:right;}
+.key {
+	color: green;
+}
+
+.large {
+	font-size: 120%;
+}
+
+li.share {
+	list-style-image: url(${keyImg});
+	padding-bottom: 1em;
+}
+
+li.share a:hover {
+	text-decoration: underline;
+	color: green;
+}
+
+.details {
+	font-style: italic;
+}
+
+#footnotewarning {
+	font-size: 65%;
+	margin: 0 3em 0 3em;
+}
+
+.fcontainer {
+	overflow: hidden;
+	width: 100%;
+}
+
+.fleft {
+	float: left;
+}
+
+.fright {
+	float: right;
+}
 </style>
-<script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
+<script type="text/javascript"
+	src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(function() {
 	$("input[type=submit]").removeAttr("disabled");
@@ -158,146 +190,208 @@ function postCreateTraditional() {
 
 <body>
 
-<%@ include file="/WEB-INF/jsp/theme/body-start.jsp" %>
-<%@ include file="/WEB-INF/jsp/login-info.jsp" %>
+	<%@ include file="/WEB-INF/jsp/theme/body-start.jsp"%>
+	<%@ include file="/WEB-INF/jsp/login-info.jsp"%>
 
-<div id="content" class="main col">
-<div id="controls" class="info">
-<p>
-<span class="large">Traditional ShareURLs</span> use a randomly generated string of letters and numbers to identify your account. You can create as many ShareURLs as you need, each with its own privacy settings. 
-This allows you to share different information with different people. Click the button below to create a new traditional ShareURL.</p>
-<form action="<c:url value="/rest/create-traditional"/>" method="post" id="createtraditional">
-<fieldset>
-<input id="tsubmit" type="submit" value="Create a new ShareURL"/>
-</fieldset>
-</form>
-<hr/>
-<div id="guessableInner">
-<c:choose>
-<c:when test="${optedOut}">
-<p>You have opted not to have a <span class="large">Public ShareURL</span>.</p>
-<div class="publicshareform">
-<form action="<c:url value="/rest/opt-in"/>" method="post" id="optin">
-<fieldset>
-<input id="isubmit" type="submit" value="Opt back in to Public ShareURL"/>
-</fieldset>
-</form>
-</div>
-</c:when>
-<c:when test="${not hasGuessable}">
+	<div id="content" class="main col">
+		<div id="controls" class="info">
+			<p>
+				<span class="large">Traditional ShareURLs</span> use a randomly
+				generated string of letters and numbers to identify your account.
+				You can create as many ShareURLs as you need, each with its own
+				privacy settings. This allows you to share different information
+				with different people. Click the button below to create a new
+				traditional ShareURL.
+			</p>
+			<form action="<c:url value="/rest/create-traditional"/>"
+				method="post" id="createtraditional">
+				<fieldset>
+					<input id="tsubmit" type="submit" value="Create a new ShareURL" />
+				</fieldset>
+			</form>
+			<hr />
+			<div id="guessableInner">
+				<c:choose>
+					<c:when test="${optedOut}">
+						<p>
+							You have opted not to have a <span class="large">Public
+								ShareURL</span>.
+						</p>
+						<div class="publicshareform">
+							<form action="<c:url value="/rest/opt-in"/>" method="post"
+								id="optin">
+								<fieldset>
+									<input id="isubmit" type="submit"
+										value="Opt back in to Public ShareURL" />
+								</fieldset>
+							</form>
+						</div>
+					</c:when>
+					<c:when test="${not hasGuessable}">
 
-<p><span class="large">Public ShareURLs</span> work just like traditional ShareURLs, however the link contains your email address instead of a random alpha-numeric string.
-All accounts are automatically assigned a Public ShareURL - with a few <a target="_new_help" href="https://helpdesk.wisc.edu/wisccal/page.php?id=27557">exceptions</a>.</p>
-<div class="fcontainer">
-<c:choose>
-<c:when test="${!empty ineligibleStatus}">
+						<p>
+							<span class="large">Public ShareURLs</span> work just like
+							traditional ShareURLs, however the link contains your email
+							address instead of a random alpha-numeric string. All accounts
+							are automatically assigned a Public ShareURL - with a few <a
+								target="_new_help"
+								href="https://helpdesk.wisc.edu/wisccal/page.php?id=27557">exceptions</a>.
+						</p>
+						<div class="fcontainer">
+							<c:choose>
+								<c:when test="${!empty ineligibleStatus}">
 
-<c:choose>
-<c:when test="${ineligibleStatus eq 'CALENDAR_UNSEARCHABLE'}">
-<p><strong>A Public ShareURL has not been enabled for your account because it has been <a target="_new_help" href="https://helpdesk.wisc.edu/wisccal/page.php?id=24383">hidden from 'search by CalDAV discovery.'</a></strong></p>
-</c:when>
-<c:when test="${ineligibleStatus eq 'HAS_FERPA_HOLD'}">
-<p><strong>A Public ShareURL has not been created for your account because you have requested privacy protection for your email address via FERPA.</strong></p>
-</c:when>
-</c:choose>
+									<c:choose>
+										<c:when test="${ineligibleStatus eq 'CALENDAR_UNSEARCHABLE'}">
+											<p>
+												<strong>A Public ShareURL has not been enabled for
+													your account because it has been <a target="_new_help"
+													href="https://helpdesk.wisc.edu/wisccal/page.php?id=24383">hidden
+														from 'search by CalDAV discovery.'</a>
+												</strong>
+											</p>
+										</c:when>
+										<c:when test="${ineligibleStatus eq 'HAS_FERPA_HOLD'}">
+											<p>
+												<strong>A Public ShareURL has not been created for
+													your account because you have requested privacy protection
+													for your email address via FERPA.</strong>
+											</p>
+										</c:when>
+									</c:choose>
 
-<div class="publicshareform fleft" style="padding-right: 1.5em;">
-<form action="<c:url value="/rest/create-public"/>" method="post" id="createpublic">
-<fieldset>
-<input id="psubmit" type="submit" value="Create a Public ShareURL"/>
-</fieldset>
-</form>
-</div>
-</c:when>
-<c:otherwise>
-<p>A Public ShareURL has been automatically registered for you.</p>
-</c:otherwise>
-</c:choose>
+									<div class="publicshareform fleft"
+										style="padding-right: 1.5em;">
+										<form action="<c:url value="/rest/create-public"/>"
+											method="post" id="createpublic">
+											<fieldset>
+												<input id="psubmit" type="submit"
+													value="Create a Public ShareURL" />
+											</fieldset>
+										</form>
+									</div>
+								</c:when>
+								<c:otherwise>
+									<p>A Public ShareURL has been automatically registered for
+										you.</p>
+								</c:otherwise>
+							</c:choose>
 
-<c:if test="${empty ineligibleStatus }">
-<div class="publicshareform fleft">
-<form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
-<fieldset>
-<input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
-</fieldset>
-</form>
-</div>
-</c:if>
-</div>
-</c:when>
-<c:otherwise>
-<p><span class="large">Your Public ShareURL is enabled</span>, use the link below to change how much of your calendar data is displayed.</p>
+							<c:if test="${empty ineligibleStatus }">
+								<div class="publicshareform fleft">
+									<form action="<c:url value="/rest/opt-out"/>" method="post"
+										class="optoutform">
+										<fieldset>
+											<input id="osubmit" type="submit"
+												value="Opt out from Public ShareURL" />
+										</fieldset>
+									</form>
+								</div>
+							</c:if>
+						</div>
+					</c:when>
+					<c:otherwise>
+						<p>
+							<span class="large">Your Public ShareURL is enabled</span>, use
+							the link below to change how much of your calendar data is
+							displayed.
+						</p>
 
-<c:if test="${not ineligibleStatus.ineligibleFromExternalSource }">
-<div class="publicshareform">
-<form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
-<fieldset>
-<input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
-</fieldset>
-</form>
-</div>
-</c:if>
+						<c:if test="${not ineligibleStatus.ineligibleFromExternalSource }">
+							<div class="publicshareform">
+								<form action="<c:url value="/rest/opt-out"/>" method="post"
+									class="optoutform">
+									<fieldset>
+										<input id="osubmit" type="submit"
+											value="Opt out from Public ShareURL" />
+									</fieldset>
+								</form>
+							</div>
+						</c:if>
 
-</c:otherwise>
-</c:choose>
-</div> <!-- end id=guessableInner -->
+					</c:otherwise>
+				</c:choose>
+			</div>
+			<!-- end id=guessableInner -->
 
-</div> <!-- end id=controls -->
+		</div>
+		<!-- end id=controls -->
 
-<h2>My ShareURLs</h2>
-<div id="myshares">
- 
-<c:if test="${not empty shares}">
-<ul>
-<c:forEach items="${shares}" var="share">
-<c:url var="manageUrl" value="manage.html">
-<c:param name="id" value="${share.key}"/>
-</c:url>
-<c:choose>
-<c:when test="${share.guessable }">
-<c:set var="linkText" value="Edit Privacy Settings for ${share.key } (Public ShareURL)"/>
-</c:when>
-<c:otherwise>
-<c:set var="linkText" value="Edit Privacy Settings for ${share.key }"/>
-</c:otherwise>
-</c:choose>
-<c:choose>
-<c:when test="${share.freeBusyOnly == true}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}<c:if test="${not empty share.label}">&nbsp;<i>(${share.label})</i></c:if></span></a><br/><span class="details">Free Busy only.</span> 
-</li>
-</c:when>
-<c:otherwise>
-<c:choose>
-<c:when test="${share.eventFilterCount == 0}">
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}<c:if test="${not empty share.label}">&nbsp;<i>(${share.label})</i></c:if></span></a><br/><span class="details">All Calendar Data<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span> 
-</li>
-</c:when>
-<c:otherwise>
-<li class="share"><a title="View Details and/or Manage ${share.key}" href="${manageUrl}"><span class="key large">${linkText}<c:if test="${not empty share.label}">&nbsp;<i>(${share.label})</i></c:if></span></a><br/><span class="details">${share.sharePreferences.filterDisplay}<c:if test="${share.includeParticipants}">, Include Participants</c:if>.</span>
-</li>
-</c:otherwise>
-</c:choose>
-</c:otherwise>
-</c:choose>
-</c:forEach>
-</ul>
-</c:if>
+		<h2>My ShareURLs</h2>
+		<div id="myshares">
 
-</div>
+			<c:if test="${not empty shares}">
+				<ul>
+					<c:forEach items="${shares}" var="share">
+						<c:url var="manageUrl" value="manage.html">
+							<c:param name="id" value="${share.key}" />
+						</c:url>
+						<c:choose>
+							<c:when test="${share.guessable }">
+								<c:set var="linkText"
+									value="Edit Privacy Settings for ${share.key } (Public ShareURL)" />
+							</c:when>
+							<c:otherwise>
+								<c:set var="linkText"
+									value="Edit Privacy Settings for ${share.key }" />
+							</c:otherwise>
+						</c:choose>
+						<c:choose>
+							<c:when test="${share.freeBusyOnly == true}">
+								<li class="share"><a
+									title="View Details and/or Manage ${share.key}"
+									href="${manageUrl}"><span class="key large">${linkText}<c:if
+												test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
+											</c:if></span></a><br />
+								<span class="details">Free Busy only.</span></li>
+							</c:when>
+							<c:otherwise>
+								<c:choose>
+									<c:when test="${share.eventFilterCount == 0}">
+										<li class="share"><a
+											title="View Details and/or Manage ${share.key}"
+											href="${manageUrl}"><span class="key large">${linkText}<c:if
+														test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
+													</c:if></span></a><br />
+										<span class="details">All Calendar Data<c:if
+													test="${share.includeParticipants}">, Include Participants</c:if>.
+										</span></li>
+									</c:when>
+									<c:otherwise>
+										<li class="share"><a
+											title="View Details and/or Manage ${share.key}"
+											href="${manageUrl}"><span class="key large">${linkText}<c:if
+														test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
+													</c:if></span></a><br />
+										<span class="details">${share.sharePreferences.filterDisplay}<c:if
+													test="${share.includeParticipants}">, Include Participants</c:if>.
+										</span></li>
+									</c:otherwise>
+								</c:choose>
+							</c:otherwise>
+						</c:choose>
+					</c:forEach>
+				</ul>
+			</c:if>
+
+		</div>
 
 
 
 
-</div> <!-- content -->
-<div class="alert" id="footnotewarning">
-<p>
-<strong>Security note</strong><br/>
-The intent of this WiscCal feature is to allow you to share your WiscCal calendar data in a manner that does not require authentication.
-All information that you store in WiscCal, or that other faculty, staff, or students submit to your calendar, 
-may be viewable by any external user. The University of Wisconsin-Madison assumes no responsibility for how you 
-share this information or how it is used.
-</p>
-</div>
-<%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
+	</div>
+	<!-- content -->
+	<div class="alert" id="footnotewarning">
+		<p>
+			<strong>Security note</strong><br /> The intent of this WiscCal
+			feature is to allow you to share your WiscCal calendar data in a
+			manner that does not require authentication. All information that you
+			store in WiscCal, or that other faculty, staff, or students submit to
+			your calendar, may be viewable by any external user. The University
+			of Wisconsin-Madison assumes no responsibility for how you share this
+			information or how it is used.
+		</p>
+	</div>
+	<%@ include file="/WEB-INF/jsp/theme/body-end.jsp"%>
 </body>
 </html>

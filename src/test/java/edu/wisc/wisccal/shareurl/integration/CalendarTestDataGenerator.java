@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBContext;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.DateList;
@@ -49,7 +50,12 @@ import net.fortuna.ical4j.model.property.Uid;
 
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+//import com.microsoft.exchange.types.ConnectingSIDType;
 
 import edu.wisc.wisccal.shareurl.Tests;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
@@ -61,6 +67,9 @@ import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
  */
 public class CalendarTestDataGenerator {
 
+
+	
+	
 	private final String targetMonth = "201208";
 	private final String outputDirectoryBase = System.getProperty(
 			"edu.wisc.wisccal.shareurl.integration.CalendarTestDataGenerator.outputDirectory", 
@@ -283,4 +292,7 @@ public class CalendarTestDataGenerator {
 		event.getProperties().add(new Summary(summary));
 		return event;
 	}
+	
+
+	
 }

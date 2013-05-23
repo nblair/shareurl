@@ -1,4 +1,7 @@
-<%@ include file="/WEB-INF/jsp/includes.jsp" %><%@ page contentType="text/plain; charset=UTF-8"%><c:out escapeXml="false" value="${ical}"/><%-- 
+<%@ include file="/WEB-INF/jsp/includes.jsp"%><%@ page
+	contentType="text/plain; charset=UTF-8"%><c:out escapeXml="false"
+	value="${ical}" />
+<%-- 
   Copyright 2007-2010 The Board of Regents of the University of Wisconsin System.
 
   Licensed under the Apache License, Version 2.0 (the "License");

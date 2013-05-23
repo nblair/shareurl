@@ -19,63 +19,81 @@ body {
 	margin-right: 0px;
 	margin-left: 2px;
 }
+
 a {
-	font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, "sans serif";
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana,
+		"sans serif";
 	color: #990000;
 	text-decoration: none;
 }
-.shareform	{
+
+.shareform {
 	display: inline;
 }
-.warn	{
+
+.warn {
 	color: #990000;
 	font-weight: bold;
 }
-.highlight	{
+
+.highlight {
 	background-color: #DBDBDB;
 	border: gray 1px solid;
 	padding: 4px 0px 4px 12px;
 }
-.shareinfo	{
+
+.shareinfo {
 	color: green;
 	font-weight: bold;
 }
+
 .loginlink {
 	padding: 0px 10px 0px 0px;
 }
+
 .sharelink {
 	padding: 0px 0px 0px 10px;
 }
+
 .alert {
-	background: #fff6bf url(/ResourceServingWebapp/rs/famfamfam/silk/1.3/exclamation.png) center no-repeat;
+	background: #fff6bf
+		url(/ResourceServingWebapp/rs/famfamfam/silk/1.3/exclamation.png)
+		center no-repeat;
 	background-position: 15px 50%;
 	text-align: left;
 	padding: 5px 20px 5px 45px;
 	border-top: 2px solid #ffd324;
 	border-bottom: 2px solid #ffd324;
 }
+
 .info {
-	background: #f8fafc url(/ResourceServingWebapp/rs/famfamfam/silk/1.3/information.png) center no-repeat;
+	background: #f8fafc
+		url(/ResourceServingWebapp/rs/famfamfam/silk/1.3/information.png)
+		center no-repeat;
 	background-position: 15px 50%;
 	text-align: left;
 	padding: 5px 20px 5px 45px;
 	border-top: 2px solid #b5d4fe;
 	border-bottom: 2px solid #b5d4fe;
 }
+
 #navigation {
 	font-size: 10pt;
 	font-weight: bold;
 	padding-bottom: 2px;
 }
+
 #content {
 	position: absolute;
 	width: 240px;
 }
+
 #error {
 	font-size: 10pt;
 	font-weight: bold;
 	padding: 4px;
 }
+
 #timeHeader {
 	font-size: 10pt;
 	/* white */
@@ -86,18 +104,22 @@ a {
 	word-spacing: 8px;
 	font-weight: bold;
 }
+
 #timeHeader a {
 	color: #FFFFFF;
 	text-decoration: underline;
 }
+
 #timeHeader a.forward {
 	text-align: right;
 	font-size: 12pt;
 }
+
 #timeHeader a.reverse {
 	text-align: left;
 	font-size: 12pt;
 }
+
 #calendarEvents {
 	font-size: 8pt;
 	/* black */
@@ -106,9 +128,11 @@ a {
 	background-color: #EEEEFF;
 	padding: 2px;
 }
+
 #calendarEvents a {
 	text-decoration: underline;
 }
+
 #tasks {
 	font-size: 8pt;
 	/* black */
@@ -117,22 +141,27 @@ a {
 	background-color: #DDDDEE;
 	padding: 2px;
 }
-#share	{
+
+#share {
 	font: 'Lucida Grande', Verdana, Lucida, Arial, Helvetica, sans-serif;
 	font-size: 10pt;
 	width: 540pt;
 	padding: 10px;
 }
+
 #share a {
 	font-family: "arial", "helvetica", "sans serif";
 }
-#sharestatus	{
+
+#sharestatus {
 	margin: 10px;
 }
-#sharestatus ul	{
+
+#sharestatus ul {
 	list-style-type: none;
 	padding: 0px 0px 0px 4px;
 }
+
 #sharestatus ul li {
 	margin: 4px 0px 4px 0px;
 }

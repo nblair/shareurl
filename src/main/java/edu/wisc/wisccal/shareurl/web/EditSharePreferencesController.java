@@ -20,10 +20,15 @@
 package edu.wisc.wisccal.shareurl.web;
 
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +55,7 @@ import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.AccessClassificationMatchPreference;
+import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
@@ -115,13 +121,15 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling shareDetails request for " + activeAccount);
+			log.debug("Handling display request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		if(StringUtils.isBlank(shareKey)) {
 			return "input-missing";
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
+				
 		if(candidate != null) {
+			log.debug("share object: "+ candidate.toString());
 			model.addAttribute("share", candidate);
 			// also grab eligibility
 			model.addAttribute("ineligibleStatus", automaticPublicShareService.getEligibilityStatus(activeAccount));
@@ -129,6 +137,9 @@ public class EditSharePreferencesController extends WebContentGenerator {
 			return "share-details";
 		}
 		
+		if(log.isDebugEnabled()){
+			log.debug("Could not find share");
+		}
 		return "redirect:/error-404.jsp";
 	}
 	/**
@@ -142,7 +153,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling shareDetails request for " + activeAccount);
+			log.debug("Handling revoke request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null && candidate.isRevocable()) {	
@@ -165,7 +176,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling shareDetails request for " + activeAccount);
+			log.debug("Handling getShareDetails request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null) {
@@ -186,7 +197,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling toAllCalendar request for " + activeAccount);
+			log.debug("Handling toAllCalendar request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null && candidate.isFreeBusyOnly()) {
@@ -210,13 +221,14 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling toFreeBusy request for " + activeAccount);
+			log.debug("Handling toFreeBusy request request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null && !candidate.isFreeBusyOnly()) {
 			Set<ISharePreference> prefs = candidate.getSharePreferences().getPreferences();
 			for(ISharePreference pref: prefs) {
-				if(!GuessableSharePreference.GUESSABLE.equals(pref.getType())) {
+				if(!GuessableSharePreference.GUESSABLE.equals(pref.getType()) 
+						&& !CalendarMatchPreference.CALENDAR_MATCH.equals(pref.getType())) {
 					candidate = shareDao.removeSharePreference(candidate, pref);
 				}		
 			}
@@ -225,6 +237,72 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		}
 		return JSON_VIEW;
 	}
+	
+	/**
+	 * Convert the share to support Calendar Selection
+	 * 
+	 * @param shareKey
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/rest/tocs", method=RequestMethod.POST)
+	public String toCalSelect(@RequestParam String shareKey, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("Handling toCalendarSelect request request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
+		}
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		//if candidate is not null and calendar isCalendarSelect()
+		if(candidate != null && !candidate.isCalendarSelect()){
+			//add CalendarMatchPref for default calendar
+			candidate = shareDao.addSharePreference(candidate, new CalendarMatchPreference("WiscCal - calendar", "calendar/"));
+			model.addAttribute("share", candidate);
+		}else{
+			StringBuilder err = new StringBuilder(" Failed to set CalendarSelect. ");
+			if(candidate == null) err.append("Candidate not found. ");
+			if(candidate.isCalendarSelect()) err.append("Candidate is already calendarSelect. ");
+			
+			model.addAttribute("error",err.toString());
+		}
+		
+		return JSON_VIEW;
+	}
+	
+	/**
+	 * Convert the share to display only the Calendar Default (WiscCal -calendar)
+	 * 
+	 * @param shareKey
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value="/rest/tocd", method=RequestMethod.POST)
+	public String toCalDefault(@RequestParam String shareKey, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("Handling toCalendarDefault request request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
+		}
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		//if candidate is not null and calendar isCalendarSelect()
+		if(candidate != null && candidate.isCalendarSelect()){
+			//delete all calendarMatch prefs
+			Set<ISharePreference> prefs = candidate.getSharePreferences().getCalendarMatchPreferences();
+			for(ISharePreference pref: prefs) {
+				candidate = shareDao.removeSharePreference(candidate, pref);
+			}
+			model.addAttribute("share", candidate);
+		}else{
+			StringBuilder err = new StringBuilder(" Failed to set CalendarDefault. ");
+			if(candidate == null) err.append("Candidate not found. ");
+			if(candidate.isCalendarSelect()) err.append("Candidate is already calendarDefault. ");
+			
+			model.addAttribute("error",err.toString());
+		}
+		return JSON_VIEW;
+	}
+	
+	
 	
 	/**
 	 * Add the {@link IncludeParticipantsPreference}, if not present.
@@ -238,10 +316,14 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling includeParticipants request for " + activeAccount);
+			log.debug("handling includeParticipants request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate == null || candidate.isFreeBusyOnly()) {
+			StringBuilder err = new StringBuilder("Failed to include participants (");
+			if(candidate == null) err.append("Candidate is null, ");
+			if(candidate.isFreeBusyOnly()) err.append("Candidate is FB only");
+			err.append(")");
 			return JSON_VIEW;
 		}
 		
@@ -271,7 +353,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
-			log.debug("handling addPrivacyFilter request for " + activeAccount);
+			log.debug("Handling addPrivacyFilter request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
 		
 		Share candidate = identifyCandidate(shareKey, activeAccount);
@@ -324,6 +406,108 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		
 		return results;
 	}
+	
+	/**
+	 * Add a "calendar" filter
+	 * 
+	 * @see CalendarMatchPreference
+	 * @param shareKey
+	 * @param propertyName
+	 * @param propertyValue
+	 * @param model
+	 * @return the json view
+	 */
+	@RequestMapping(value="/rest/addCalendarFilter", method=RequestMethod.POST)
+	public String addCalendarFilter(@RequestParam String shareKey, @RequestParam String calendarId, @RequestParam String calendarType, ModelMap model) {
+		
+		
+		
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		
+		if(log.isDebugEnabled()) {
+			log.debug("Handling addCalendarFilter request for  shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId()+ 
+					", calendarType="+calendarType+", calendarId="+calendarId);
+		}
+				
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		
+		
+		//FB candidates may still specify calendars...
+		//if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, calendarType, calendarId)) {
+		if(candidate != null  && validatePropertyFilter(candidate, calendarType, calendarId)) {
+			ISharePreference sharePreference = SharePreferences.construct(CalendarMatchPreference.CALENDAR_MATCH, calendarType, calendarId);
+			candidate = shareDao.addSharePreference(candidate, sharePreference);
+			model.addAttribute("share", candidate);
+			model.addAttribute("newCalendarFilterDisplayName", sharePreference.getDisplayName());
+		}else{
+			StringBuilder err = new StringBuilder("Failed to add calendar filter");
+			model.addAttribute("error",err.toString());
+			if(log.isDebugEnabled()){
+				err.append("(");
+				if(candidate == null) err.append("Candidate is null, ");
+				//if(candidate.isFreeBusyOnly()) err.append("Candidate is FB only, ");
+				if(!validatePropertyFilter(candidate, calendarType, calendarId)) err.append("Validation failed");	
+				err.append(")");
+				log.debug(err.toString());
+			}
+		}
+		return JSON_VIEW;
+	}
+	/**
+	 * Remove a "calendar" filter
+	 * 
+	 * @see CalendarMatchPreference
+	 * @param shareKey
+	 * @param propertyName
+	 * @param propertyValue
+	 * @param model
+	 * @return the json view
+	 */
+	@RequestMapping(value="/rest/removeCalendarFilter", method=RequestMethod.POST)
+	public String removeCalendarFilter(@RequestParam String shareKey, @RequestParam String calendarName, @RequestParam String calendarId, ModelMap model) {
+	
+		
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling removeCalendarFilter request for " + activeAccount.getEmailAddress() +",sharekey="+shareKey+", calendarName="+calendarName+",calendarId="+calendarId);
+		}
+		
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		StringBuilder err = new StringBuilder("Failed to remove calendar filter");
+		
+		if(candidate != null && validatePropertyFilter(candidate, calendarName, calendarId)) {
+			ISharePreference sharePreference = SharePreferences.construct(CalendarMatchPreference.CALENDAR_MATCH,calendarName, calendarId);
+			if(candidate.getSharePreferences().getPreferences().contains(sharePreference)) {
+				candidate = shareDao.removeSharePreference(candidate, sharePreference);
+				model.addAttribute("share", candidate);
+				model.addAttribute("removeCalendarFilter", true);
+			}else{
+				model.addAttribute("error",err.toString());
+				if(log.isDebugEnabled()){
+					err.append("Candidate not found.  SharePreference does not exist.");
+					log.debug(err.toString());
+				}
+			}
+			
+		}else{
+			model.addAttribute("error",err.toString());
+			if(log.isDebugEnabled()){
+				err.append("(");
+				if(candidate == null) err.append("Candidate is null, ");
+				
+				//FB does not matter in this case.
+				//if(candidate.isFreeBusyOnly()) err.append("Candidate is FB only, ");
+				
+				if(!validatePropertyFilter(candidate, calendarName, calendarId)) err.append("Validation failed");	
+				err.append(")");
+				log.debug(err.toString());
+			}		
+		}
+		return JSON_VIEW;
+	}
+	
 	
 	/**
 	 * Add a "content" filter
@@ -458,11 +642,32 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	 * @return
 	 */
 	protected boolean validatePropertyFilter(Share candidate, String propertyName, String propertyValue) {
+		
 		if(Clazz.CLASS.equals(propertyName)) {
 			return allowedPrivacyFilterValues.contains(propertyValue);
+		}else if(candidate.getAllCals().keySet().contains(propertyValue)){
+			return true;
 		}
 		
 		return allowedContentFilterPropertyNames.contains(propertyName) && StringUtils.isNotBlank(propertyValue);
+	}
+	
+	/**
+	 * 
+	 * @param calId
+	 * @return true only if calId is valid
+	 */
+	protected boolean validateExchangeCalendarId(String calId){
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @param calId
+	 * @return true if calId is a valid calendarPath
+	 */
+	protected boolean validateWiscCalCalendarId(String calId){
+		return true;
 	}
 		
 	/**

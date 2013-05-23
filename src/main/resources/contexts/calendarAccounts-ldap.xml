@@ -1,89 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
+<!-- Licensed to Jasig under one or more contributor license agreements. 
+	See the NOTICE file distributed with this work for additional information 
+	regarding copyright ownership. Jasig licenses this file to you under the 
+	Apache License, Version 2.0 (the "License"); you may not use this file except 
+	in compliance with the License. You may obtain a copy of the License at: 
+	http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable 
+	law or agreed to in writing, software distributed under the License is distributed 
+	on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
+	express or implied. See the License for the specific language governing permissions 
+	and limitations under the License. -->
 
-    Licensed to Jasig under one or more contributor license
-    agreements. See the NOTICE file distributed with this work
-    for additional information regarding copyright ownership.
-    Jasig licenses this file to you under the Apache License,
-    Version 2.0 (the "License"); you may not use this file
-    except in compliance with the License. You may obtain a
-    copy of the License at:
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on
-    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied. See the License for the
-    specific language governing permissions and limitations
-    under the License.
-
--->
-
-<beans	xmlns="http://www.springframework.org/schema/beans"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns:context="http://www.springframework.org/schema/context"
-		xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring"
-		xmlns:tx="http://www.springframework.org/schema/tx"
-		xmlns:task="http://www.springframework.org/schema/task"
-		xsi:schemaLocation="
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
 		http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
-	
+
 	<bean id="ldapContextSource" class="org.springframework.ldap.core.support.LdapContextSource">
-		<property name="url" value="${ldap.url}"/>
-		<property name="userDn" value="${ldap.userDn}"/>
-		<property name="password" value="${ldap.password}"/>
-		<property name="pooled" value="false"/>
+		<property name="url" value="${ldap.url}" />
+		<property name="userDn" value="${ldap.userDn}" />
+		<property name="password" value="${ldap.password}" />
+		<property name="pooled" value="false" />
 		<property name="baseEnvironmentProperties">
 			<map>
-				<entry key="com.sun.jndi.ldap.connect.timeout" value="6000"/>
+				<entry key="com.sun.jndi.ldap.connect.timeout" value="6000" />
 			</map>
 		</property>
 	</bean>
-	
+
 	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
 		<constructor-arg ref="ldapContextSource" />
 	</bean>
-	<bean id="ldapAttributesKey" class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
-		<property name="displayNameAttributeName" value="displayname"/>
-		<property name="usernameAttributeName" value="mail"/>
-		<property name="emailAddressAttributeName" value="mail"/>
-		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid"/>
-		<property name="delegateOwnerAttributeName" value="owner"/>
-		<property name="eligibilityAttributeName" value="icsstatus"/>
+	<bean id="ldapAttributesKey"
+		class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
+		<property name="displayNameAttributeName" value="displayname" />
+		<property name="usernameAttributeName" value="mail" />
+		<property name="emailAddressAttributeName" value="mail" />
+		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid" />
+		<property name="delegateOwnerAttributeName" value="owner" />
+		<property name="eligibilityAttributeName" value="icsstatus" />
+		<property name="msolUpnAttributeName"  value="wiscEduMSOLUPN" />
 	</bean>
-	<bean id="peopleCalendarAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
-		<property name="ldapTemplate" ref="ldapTemplate"/>
-		<property name="baseDn" value="${ldap.userAccountBaseDn}"/>
-		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
-		<property name="enforceSpecificObjectClass" value="true"/>
-		<property name="requiredObjectClass" value="wisceduperson"/>
-		<qualifier value="people"/>
+	<bean id="peopleCalendarAccountDao"
+		class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
+		<property name="ldapTemplate" ref="ldapTemplate" />
+		<property name="baseDn" value="${ldap.userAccountBaseDn}" />
+		<property name="ldapAttributesKey" ref="ldapAttributesKey" />
+		<property name="enforceSpecificObjectClass" value="true" />
+		<property name="requiredObjectClass" value="wisceduperson" />
+		<qualifier value="people" />
 	</bean>
-	 
-	<bean id="resourceLdapAttributesKey" class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
-		<property name="displayNameAttributeName" value="cn"/>
-		<property name="usernameAttributeName" value="mail"/>
-		<property name="emailAddressAttributeName" value="mail"/>
-		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid"/>
-		<property name="delegateOwnerAttributeName" value="owner"/>
-		<property name="eligibilityAttributeName" value="icsstatus"/>
+
+	<bean id="resourceLdapAttributesKey"
+		class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
+		<property name="displayNameAttributeName" value="cn" />
+		<property name="usernameAttributeName" value="mail" />
+		<property name="emailAddressAttributeName" value="mail" />
+		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid" />
+		<property name="delegateOwnerAttributeName" value="owner" />
+		<property name="eligibilityAttributeName" value="icsstatus" />
+		<property name="msolUpnAttributeName"  value="wiscEduMSOLUPN" />
 	</bean>
-	<bean id="delegateAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl"> 
-		<property name="ldapTemplate" ref="ldapTemplate"/>
-		<property name="baseDn" value="${ldap.resourceAccountBaseDn}"/>
-		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey"/>
-		<property name="enforceSpecificObjectClass" value="true"/>
-		<property name="requiredObjectClass" value="wisceducalresource"/>
-		<qualifier value="delegates"/>
+	<bean id="delegateAccountDao"
+		class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl">
+		<property name="ldapTemplate" ref="ldapTemplate" />
+		<property name="baseDn" value="${ldap.resourceAccountBaseDn}" />
+		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey" />
+		<property name="enforceSpecificObjectClass" value="true" />
+		<property name="requiredObjectClass" value="wisceducalresource" />
+		<qualifier value="delegates" />
 	</bean>
-	<bean id="calendarAccountDao" class="org.jasig.schedassist.impl.CompositeCalendarAccountDaoImpl">
-		<property name="calendarAccountDao" ref="peopleCalendarAccountDao"/>
-		<property name="delegateCalendarAccountDao" ref="delegateAccountDao"/>
+	<bean id="calendarAccountDao"
+		class="org.jasig.schedassist.impl.CompositeCalendarAccountDaoImpl">
+		<property name="calendarAccountDao" ref="peopleCalendarAccountDao" />
+		<property name="delegateCalendarAccountDao" ref="delegateAccountDao" />
 	</bean>
-	
+
 </beans>

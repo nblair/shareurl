@@ -19,6 +19,8 @@
 
 package edu.wisc.wisccal.shareurl.support;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -33,10 +35,26 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Transp;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
 
+import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
+import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
+import org.jasig.schedassist.model.ICalendarAccount;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.googlecode.ehcache.annotations.Cacheable;
+import com.googlecode.ehcache.annotations.KeyGenerator;
+
+import edu.wisc.wisccal.shareurl.IShareDao;
+import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
+import edu.wisc.wisccal.shareurl.domain.ISharePreference;
+import edu.wisc.wisccal.shareurl.domain.Share;
+import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
 
 /**
@@ -45,8 +63,123 @@ import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
  * @author Nicholas Blair
  */
 public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl {
-
+	private IShareDao shareDao;
 	private TimeZoneRegistry _registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+	private CacheManager cacheManager;
+	
+	
+	
+	
+	/* (non-Javadoc)
+	 * 
+	 * Retrieve every calendar that a user has created a CALENDAR_MATCH preference for.  
+	 * If no preferences are defined return only the default caldav calendar
+	 * 
+	 * @see org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl#getCalendarsInternal(org.jasig.schedassist.model.ICalendarAccount, java.util.Date, java.util.Date)
+	 */
+	@Override
+	protected List<CalendarWithURI> getCalendarsInternal(ICalendarAccount calendarAccount, Date startDate, Date endDate) {
+		
+		List<CalendarWithURI> calendars = new ArrayList<CalendarWithURI>();
+		List<String> exchangeCalendarIds = new ArrayList<String>();
+		List<String> caldavCalendarIds = new ArrayList<String>();
+		
+		//retrieve shares
+		List<Share> shares = shareDao.retrieveByOwner(calendarAccount);
+		if(shares.size() > 0){
+			for( Share s : shares){
+				Set<ISharePreference> prefs = s.getSharePreferences().getPreferencesByType(CalendarMatchPreference.CALENDAR_MATCH);
+				
+				//if a CALENDAR_MATCH pref exists, retrieve multiple calendars
+				if(prefs.size() > 0){
+					for(ISharePreference p: prefs){
+						if(p.getKey().contains(calendarAccount.getEmailAddress())){
+							//this is a calDav calendar
+							StringBuilder accountUri = new StringBuilder(this.getCaldavDialect().getAccountHome(calendarAccount));
+							accountUri.append("/");
+							accountUri.append(p.getValue());
+							caldavCalendarIds.add(accountUri.toString());
+							
+						}else if(p.getKey().contains(calendarAccount.getAttributeValue("wiscedumsolupn"))){
+							//this is an exchange calendar
+							exchangeCalendarIds.add(p.getValue());
+						}else{
+							log.warn("Calendar type not recognized and will be ignored");		
+						}
+					}
+				}
+			}
+		}
+		
+		StringBuilder message = new StringBuilder();
+		
+		//if any exchangeIds were found, retrieve the corresponding calendars.
+		if(!exchangeCalendarIds.isEmpty()){
+			message = new StringBuilder("Retrieving exchange calendars for the following ids: ");
+			for(String s : exchangeCalendarIds){
+				message.append("\n"+s);
+			}
+			CalendarWithURI exchangeCalendarWithURI = getExchangeCalendars(calendarAccount, startDate, endDate,exchangeCalendarIds);
+			if(exchangeCalendarWithURI !=null) calendars.add(exchangeCalendarWithURI);
+
+		}
+		
+		//if any calDav calendars were found....
+		if(!caldavCalendarIds.isEmpty()){
+			message = new StringBuilder("Retrieving caldav calendars for the following ids: ");
+			for(String cid: caldavCalendarIds){
+				message.append("\n"+cid);
+				List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate,cid );
+				if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
+			}
+		}
+		
+		//if no calendarIds are found retrieve the default 
+		if(exchangeCalendarIds.isEmpty() && caldavCalendarIds.isEmpty()){
+			message = new StringBuilder("No Calendar IDs found.  Retrieving default calDav calendar.");
+			List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate );
+			if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
+		}
+		
+		log.debug(message.toString());
+		
+		for(String c : cacheManager.getCacheNames()){
+			log.debug(c+" stats: "+ cacheManager.getCache(c));
+		}
+		
+		assert(null != calendars);
+		//the calendarid must be added to every event returned
+		for(CalendarWithURI cwu : calendars){
+			log.debug("GetCalendarsInternal returned calendar with URI: "+cwu.getUri().toString());
+		}
+		
+		log.debug("GetCalendarsInternal returned: "+ calendars.toString());	
+		return calendars;
+	}
+		
+
+	
+	protected CalendarWithURI getExchangeCalendars(ICalendarAccount calendarAccount, Date startDate, Date endDate, List<String> calendarIds){
+		CalendarWithURI exchangeCalendarWithURI = null;
+		if(!calendarAccount.getAttributeValues("wiscedumsolupn").isEmpty() && null != calendarAccount.getAttributeValues("wiscedumsolupn").get(0)){
+			ApplicationContext ewsContext = 
+					new ClassPathXmlApplicationContext("classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml");
+			ExchangeCalendarDataDaoImpl exchangeCalendarDataDao =  (ExchangeCalendarDataDaoImpl) ewsContext.getBean("exchangeCalendarDataDao");
+			log.debug("getExchangeCalendar for "+ calendarAccount.getAttributeValues("wiscedumsolupn").get(0) + " from " + startDate + " to " + endDate);
+			Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(calendarAccount, startDate, endDate,calendarIds);
+			log.debug("exchange returned this: " + exchangeCalendar);
+			assert(null != exchangeCalendar);
+			exchangeCalendarWithURI = new CalendarWithURI(exchangeCalendar, "exchangeCalendarDataTest");
+			
+	
+		}
+		return exchangeCalendarWithURI;
+		
+	}
+	
+	protected CalendarWithURI getExchangeCalendars(ICalendarAccount calendarAccount, Date startDate, Date endDate){
+		return getExchangeCalendars(calendarAccount, startDate, endDate, null);
+	}
 	
 	/**
 	 * Calls the super, then passes the result through {@link #checkEventsAndInspectTimeZones(Calendar)}.
@@ -101,5 +234,33 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public IShareDao getShareDao() {
+		return shareDao;
+	}
+	/**
+	 * 
+	 * @param shareDao
+	 */
+	@Autowired
+	public void setShareDao(IShareDao shareDao) {
+		this.shareDao = shareDao;
+	}
+
+
+
+	public CacheManager getCacheManager() {
+		return cacheManager;
+	}
+
+
+	@Autowired
+	public void setCacheManager(CacheManager cacheManager) {
+		this.cacheManager = cacheManager;
+	}
+
 
 }

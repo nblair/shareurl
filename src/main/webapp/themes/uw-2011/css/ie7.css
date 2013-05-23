@@ -1,10 +1,14 @@
-body {position: relative;}
+body {
+	position: relative;
+}
 
-#globalnav li, .main-menu > li, #sidebar, #content
-{display: inline;}
+#globalnav li,.main-menu>li,#sidebar,#content {
+	display: inline;
+}
 
-
-#uwhome, #globalnav {top: -18px;}
+#uwhome,#globalnav {
+	top: -18px;
+}
 
 .main-menu {
 	position: relative;
@@ -17,27 +21,32 @@ body {position: relative;}
 	z-index: 5000000000;
 }
 
-.main-menu > li {
+.main-menu>li {
 	border-bottom: #ccc;
 }
 
-.main-menu > li > h2, .main-menu > li > h2 > a {
+.main-menu>li>h2,.main-menu>li>h2>a {
 	width: 100%;
 	text-align: center;
 }
 
 .main-menu li:hover {
 	/* fixes IE7 'sticky bug' */
-	  visibility: inherit;
+	visibility: inherit;
 }
+
 ul.submenu {
 	border-right: 1px solid #ccc;
 }
 
-.submenu > li {list-style: none; width: 99%}
+.submenu>li {
+	list-style: none;
+	width: 99%
+}
 
-.submenu > li a {width: 100%;}
-
+.submenu>li a {
+	width: 100%;
+}
 
 /* equal height columns using faux columns */
 #shell {
@@ -48,4 +57,6 @@ ul.submenu {
 	background-repeat: repeat-y;
 }
 
-#content {padding-top: 40px;}
+#content {
+	padding-top: 40px;
+}

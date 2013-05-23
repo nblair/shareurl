@@ -148,7 +148,7 @@ public class SharedCalendarController {
 	 * @param calendarDataDao the calendarDataDao to set
 	 */
 	@Autowired
-	public void setCalendarDataDao(ICalendarDataDao calendarDataDao) {
+	public void setCalendarDataDao(@Qualifier("caldavCalendarDataDao") ICalendarDataDao calendarDataDao) {
 		this.calendarDataDao = calendarDataDao;
 	}
 	/**
@@ -261,10 +261,17 @@ public class SharedCalendarController {
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);
 
+			// targeting a specific event?
+			// set agenda to point to a single event?
 			if(null != requestDetails.getEventId()) {
+				
+				LOG.debug("Looking for single event with id" + requestDetails.getEventId());
+				
 				VEvent matchingEvent = findMatchingEvent(agenda, requestDetails);
 				if(matchingEvent != null) {
+					LOG.debug("matching event id found");
 					if(ShareDisplayFormat.JSON.equals(display)) {
+						
 						model.put("calendar", simpleCalendars.simplify(CalendarDataUtils.wrapEvent(matchingEvent), sharePreferences.isIncludeParticipants()));
 					} else {
 						EventParticipation participation = calendarDataProcessor.getEventParticipation(matchingEvent, account);
@@ -279,6 +286,7 @@ public class SharedCalendarController {
 						model.put("includeParticipants", sharePreferences.isIncludeParticipants());
 					}
 				} else {
+					LOG.debug("matching event id NOT found");
 					// signal 404
 					return false;
 				}
@@ -424,7 +432,7 @@ public class SharedCalendarController {
 			boolean success = prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
 			if(LOG.isDebugEnabled()) {
 				List<String> eventUids = eventDebugIds(agenda);
-				LOG.debug("post prepareModel " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+				LOG.debug("post prepareModel; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
 			}
 			if(LOG.isTraceEnabled()) {
 				LOG.trace("post prepareModel " + requestDetails + "; " + account + " has raw agenda " + agenda);

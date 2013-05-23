@@ -13,73 +13,166 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 --%>
-<%@ include file="/WEB-INF/jsp/includes.jsp" %>
-<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+<%@ include file="/WEB-INF/jsp/includes.jsp"%>
+<%@ taglib prefix="security"
+	uri="http://www.springframework.org/security/tags"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="-1">
-<%@ include file="/WEB-INF/jsp/theme/head-elements.jsp" %>
+<%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 <title>WiscCal ShareURL - Manage ${share.key }</title>
-<rs:resourceURL var="revokeIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
-<rs:resourceURL var="tickIcon" value="/rs/famfamfam/silk/1.3/tick.png"/>
-<rs:resourceURL var="helpIcon" value="/rs/famfamfam/silk/1.3/help.png"/>
-<rs:resourceURL var="alertIcon" value="/rs/famfamfam/silk/1.3/exclamation.png"/>
+<rs:resourceURL var="revokeIcon"
+	value="/rs/famfamfam/silk/1.3/cross.png" />
+<rs:resourceURL var="tickIcon" value="/rs/famfamfam/silk/1.3/tick.png" />
+<rs:resourceURL var="helpIcon" value="/rs/famfamfam/silk/1.3/help.png" />
+<rs:resourceURL var="alertIcon"
+	value="/rs/famfamfam/silk/1.3/exclamation.png" />
 <style type="text/css">
-.key { color:green;}
-.large { font-size:120%;}
-.margin3 { margin: 3px; }
-.padding1 { padding: 1em; }
-.padding2 { padding: 2em; }
-.bordered { border: 1px solid #990000; }
-.clear { clear:both; }
-.fleft { float: left;}
-.fright {float:right;}
-.scBox { float: left; position: relative; width: 26%; margin: 0px 3px 0px 3px; border: 1px solid #666152; padding: 1.25em;}
-.removable { border: 1px solid #C7CEF9; background-color: #E2E6FF;}
-.revokeHandle {position:relative; top:3px;}
-.sharelink { border: 1px dotted #C7CEF9; background-color: #E2E6FF; padding: 0.5em 0.5em 0.5em 1em;}
-.sharelinktext { color: blue; font-size: 130%;}
-#sharelinktag { color: blue;}
-#examples { line-height:200%;}
-.notselected {opacity:0.75;}
-.inlineblock {display:inline-block;}
-#includeParticipantsHelp {font-size:80%;}
+.key {
+	color: green;
+}
+
+.large {
+	font-size: 120%;
+}
+
+.margin3 {
+	margin: 3px;
+}
+
+.padding1 {
+	padding: 1em;
+}
+
+.padding2 {
+	padding: 2em;
+}
+
+.bordered {
+	border: 1px solid #990000;
+}
+
+.clear {
+	clear: both;
+}
+
+.fleft {
+	float: left;
+}
+
+.fright {
+	float: right;
+}
+
+.scBox {
+	float: left;
+	position: relative;
+	width: 26%;
+	margin: 0px 3px 0px 3px;
+	border: 1px solid #666152;
+	padding: 1.25em;
+}
+
+.removable {
+	border: 1px solid #C7CEF9;
+	background-color: #E2E6FF;
+}
+
+.revokeHandle {
+	position: relative;
+	top: 3px;
+}
+
+.sharelink {
+	border: 1px dotted #C7CEF9;
+	background-color: #E2E6FF;
+	padding: 0.5em 0.5em 0.5em 1em;
+}
+
+.sharelinktext {
+	color: blue;
+	font-size: 130%;
+}
+
+#sharelinktag {
+	color: blue;
+}
+
+#examples {
+	line-height: 200%;
+}
+
+.notselected {
+	opacity: 0.75;
+}
+
+.inlineblock {
+	display: inline-block;
+}
+
+#includeParticipantsHelp {
+	font-size: 80%;
+}
 </style>
-<c:url value="/u/${share.key}" var="baseShareUrl"/>
+<c:url value="/u/${share.key}" var="baseShareUrl" />
 <c:url value="/rest/shareDetails" var="shareDetails">
-<c:param name="shareKey" value="${share.key}"/>
+	<c:param name="shareKey" value="${share.key}" />
 </c:url>
 
-<c:url value="/rest/includeP" var="includeP"/>
-<c:url value="/rest/excludeP" var="excludeP"/>
+<c:url value="/rest/includeP" var="includeP" />
+<c:url value="/rest/excludeP" var="excludeP" />
 
-<c:url value="/rest/toac" var="toac"/>
-<c:url value="/rest/tofb" var="tofb"/>
-<c:url value="/rest/addPrivacyFilter" var="addPrivacyFilter"/>
-<c:url value="/rest/addContentFilter" var="addContentFilter"/>
-<c:url value="/rest/removeContentFilter" var="removeContentFilter"/>
-<c:url value="/rest/resetFilters" var="resetFilters"/>
+<c:url value="/rest/toac" var="toac" />
+<c:url value="/rest/tofb" var="tofb" />
+<c:url value="/rest/addPrivacyFilter" var="addPrivacyFilter" />
+<c:url value="/rest/addContentFilter" var="addContentFilter" />
+<c:url value="/rest/removeContentFilter" var="removeContentFilter" />
+<c:url value="/rest/resetFilters" var="resetFilters" />
 
-<c:set var="revokeMessage" value="This ShareURL will be permanently deleted. Are you sure?"/>
+<c:url value="/rest/addCalendarFilter" var="addCalendarFilter" />
+<c:url value="/rest/removeCalendarFilter" var="removeCalendarFilter" />
+<c:url value="/rest/tocs" var="tocs" />
+<c:url value="/rest/tocd" var="tocd" />
+
+
+<c:set var="revokeMessage"
+	value="This ShareURL will be permanently deleted. Are you sure?" />
 <c:if test="${share.guessable}">
-<c:choose>
-<c:when test="${ ineligibleStatus.ineligibleFromExternalSource}">
-<c:set var="revokeMessage" value="Are you sure you wish to disable your Public ShareURL?"/>
-</c:when>
-<c:otherwise>
-<c:set var="revokeMessage" value="Your Public ShareURL will revert to the default (Free/Busy Only). Are you sure?"/>
-</c:otherwise>
-</c:choose>
+	<c:choose>
+		<c:when test="${ ineligibleStatus.ineligibleFromExternalSource}">
+			<c:set var="revokeMessage"
+				value="Are you sure you wish to disable your Public ShareURL?" />
+		</c:when>
+		<c:otherwise>
+			<c:set var="revokeMessage"
+				value="Your Public ShareURL will revert to the default (Free/Busy Only). Are you sure?" />
+		</c:otherwise>
+	</c:choose>
 </c:if>
 
-<rs:resourceURL var="jqueryUiCssPath" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
-<link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}" media="all"/>
-<rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
+<rs:resourceURL var="jqueryUiCssPath"
+	value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css" />
+<link rel="stylesheet" type="text/css" href="${jqueryUiCssPath}"
+	media="all" />
+<rs:resourceURL var="jqueryUiPath"
+	value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js" />
 <script type="text/javascript" src="${jqueryUiPath}"></script>
-<script type="text/javascript" src="<c:url value="/js/jquery.serializeObject.js"/>"></script>
+<script type="text/javascript"
+	src="<c:url value="/js/jquery.serializeObject.js"/>"></script>
 <script type="text/javascript" src="<c:url value="/js/edit-share.js"/>"></script>
+
+<script type="text/javascript">
+    function setExchangeCalType(sel) {
+    	 $("#exchangeCalType").val($("#exchangeCalendarNames option:selected").text());
+    }
+    function setWiscCalType(sel) {
+    	 $("#wiscCalType").val($("#wiscCalCalendarNames option:selected").text());   	
+  	}
+</script>
+
+
 <script type="text/javascript">
 $(function() {
 	$("#includeParticipantsHelp").dialog({ autoOpen: false, 
@@ -119,10 +212,12 @@ $(function() {
 	$('#datex').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
 	$('#datey').change(function(e) { renderShareUrlExample('${baseShareUrl}'); });
 	var initShare = { "freeBusyOnly": ${share.freeBusyOnly}, 
-			"includeParticipants": ${share.includeParticipants}, 
-			"sharePreferences": {
-				"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
-				"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)}
+					  "includeParticipants": ${share.includeParticipants}, 
+					  "calendarSelect": ${share.calendarSelect}, 
+					  "sharePreferences": {
+							"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
+							"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)},
+							"calendarFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.calendarFilters)}
 			} };
 	var lastShare = initShare;
 	renderShareControls(initShare);
@@ -154,6 +249,25 @@ function setupFormHandlers() {
 	applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}', '#labelindicatorcf', function() {
 		setupRemoveContentFilterForms();
 	});
+	
+	// ctcudd
+	
+	applySubmitHandlerIfPresent('#tocd', '${tocd}', '#labelindicatorcd');
+	applySubmitHandlerIfPresent('#tocs', '${tocs}', '#labelindicatorcs');
+	$('#cdRadio').click(function() {
+	    $('#tocd').submit();
+	});
+	$('#csRadio').click(function() {
+	    $('#tocs').submit();
+	});
+	
+	applySubmitHandlerIfPresent('#exchangeCalendarFilter', '${addCalendarFilter}', '#labelindicatorExchangeCalCalf', function() {
+		setupRemoveCalendarFilterForms();
+	});
+	applySubmitHandlerIfPresent('#wiscCalCalendarFilter', '${addCalendarFilter}', '#labelindicatorWiscCalCalf', function() {
+		setupRemoveCalendarFilterForms();
+	});
+	
 	applySubmitHandlerIfPresent('#privacyFilter', '${addPrivacyFilter}', '#labelindicatorcl');
 	$('#publicClass').click(function() {
 	    $('#privacyFilter').submit();
@@ -165,25 +279,49 @@ function setupFormHandlers() {
 	    $('#privacyFilter').submit();
 	});
 	setupRemoveContentFilterForms();
+	setupRemoveCalendarFilterForms();
 }
+
+function setupRemoveCalendarFilterForms(){
+	$('.removeCalendarFilter').each(function(i) {
+		applySubmitHandlerIfPresent($(this), '${removeCalendarFilter}', '#labelindicatorWiscCalCalf', function() {
+			setupRemoveCalendarFilterForms();
+		});
+		applySubmitHandlerIfPresent($(this), '${removeCalendarFilter}', '#labelindicatorExchangeCalCalf', function() {
+			setupRemoveCalendarFilterForms();
+		});
+	});
+	
+	$('#calendarFilters .revokeHandle').unbind('click');
+	$('#calendarFilters .revokeHandle').click(function(event) {
+		var anchor = $(this);
+		anchor.parent('form').submit();
+	})
+}
+
 function setupRemoveContentFilterForms() {
 	$('.removeContentFilter').each(function(i) {
 		applySubmitHandlerIfPresent($(this), '${removeContentFilter}', '#labelindicatorcf', function() {
 			setupRemoveContentFilterForms();
 		});
 	});
-	
-	$('.revokeHandle').unbind('click');
-	$('.revokeHandle').click(function(event) {
+
+	$('#contentFilters .revokeHandle').unbind('click');
+	$('#contentFilters .revokeHandle').click(function(event) {
 		var anchor = $(this);
 		anchor.parent('form').submit();
 	})
 }
 function postAndRenderPreferences(url, form, indicator, callback) {
+	//clear all indicators
 	$('.ind').empty();
+	//append gif to current indication
 	$('<img src="<c:url value="/img/indicator.gif"/>"/>').appendTo(indicator);
+	//serialize the formdata
 	var formdata = $(form).serializeObject();
+	//append sharkey to serialized data
 	formdata["shareKey"] = '${share.key}';
+	//see http://api.jquery.com/jQuery.post/
 	$.post(url,
 			formdata,
 			function(responsedata) {
@@ -193,6 +331,8 @@ function postAndRenderPreferences(url, form, indicator, callback) {
                     $('<img src="${tickIcon}"/>').appendTo(indicator);
 					renderShareControls(responsedata.share);
 					renderFilterPreferences(responsedata.share, '${revokeIcon}', '${removeContentFilter}', responsedata.removeContentFilter);
+					renderFilterCalendarPreferences(responsedata.share, '${revokeIcon}', '${removeCalendarFilter}', responsedata.removeCalendarFilter);
+					
 					if(callback && typeof(callback) == 'function') {
 						callback(responsedata);
 					}
@@ -204,9 +344,12 @@ function postAndRenderPreferences(url, form, indicator, callback) {
 					}
 					renderShareControls(lastShare);
 					renderFilterPreferences(lastShare, '${revokeIcon}', '${removeContentFilter}', false);
+					renderFilterCalendarPreferences(lastShare, '${revokeIcon}', '${removeCalendarFilter}', false);
 				}
 			},
 			"json");
+	//here?
+
 };
 function postSetLabel(form) {
 	$('.ind').empty();
@@ -234,144 +377,335 @@ function postSetLabel(form) {
 
 <body>
 
-<%@ include file="/WEB-INF/jsp/theme/body-start.jsp" %>
-<%@ include file="/WEB-INF/jsp/login-info.jsp" %>
+	<%@ include file="/WEB-INF/jsp/theme/body-start.jsp"%>
+	<%@ include file="/WEB-INF/jsp/login-info.jsp"%>
 
-<div id="content" class="main col">
+	<div id="content" class="main col">
 
-<div id="shareDetails" class="margin3">
-<p><strong>You are editing the privacy settings for:</strong></p>
-<p class="key large padding1">${viewhelper:getVirtualServerAddress(pageContext.request)}${baseShareUrl }</p>
-<p>The settings you select below will determine what calendar data will be accessible through your ShareURL.
-To allow different access levels for different audiences, you can create multiple ShareURLs with different options.</p>
-</div>
+		<div id="shareDetails" class="margin3">
+			<p>
+				<strong>You are editing the privacy settings for:</strong>
+			</p>
+			<p class="key large padding1">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span></p>
+			<p>The settings you select below will determine what calendar
+				data will be accessible through your ShareURL. To allow different
+				access levels for different audiences, you can create multiple
+				ShareURLs with different options.</p>
+		</div>
 
-<div id="shareControls2">
+		<div id="shareControls2">
 
-<c:if test="${not share.guessable }">
-<div class="margin3 padding1">
-<form id="setLabel">
-<fieldset><label for="label">Label (optional):</label>&nbsp;<input id="labelinput" name="label" type="text" value="${share.label}"><input id="lsubmit" type="submit" value="Change">&nbsp;<span id="labelindicator" class="ind"></span></fieldset>
-<p>Adding a label can help you remember how you intend to use this ShareURL or with whom you have shared it's address. Your label will be visible to you only.</p>
-</form>
-</div>
-</c:if>
-
-<div id="scFreeBusy" class="bordered padding1 margin3">
-<form action="${tofb }" method="post" id="tofb">
-<fieldset>
-<input id="fbRadio" type="radio" name="freebusyonly" value="true"/><label for="freebusyonly"><strong>Free/Busy only</strong></label>&nbsp;<span id="labelindicatorfb" class="ind"></span>
-</fieldset>
-</form>
-<div id="scFreeBusyInner">
-<p>Free/Busy only ShareURLs display only the start and end times for periods that you are busy, all other meeting details are withheld.</p>
-</div>
-</div> <!-- end scFreeBusy -->
-
-<div id="scAllCalendar" class="bordered padding1 margin3">
-
-<form action="${toac }" method="post" id="toac">
-<fieldset>
-<input id="acRadio" type="radio" name="allcalendar" value="true"/><label for="allcalendar"><strong>Include more event detail</strong></label>&nbsp;<span id="labelindicatorac" class="ind"></span>
-<p>ShareURLs using this setting display meeting title, location, and details along with start and end times. Meeting participants are withheld by default.
-</fieldset>
-</form>
-
-<div id="scAllCalendarInner">
-
-<form action="${includeP}" method="post" id="includeP1">
-<fieldset>
-<input id="ip" type="checkbox" name="includeParticipants" <c:if test="${share.includeParticipants }">checked="checked"</c:if>/>&nbsp;<label for="includeParticipants">Include attendees and organizer on group appointments</label>&nbsp;<span id="labelindicatorip" class="ind"></span>&nbsp;<a id="ipTrigger" href="#includeParticipantsHelp" title="Include Participants Option Help">What's this?</a> 
-</fieldset>
-</form>
-
-<div id="filters" class="padding2">
-<form action="${addPrivacyFilter}" method="post" id="privacyFilter">
-<p>Limit results to include only events with the following <a target="_new_visibilityHelp" href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>&nbsp;<span id="labelindicatorcl" class="ind"></span>:</p>
-<fieldset>
-<input id="publicClass" type="checkbox" name="includePublic" class="classFilterCheckbox"/>&nbsp;<label for="public">Public</label><br/>
-<input id="confidClass" type="checkbox" name="includeConfidential" class="classFilterCheckbox"/>&nbsp;<label for="confidential">Show Date and Time Only</label><br/>
-<input id="privateClass" type="checkbox" name="includePrivate" class="classFilterCheckbox"/>&nbsp;<label for="private">Private</label><br/>
-</fieldset>
-</form>
-<form action="${addContentFilter}" method="post" id="contentFilter">
-<fieldset>
-<span>Include only events with </span>
-<select id="propertyName" name="propertyName"><option value="SUMMARY">Title</option><option value="LOCATION">Location</option><option value="DESCRIPTION">Description</option></select>
-<span>&nbsp;containing&nbsp;</span><input type="text" name="propertyValue"/>&nbsp;<input id="addFilter" type="submit" value="Add"/>&nbsp;<span id="labelindicatorcf" class="ind"></span><br/>
-</fieldset>
-</form>
-<ul id="contentFilters">
-<c:forEach items="${share.sharePreferences.propertyMatchPreferences }" var="pref" varStatus="status">
-<li><span class="removable">${pref.displayName }</span>&nbsp;<form class="removeContentFilter inlineblock" action="${removeContentFilter}" method="post" id="removeContentFilter${status.index}"><fieldset><input type="hidden" name="propertyName" value="${pref.key}"/><input type="hidden" name="propertyValue" value="${pref.value}"/></fieldset><img class="revokeHandle" src="${revokeIcon }" title="Remove this filter"/></form></li>
-</c:forEach>
-</ul>
-</div>
-
-</div> <!-- end scAllCalendarInner -->
-</div> <!-- end scAllCalendar -->
-
-<div id="revoke" class="margin3 padding1">
-<c:choose>
-<c:when test="${share.guessable && not ineligibleStatus.ineligibleFromExternalSource}">
-<form action="<c:url value="/rest/opt-out"/>" method="post" class="optoutform">
-<fieldset>
-<input id="osubmit" type="submit" value="Opt out from Public ShareURL"/>
-</fieldset>
-</form>
-</c:when>
-<c:otherwise>
-<c:url var="revokeUrl" value="revoke.html">
-<c:param name="id" value="${share.key }"/>
-</c:url>
-
-<form:form action="${revokeUrl}" cssClass="revokeform" method="post">
-<input type="submit" class="revokebutton" value="Delete this ShareURL"/>
-</form:form>
-</c:otherwise>
-</c:choose>
-</div>
-
-</div> <!-- end shareControls2 -->
+			<c:if test="${not share.guessable }">
+				<div class="margin3 padding1">
+					<form id="setLabel">
+						<fieldset>
+							<label for="label">Label (optional):</label>&nbsp;<input
+								id="labelinput" name="label" type="text" value="${share.label}"><input
+								id="lsubmit" type="submit" value="Change">&nbsp;<span
+								id="labelindicator" class="ind"></span>
+						</fieldset>
+						<p>Adding a label can help you remember how you intend to use
+							this ShareURL or with whom you have shared it's address. Your
+							label will be visible to you only.</p>
+					</form>
+				</div>
+			</c:if>
 
 
-<!--  </div> --> <!--  end privacySettings -->
+			<div id="calDefault" class="bordered padding1 margin3">
+				<form action="${tocd }" method="post" id="tocd">
+					<fieldset>
+						<input id="cdRadio" type="radio" name="calDefault" value="true" /><label
+							for="calDefault"><strong>Default Calendar Only</strong></label>&nbsp;<span
+							id="labelindicatorcd" class="ind"></span>
+					</fieldset>
+				</form>
+				<div id="scCalDefaultInner">
+					<p>Only display events contained in your default WiscCal Calendar</p>
+				</div>
+			</div>
 
-<hr/>
+			<div id="calSelect" class="bordered padding1 margin3">
+				<form action="${tocs }" method="post" id="tocs">
+					<fieldset>
+						<input id="csRadio" type="radio" name="calSelect" value="true" /><label
+							for="calSelect"><strong>Select one or more calendars</strong></label>&nbsp;<span
+							id="labelindicatorcs" class="ind"></span>
+					</fieldset>
+				</form>
+				<div id="scCalSelectInner">
+					<p>Display events from selected Calendars</p>
+				
+					<div id="calSelectFilters">
+							<form action="${addCalendarFilter}" method="post"
+								id="exchangeCalendarFilter">
+								<fieldset>
+									<span>Include events from the following Office 365 calendar </span> 
+									<form:select 
+										name="calendarId" id="exchangeCalendarNames" class="calSelectDDL" path="share" onchange="setExchangeCalType(this);">
+										<form:options items="${share.msolCals}" />
+									</form:select>
+									<input id="exchangeCalType" name="calendarType" type="hidden" value="exchange" />
+									<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setExchangeCalType(this);" />&nbsp;
+									<span id="labelindicatorExchangeCalCalf"	class="ind"></span><br />
+								</fieldset>
+							</form>
+							<form action="${addCalendarFilter}" method="post"
+								id="wiscCalCalendarFilter">
+								<fieldset>
+									<span>Include events from the following WiscCal calendar </span> 
+									<form:select 
+										name="calendarId" id="wiscCalCalendarNames" class="calSelectDDL" path="share" onchange="setWiscCalType(this);">
+										<form:options items="${share.wiscCals}" />
+									</form:select>
+									<input id="wiscCalType" name="calendarType" type="hidden" value="wisccal" />
+									<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setWiscCalType(this);"/>&nbsp;
+									<span id="labelindicatorWiscCalCalf"	class="ind"></span><br />
+								</fieldset>
+							</form>
+							<ul id="calendarFilters">
+								<c:choose>
+									<c:when test="${empty share.sharePreferences.calendarMatchPreferences}" >
+										<li><span class="removable">WiscCal - calendar</span>&nbsp;
+												<form class="removeCalendarFilter inlineblock"
+													action="${removeCalendarFilter}" method="post"
+													id="removeCalendarFilter${status.index}">
+													<fieldset>
+														<input type="hidden" name="calendarName" value="WiscCal - calendar" /><input
+															type="hidden" name="calendarId" value="calendar/" />
+													</fieldset>
+													<img class="revokeHandle" src="${revokeIcon }"
+														title="Remove this filter" />
+												</form></li>
+									</c:when>
+									<c:otherwise>
+										<c:forEach
+											items="${share.sharePreferences.calendarMatchPreferences }"
+											var="pref" varStatus="status">
+											<li><span class="removable">${pref.displayName }</span>&nbsp;
+												<form class="removeCalendarFilter inlineblock"
+													action="${removeCalendarFilter}" method="post"
+													id="removeCalendarFilter${status.index}">
+													<fieldset>
+														<input type="hidden" name="calendarName" value="${pref.key}" /><input
+															type="hidden" name="calendarId" value="${pref.value}" />
+													</fieldset>
+													<img class="revokeHandle" src="${revokeIcon }"
+														title="Remove this filter" />
+												</form></li>
+										</c:forEach>								
+									</c:otherwise>
+								</c:choose>
+							</ul>
+						</div>
+						<!-- end calSelectFilters -->
+					</div>
+					<!-- end scCalSelectInner -->
+			</div>
+			<!-- end calSelect -->
 
-<div id="examples" class="margin3">
-<h2>Using your ShareURL</h2>
-<p>This ShareURL can be viewed with the following link. Use the form controls below to update the example for your use case:</p>
-<div class="sharelink">
-<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30)?ical"><span class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span id="dateRange">/dr(-14,30)</span><span id="icsSuffix"></span><span id="queryParameters">?ical</span></span></a>
-</div>
+			<div id="scFreeBusy" class="bordered padding1 margin3">
+				<form action="${tofb }" method="post" id="tofb">
+					<fieldset>
+						<input id="fbRadio" type="radio" name="freebusyonly" value="true" /><label
+							for="freebusyonly"><strong>Free/Busy only</strong></label>&nbsp;<span
+							id="labelindicatorfb" class="ind"></span>
+					</fieldset>
+				</form>
+				<div id="scFreeBusyInner">
+					<p>Free/Busy only ShareURLs display only the start and end
+						times for periods that you are busy, all other meeting details are
+						withheld.</p>
+				</div>
+			</div>
+			<!-- end scFreeBusy -->
 
-<p><label for="client">I want to view my ShareURL in </label>
-<select name="client" id="clientselect">
-<option value="native" selected="selected">Microsoft Outlook, Mozilla Thunderbird, or Apple iCal</option>
-<option value="iphone">an iPhone or iPad</option>
-<option value="browser">a Web Browser, like Firefox, Chrome, or Internet Explorer</option>
-<option value="google">Google Calendar</option>
-<option value="ics">an ICS (iCalendar) file</option>
-<option value="news">a News (RSS) Reader</option>
-<option value="json">Javascript Object Notation (JSON)</option>
-</select>
-</p>
+			<div id="scAllCalendar" class="bordered padding1 margin3">
 
-<p><label for="x">I would like to see data from </label><input id="x" type="number" name="x" value="14" min="-999" max="999"/> days <select id="negatex"><option value="negate" selected="selected">back</option><option value="">forward</option></select> <label for="y">through </label><input id="y" type="number" name="y" value="30"  min="-999" max="999"/> days forward.</p>
-<p>OR, I would like to see data from <a id="justToday" href="#justToday">just "today"</a>.</p>
-<p>OR, <label for="datex">I would like to see data from specifically </label><input id="datex" type="text" name="datex"/><label for="datey"> through </label><input id="datey" type="text" name="datey"/></p>
+				<form action="${toac }" method="post" id="toac">
+					<fieldset>
+						<input id="acRadio" type="radio" name="allcalendar" value="true" /><label
+							for="allcalendar"><strong>Include more event
+								detail</strong></label>&nbsp;<span id="labelindicatorac" class="ind"></span>
+						<p>ShareURLs using this setting display meeting title,
+							location, and details along with start and end times. Meeting
+							participants are withheld by default.
+					</fieldset>
+				</form>
 
-<p>I would like to see <a title="View ShareURL Options (Opens new window)" target="_new_help" href="http://kb.wisc.edu/wisccal/page.php?id=13322">all available options for ShareURLs&raquo;</a>, including options for web developers.</p>
+				<div id="scAllCalendarInner">
 
-</div>
-<div id="includeParticipantsHelp" title="Include Participants Help">
-<p>This setting controls whether or not the name and email address for meeting participants (attendees, organizer) is included in the data for group events displayed by your ShareURL.</p>
-<br/>
-<p>Consider this option carefully: <strong>if you meet with students regularly, you should not enable this setting</strong>. This setting is best used
-on Traditional ShareURLs that are not shared with a wide audience. The WiscCal team recommends you avoid using this setting on your Public ShareURL.</p>
-</div>
-</div> <!-- content -->
-<%@ include file="/WEB-INF/jsp/theme/body-end.jsp" %>
+					<form action="${includeP}" method="post" id="includeP1">
+						<fieldset>
+							<input id="ip" type="checkbox" name="includeParticipants"
+								<c:if test="${share.includeParticipants }">checked="checked"</c:if> />&nbsp;<label
+								for="includeParticipants">Include attendees and
+								organizer on group appointments</label>&nbsp;<span id="labelindicatorip"
+								class="ind"></span>&nbsp;<a id="ipTrigger"
+								href="#includeParticipantsHelp"
+								title="Include Participants Option Help">What's this?</a>
+						</fieldset>
+					</form>
+
+					<div id="filters" class="padding2">
+						<form action="${addPrivacyFilter}" method="post"
+							id="privacyFilter">
+							<p>
+								Limit results to include only events with the following <a
+									target="_new_visibilityHelp"
+									href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>&nbsp;<span
+									id="labelindicatorcl" class="ind"></span>:
+							</p>
+							<fieldset>
+								<input id="publicClass" type="checkbox" name="includePublic"
+									class="classFilterCheckbox" />&nbsp;<label for="public">Public</label><br />
+								<input id="confidClass" type="checkbox"
+									name="includeConfidential" class="classFilterCheckbox" />&nbsp;<label
+									for="confidential">Show Date and Time Only</label><br /> <input
+									id="privateClass" type="checkbox" name="includePrivate"
+									class="classFilterCheckbox" />&nbsp;<label for="private">Private</label><br />
+							</fieldset>
+						</form>
+						<form action="${addContentFilter}" method="post"
+							id="contentFilter">
+							<fieldset>
+								<span>Include only events with </span> <select id="propertyName"
+									name="propertyName"><option value="SUMMARY">Title</option>
+									<option value="LOCATION">Location</option>
+									<option value="DESCRIPTION">Description</option></select> <span>&nbsp;containing&nbsp;</span><input
+									type="text" name="propertyValue" />&nbsp;<input id="addFilter"
+									type="submit" value="Add" />&nbsp;<span id="labelindicatorcf"
+									class="ind"></span><br />
+							</fieldset>
+						</form>
+						<ul id="contentFilters">
+							<c:forEach
+								items="${share.sharePreferences.propertyMatchPreferences }"
+								var="pref" varStatus="status">
+								<li><span class="removable">${pref.displayName }</span>&nbsp;
+									<form class="removeContentFilter inlineblock"
+										action="${removeContentFilter}" method="post"
+										id="removeContentFilter${status.index}">
+										<fieldset>
+											<input type="hidden" name="propertyName" value="${pref.key}" /><input
+												type="hidden" name="propertyValue" value="${pref.value}" />
+										</fieldset>
+										<img class="revokeHandle" src="${revokeIcon }"
+											title="Remove this filter" />
+									</form></li>
+							</c:forEach>
+						</ul>
+					</div>
+
+				</div>
+				<!-- end scAllCalendarInner -->
+			</div>
+			<!-- end scAllCalendar -->
+
+			<div id="revoke" class="margin3 padding1">
+				<c:choose>
+					<c:when
+						test="${share.guessable && not ineligibleStatus.ineligibleFromExternalSource}">
+						<form action="<c:url value="/rest/opt-out"/>" method="post"
+							class="optoutform">
+							<fieldset>
+								<input id="osubmit" type="submit"
+									value="Opt out from Public ShareURL" />
+							</fieldset>
+						</form>
+					</c:when>
+					<c:otherwise>
+						<c:url var="revokeUrl" value="revoke.html">
+							<c:param name="id" value="${share.key }" />
+						</c:url>
+
+						<form:form action="${revokeUrl}" cssClass="revokeform"
+							method="post">
+							<input type="submit" class="revokebutton"
+								value="Delete this ShareURL" />
+						</form:form>
+					</c:otherwise>
+				</c:choose>
+			</div>
+
+		</div>
+		<!-- end shareControls2 -->
+
+
+		<!--  </div> -->
+		<!--  end privacySettings -->
+
+		<hr />
+
+		<div id="examples" class="margin3">
+			<h2>Using your ShareURL</h2>
+			<p>This ShareURL can be viewed with the following link. Use the
+				form controls below to update the example for your use case:</p>
+			<div class="sharelink">
+				<a id="sharelinktag" href="${baseShareUrl }/dr(-14,30)?ical"><span
+					class="sharelinktext">${viewhelper:getVirtualServerAddress(pageContext.request)}<span>${baseShareUrl}</span><span
+						id="dateRange">/dr(-14,30)</span><span id="icsSuffix"></span><span
+						id="queryParameters">?ical</span></span></a>
+			</div>
+
+			<p>
+				<label for="client">I want to view my ShareURL in </label> <select
+					name="client" id="clientselect">
+					<option value="native" selected="selected">Microsoft
+						Outlook, Mozilla Thunderbird, or Apple iCal</option>
+					<option value="iphone">an iPhone or iPad</option>
+					<option value="browser">a Web Browser, like Firefox,
+						Chrome, or Internet Explorer</option>
+					<option value="google">Google Calendar</option>
+					<option value="ics">an ICS (iCalendar) file</option>
+					<option value="news">a News (RSS) Reader</option>
+					<option value="json">Javascript Object Notation (JSON)</option>
+				</select>
+			</p>
+
+			<p>
+				<label for="x">I would like to see data from </label><input id="x"
+					type="number" name="x" value="14" min="-999" max="999" /> days <select
+					id="negatex"><option value="negate" selected="selected">back</option>
+					<option value="">forward</option></select> <label for="y">through </label><input
+					id="y" type="number" name="y" value="30" min="-999" max="999" />
+				days forward.
+			</p>
+			<p>
+				OR, I would like to see data from <a id="justToday"
+					href="#justToday">just "today"</a>.
+			</p>
+			<p>
+				OR, <label for="datex">I would like to see data from
+					specifically </label><input id="datex" type="text" name="datex" /><label
+					for="datey"> through </label><input id="datey" type="text"
+					name="datey" />
+			</p>
+
+			<p>
+				I would like to see <a
+					title="View ShareURL Options (Opens new window)" target="_new_help"
+					href="http://kb.wisc.edu/wisccal/page.php?id=13322">all
+					available options for ShareURLs&raquo;</a>, including options for web
+				developers.
+			</p>
+
+		</div>
+		<div id="includeParticipantsHelp" title="Include Participants Help">
+			<p>This setting controls whether or not the name and email
+				address for meeting participants (attendees, organizer) is included
+				in the data for group events displayed by your ShareURL.</p>
+			<br />
+			<p>
+				Consider this option carefully: <strong>if you meet with
+					students regularly, you should not enable this setting</strong>. This
+				setting is best used on Traditional ShareURLs that are not shared
+				with a wide audience. The WiscCal team recommends you avoid using
+				this setting on your Public ShareURL.
+			</p>
+		</div>
+	</div>
+	<!-- content -->
+	<%@ include file="/WEB-INF/jsp/theme/body-end.jsp"%>
 </body>
 </html>

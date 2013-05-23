@@ -4,21 +4,25 @@ body {
 	margin-right: 0px;
 	margin-left: 2px;
 }
+
 #content {
 	width: 240px;
-	position: absolute;	
+	position: absolute;
 }
-.event	{
+
+.event {
 	font-size: 8pt;
 	padding-left: 2px;
 	margin-left: 4px;
 	background-color: #eff2f2;
 }
+
 #eventNav {
 	font-size: 10pt;
 	padding-left: 2px;
 	margin-left: 4px;
 }
+
 label {
 	font-weight: bold;
 }

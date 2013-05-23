@@ -19,25 +19,55 @@
 
 package edu.wisc.wisccal.shareurl.support;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
+import java.util.Map;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import net.fortuna.ical4j.model.Calendar;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.jasig.schedassist.impl.exchange.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.microsoft.exchange.*;
+import com.microsoft.exchange.impl.ExchangeOnlineThrottlingPolicy;
+import com.microsoft.exchange.impl.ExchangeWebServicesClient;
+import com.microsoft.exchange.impl.ThreadLocalImpersonationConnectingSIDSourceImpl;
+import com.microsoft.exchange.messages.FindItem;
+import com.microsoft.exchange.messages.FindItemResponse;
+import com.microsoft.exchange.messages.FindItemResponseMessageType;
+import com.microsoft.exchange.messages.ResponseMessageType;
+import com.microsoft.exchange.types.ArrayOfRealItemsType;
+import com.microsoft.exchange.types.CalendarItemType;
+import com.microsoft.exchange.types.CalendarViewType;
+import com.microsoft.exchange.types.ConnectingSIDType;
+import com.microsoft.exchange.types.DefaultShapeNamesType;
+import com.microsoft.exchange.types.DistinguishedFolderIdNameType;
+import com.microsoft.exchange.types.DistinguishedFolderIdType;
+import com.microsoft.exchange.types.EmailAddressType;
+import com.microsoft.exchange.types.FindItemParentType;
+import com.microsoft.exchange.types.FolderIdType;
+import com.microsoft.exchange.types.ItemQueryTraversalType;
+import com.microsoft.exchange.types.ItemResponseShapeType;
+import com.microsoft.exchange.types.ItemType;
+import com.microsoft.exchange.types.NonEmptyArrayOfBaseFolderIdsType;
 
+import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 /**
  * 
  * @author Nicholas Blair
@@ -49,11 +79,24 @@ public final class Calendars {
 			"cli.xml");
 	private static final Log MAIN_LOG = LogFactory.getLog(Calendars.class);
 	private SupportCaldavCalendarDataDaoImpl calendarDataDao;
+	private ExchangeCalendarDataDaoImpl exchangeCalendarDataDao;
 	private ICalendarAccountDao calendarAccountDao;
 	private String targetAccount;
 	private Date startDate;
 	private Date endDate;
 	private String dateFormat = "yyyyMMdd";
+	
+	
+	
+	public ExchangeCalendarDataDaoImpl getExchangeCalendarDataDao() {
+		return exchangeCalendarDataDao;
+	}
+	
+	@Autowired
+	public void setExchangeCalendarDataDao(ExchangeCalendarDataDaoImpl exchangeCalendarDataDao) {
+		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
+	}
+	
 	/**
 	 * @return the calendarDataDao
 	 */
@@ -135,7 +178,7 @@ public final class Calendars {
 	 * @param startDateValue
 	 * @throws ParseException
 	 */
-	@Value("${support.startdate:}")
+	@Value("${support.startdate}")
 	public void setStartDateValue(String startDateValue) throws ParseException {
 		if(StringUtils.isNotBlank(startDateValue)) {
 			SimpleDateFormat df = new SimpleDateFormat(getDateFormat());
@@ -147,7 +190,7 @@ public final class Calendars {
 	 * @param endDateValue
 	 * @throws ParseException
 	 */
-	@Value("${support.enddate:}")
+	@Value("${support.enddate}")
 	public void setEndDateValue(String endDateValue) throws ParseException {
 		if(StringUtils.isNotBlank(endDateValue)) {
 			SimpleDateFormat df = new SimpleDateFormat(getDateFormat());
@@ -159,17 +202,37 @@ public final class Calendars {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG);
 		
+		ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG);
 		Calendars instance = context.getBean(Calendars.class);
+		SupportCaldavCalendarDataDaoImpl cInstance = instance.getCalendarDataDao();
 		ICalendarAccount account = instance.getCalendarAccountDao().getCalendarAccount(instance.getTargetAccount());
-		MAIN_LOG.info("calling getCalendarsInternal for " + account + " and date range " + instance.getStartDate() + " through " + instance.getEndDate());
-		List<CalendarWithURI> calendars = instance.getCalendarDataDao()
-				.getCalendarsInternal(account, 
-						instance.getStartDate(), instance.getEndDate());
+		
+		Date startDate = instance.getStartDate();
+		Date endDate = instance.getEndDate();
+		
+		assert(null != startDate);
+		assert(null != endDate);
+		assert(null != instance);
+		assert(null != cInstance);
+		assert(null != account);
+		
+//		ApplicationContext ewsContext = 
+//				new ClassPathXmlApplicationContext("classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml");
+//		ExchangeCalendarDataDaoImpl exchangeCalendarDataDao =  (ExchangeCalendarDataDaoImpl) ewsContext.getBean("exchangeCalendarDataDao");
+//		Map<FolderIdType, String> msolcals = exchangeCalendarDataDao.listCalendars(account);
+			
+		//Map<String, String> calendarNames = cInstance.listCalendarsInternal(account);
+		
+		MAIN_LOG.info("calling getCalendarsInternal for " + account.getEmailAddress() + " and date range " + startDate + " through " + endDate);
+		List<CalendarWithURI> calendars = cInstance.getCalendarsInternal(account,startDate,endDate);
+	
 		MAIN_LOG.info("getCalendarsInternal returns: " + calendars);
-		Calendar consolidated = instance.getCalendarDataDao().consolidate(calendars);
+		Calendar consolidated = cInstance.consolidate(calendars);
 		MAIN_LOG.info("after consolidate: " + consolidated);
-	}
-
+		}
+	
+	
+	
+	
 }
