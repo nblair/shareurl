@@ -178,13 +178,13 @@ AutomaticPublicShareService {
 			share.setKey(emailAddress);
 			share.setOwnerCalendarUniqueId(calendarAccount.getCalendarUniqueId());
 			share.setValid(true);
-			Set<String> msolAddresses = new HashSet<String>();
-			String temp = calendarAccount.getAttributeValue("wiscedumsolupn");
-			log.debug("msoladdress found = "+temp);
-			msolAddresses.add(temp);
+//			Set<String> msolAddresses = new HashSet<String>();
+//			String temp = calendarAccount.getAttributeValue("wiscedumsolupn");
+//			log.debug("msoladdress found = "+temp);
 			
-			share.setCalAddresses(msolAddresses);
 			
+//			share.setCalAddresses(msolAddresses);
+//			
 			share.getSharePreferences().addPreference(new FreeBusyPreference());
 			share.getSharePreferences().addPreference(new GuessableSharePreference());
 			// mark to prevent revokeShare from working

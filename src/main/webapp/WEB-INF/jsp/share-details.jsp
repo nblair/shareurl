@@ -443,7 +443,7 @@ function postSetLabel(form) {
 									<span>Include events from the following Office 365 calendar </span> 
 									<form:select 
 										name="calendarId" id="exchangeCalendarNames" class="calSelectDDL" path="share" onchange="setExchangeCalType(this);">
-										<form:options items="${share.msolCals}" />
+										<form:options items="${exchangeCalendarList}" />
 									</form:select>
 									<input id="exchangeCalType" name="calendarType" type="hidden" value="exchange" />
 									<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setExchangeCalType(this);" />&nbsp;
@@ -456,7 +456,7 @@ function postSetLabel(form) {
 									<span>Include events from the following WiscCal calendar </span> 
 									<form:select 
 										name="calendarId" id="wiscCalCalendarNames" class="calSelectDDL" path="share" onchange="setWiscCalType(this);">
-										<form:options items="${share.wiscCals}" />
+										<form:options items="${caldavCalendarList}" />
 									</form:select>
 									<input id="wiscCalType" name="calendarType" type="hidden" value="wisccal" />
 									<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setWiscCalType(this);"/>&nbsp;

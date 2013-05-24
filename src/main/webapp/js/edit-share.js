@@ -108,7 +108,7 @@ function disableCalendarDefault(){
 	$('#cdRadio').attr('checked', '');
 	$('#scCalDefaultInner').addClass('notselected');
 }
-function enableCalenarSelect(){
+function enableCalendarSelect(){
 	$('#calSelectFilters').attr('disabled', '');
 	$('.calSelectDDL').attr('disabled', '');
 	$('.calSelectButton').attr('disabled', '');

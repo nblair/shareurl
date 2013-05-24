@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.ICalendarDataDao;
-import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -42,6 +41,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.microsoft.exchange.types.FolderIdType;
 import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
+import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
@@ -84,7 +84,7 @@ IShareDao {
 	
 	
 	@Autowired
-	CaldavCalendarDataDao caldavDataDao;
+	IShareCalendarDataDao caldavDataDao;
 
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.IShareDao#generateNewShare(edu.wisc.wisccal.calendarkey.ICalendarAccount, edu.wisc.wisccal.calendarkey.SharePreferences)
@@ -402,25 +402,25 @@ IShareDao {
 			}
 			s.setSharePreferences(prefs);
 			
-			//ctcudd make sure the msoladdresses are set.
-			Set<String> msolAddresses = new HashSet<String>();
-			
-			String temp = owner.getAttributeValue("wiscedumsolupn");
-			msolAddresses.add(temp);			
-			s.setCalAddresses(msolAddresses);
-			
-			
-			//set all calendarIds here?
-			ApplicationContext ewsContext = 
-					new ClassPathXmlApplicationContext("classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml");
-			ExchangeCalendarDataDaoImpl exchangeCalendarDataDao =  (ExchangeCalendarDataDaoImpl) ewsContext.getBean("exchangeCalendarDataDao");
-			s.setMsolCals(exchangeCalendarDataDao.listCalendars(owner));	
-			
-			Validate.notNull(caldavDataDao);
-//			ApplicationContext caldavContext = 
-//					new ClassPathXmlApplicationContext("classpath*:**/*applicationContext.xml");	
-//			Calkey115CalendarDataDaoImpl caldavDataDao = (Calkey115CalendarDataDaoImpl) caldavContext.getBean("caldavCalendarDataDao");
-			s.setWiscCals(caldavDataDao.listCalendars(owner));
+//			//ctcudd make sure the msoladdresses are set.
+//			Set<String> msolAddresses = new HashSet<String>();
+//			
+//			String temp = owner.getAttributeValue("wiscedumsolupn");
+//			msolAddresses.add(temp);			
+//			s.setCalAddresses(msolAddresses);
+//			
+//			
+//			//set all calendarIds here?
+//			ApplicationContext ewsContext = 
+//					new ClassPathXmlApplicationContext("classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml");
+//			ExchangeCalendarDataDaoImpl exchangeCalendarDataDao =  (ExchangeCalendarDataDaoImpl) ewsContext.getBean("exchangeCalendarDataDao");
+//			s.setMsolCals(exchangeCalendarDataDao.listCalendars(owner));	
+//			
+//			Validate.notNull(caldavDataDao);
+////			ApplicationContext caldavContext = 
+////					new ClassPathXmlApplicationContext("classpath*:**/*applicationContext.xml");	
+////			Calkey115CalendarDataDaoImpl caldavDataDao = (Calkey115CalendarDataDaoImpl) caldavContext.getBean("caldavCalendarDataDao");
+//			s.setWiscCals(caldavDataDao.listCalendars(owner));
 			
 		}
 		return shares;

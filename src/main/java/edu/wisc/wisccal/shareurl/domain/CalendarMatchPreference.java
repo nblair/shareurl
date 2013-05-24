@@ -23,6 +23,10 @@ public class CalendarMatchPreference extends AbstractSharePreference {
 	public static final String CALENDAR_MATCH =  "CALENDAR_MATCH";
 	public static final String CALENDAR_MATCH_PROPERTY_NAME = "X-CALENDAR_MATCH";
 	
+	public static final String EXCHANGE_CALENDAR_IDENTIFIER = "Office 365";
+	public static final String ORACLE_CALENDAR_IDENTIFIER = "WiscCal";
+	
+	public boolean filterEnabled = true;
 	
 	public CalendarMatchPreference(final String propertyName, final String propertyValue) {
 		this.propertyName = propertyName;
@@ -71,15 +75,21 @@ public class CalendarMatchPreference extends AbstractSharePreference {
 		Property eventProperty = event.getProperties().getProperty(CALENDAR_MATCH_PROPERTY_NAME);
 				
 		if(null != eventProperty) {
-			log.debug("Event contains: "+CALENDAR_MATCH_PROPERTY_NAME+" = "+eventProperty.getValue());
+			log.debug("\nEvent contains: "+CALENDAR_MATCH_PROPERTY_NAME+" = "+eventProperty.getValue());
 			log.debug("CalendarMatch preference "+ this.getKey() + " = "+ this.getValue());
 			
+			if(!filterEnabled) return true;
+			
 			//if exchange calendar properties should be equal
-			if(StringUtils.equals(eventProperty.getValue(), this.getValue())) return true;
+			if(StringUtils.equals(eventProperty.getValue(), this.getValue())){
+				log.debug("Exchange match");
+				return true;
+			}
 			
 			if(StringUtils.contains(eventProperty.getValue(), this.getValue())){
 				for(String part : eventProperty.getValue().split("/") ){
 					if(StringUtils.equals(part+"/", this.getValue())){
+						log.debug("WiscCal match");
 						return true;
 					}
 				}

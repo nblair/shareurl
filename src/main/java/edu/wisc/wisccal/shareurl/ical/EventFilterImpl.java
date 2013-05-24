@@ -64,11 +64,21 @@ public class EventFilterImpl implements IEventFilter {
 
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.ical.IEventFilter#filterEvents(net.fortuna.ical4j.model.Calendar, edu.wisc.wisccal.calendarkey.SharePreferences)
+	 *
+	 *  Filter events based on SharePreferences.
+	 *	Events matching any propertyMatch preference are returned
+	 *  Events matching any calendarMatch preference are returned
+	 *  If both calendarMatch and propertyMatch prefrences are defined, events must match at least one of each preferenceType
 	 */
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Calendar filterEvents(final Calendar original, final SharePreferences preferences) {
 		final Set<ISharePreference> filterPreferences = preferences.getFilterPreferences();
+		Set<ISharePreference> calendarFilters = preferences.getCalendarMatchPreferences();
+		
+		Set<ISharePreference> propertyFilters = filterPreferences;
+		propertyFilters.removeAll(calendarFilters);
 		
 		log.info("filterEvents prefrernces = "+ preferences.toString());
 		
@@ -78,7 +88,7 @@ public class EventFilterImpl implements IEventFilter {
 		}
 
 		// otherwise, share has property matches, only return elements that match
-		ComponentList resultComponents = new ComponentList();
+		ComponentList propertyMatchComponents = new ComponentList();
 		Map<String, VTimeZone> timezones = new HashMap<String, VTimeZone>();
 
 		for(Iterator<?> i = original.getComponents().iterator(); i.hasNext(); ) {
@@ -93,24 +103,51 @@ public class EventFilterImpl implements IEventFilter {
 				VEvent event = (VEvent) component;
 				boolean kept = false;
 				ISharePreference keeper = null;
-				for(ISharePreference pref : filterPreferences) {
+				for(ISharePreference pref : propertyFilters) {
 					if(pref.matches(event)) {
-						kept = resultComponents.add(event);
+						kept = propertyMatchComponents.add(event);
 						break;
 					}
 				}
 				if(log.isDebugEnabled()) {
 					if(kept) {
-						log.debug(keeper + " retained " + calendarDataProcessor.getDebugId(event));
+						log.debug("propertyFilterPreference retained: " + calendarDataProcessor.getDebugId(event));
 					} else {
-						log.debug("dropping " + calendarDataProcessor.getDebugId(event));
+						log.debug("propertyFilterPreference dropped: " + calendarDataProcessor.getDebugId(event));
 					}
 				}
 			}
 		}
+		
+		ComponentList calendarAndPropertyMatchComponents = new ComponentList();
+		if(calendarFilters.isEmpty()){
+			calendarAndPropertyMatchComponents.addAll(propertyMatchComponents);
+		}else{
+			for(Iterator<?> i = propertyMatchComponents.iterator(); i.hasNext(); ) {
+				net.fortuna.ical4j.model.Component component = (net.fortuna.ical4j.model.Component) i.next();
+				VEvent event = (VEvent) component;
+				boolean kept = false;
+				ISharePreference keeper = null;
+				for(ISharePreference pref : calendarFilters) {
+					if(pref.matches(event)) {
+						kept = calendarAndPropertyMatchComponents.add(event);
+						break;
+					}
+				}
+				if(log.isDebugEnabled()) {
+					if(kept) {
+						log.debug("calendarMatchPreference retained: " + calendarDataProcessor.getDebugId(event));
+					} else {
+						log.debug("calendarMatchPreference dropped: " + calendarDataProcessor.getDebugId(event));
+					}
+				}
+			}	
+		}
+		
+			
 
 		preferences.disposeAll();
-		Calendar result = new Calendar(resultComponents);
+		Calendar result = new Calendar(calendarAndPropertyMatchComponents);
 		result.getComponents().addAll(timezones.values());
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(new ProdId("-//ShareURL//WiscCal//EN"));

@@ -5,10 +5,14 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.xml.bind.JAXBElement;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.component.VEvent;
 import net.sf.ehcache.CacheManager;
 
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
@@ -36,6 +40,9 @@ import com.microsoft.exchange.types.CalendarItemType;
 import com.microsoft.exchange.types.DefaultShapeNamesType;
 import com.microsoft.exchange.types.FindItemParentType;
 import com.microsoft.exchange.types.ItemType;
+
+import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
+
 import org.apache.commons.lang.time.StopWatch;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -109,6 +116,15 @@ public class ExchangeCalendarIntegrationTest extends
 		
 	}
 
+	/**
+	 * 
+	 * Obtain a Map<String=CalendarId, String=CalendarName> of all calendars for an account.
+	 * Issue one findItem request for all CalendarIds 
+	 * Issue a getItem request for every eventId returned
+	 * Verify every event returned contains a X-CALNEDAR_MATCH property with a valid calendarId
+	 * A calendarId is only valid if it is contained in map.keySet() and has a corresponding calendar (i.e. map.get(calendarId) != null )
+	 * 
+	 */
 	@Test
 	public void getCalendarByIdTest() {
 		Map<String, String> msolcals = exchangeCalendarDataDao
@@ -119,15 +135,34 @@ public class ExchangeCalendarIntegrationTest extends
 			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it
 					.next();
 
-			if (pairs.getValue().contains("test cal")) {
+			
 				log.debug("Found MS calendar [" + pairs.getValue() + " = "
 						+ pairs.getKey() + "]");
 				msoCalIds.add(pairs.getKey());
-			}
+			
 		}
 
 		Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(
 				account, startDate, endDate, msoCalIds);
+		
+		assert(!exchangeCalendar.getComponents(VEvent.VEVENT).isEmpty());
+		
+		for(Iterator<?> i = exchangeCalendar.getComponents(VEvent.VEVENT).iterator(); i.hasNext(); ) {
+			VEvent event = (VEvent) i.next();
+			Property eventProperty = event.getProperties().getProperty(CalendarMatchPreference.CALENDAR_MATCH_PROPERTY_NAME);
+			
+			log.debug(CalendarMatchPreference.CALENDAR_MATCH_PROPERTY_NAME +" = "+ eventProperty.getValue());
+			log.debug("Event summary = "+ event.getSummary());
+						
+			assertNotNull(eventProperty);
+			assert(msoCalIds.contains(eventProperty.getValue()));
+			assert(msolcals.containsKey(eventProperty.getValue()));
+			assertNotNull(msolcals.get(eventProperty.getValue()));
+			
+			String calendarName = msolcals.get(eventProperty.getValue());
+			log.debug("CalName="+calendarName);
+		}
+		
 		CalendarWithURI exchangeCalendarWithURI = new CalendarWithURI(
 				exchangeCalendar, "exchangeCalendarDataTest");
 
@@ -168,11 +203,8 @@ public class ExchangeCalendarIntegrationTest extends
 			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it
 					.next();
 
-			// value should contain @ad-test.wisc.edu for now
-			assert (pairs.getValue().contains("@ad-test.wisc.edu"));
 			log.debug(pairs.getValue() + " = " + pairs.getKey());
 
-			it.remove(); // avoids a ConcurrentModificationException
 		}
 	}
 

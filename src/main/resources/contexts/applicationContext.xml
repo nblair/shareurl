@@ -28,6 +28,8 @@
 	<context:component-scan base-package="edu.wisc.wisccal.shareurl" />
 	<context:component-scan base-package="org.jasig.schedassist.impl.caldav" />
 
+<!-- 	<import resource="classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml" /> -->
+
 	<bean id="caldavCalendarDataDao"
 		class="edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl" />
 

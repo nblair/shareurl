@@ -15,6 +15,8 @@
     <import resource="classpath:ehcache.xml" />
     <import resource="classpath:/contexts/cacheContext.xml" />
 	<import resource="classpath:database-test.xml" />
+	<import resource="classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml" />
+	
 	<bean id="primaryPropertyPlaceholderConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations" ref="propertyFileList" />

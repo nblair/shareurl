@@ -83,7 +83,7 @@ public class AbstractCalendarIntegrationTest {
 		@Override
 		public List<String> getAttributeValues(String attributeName) {
             List<String> l =  new ArrayList<String>();
-            if(attributeName.equals("wiscedumsolupn"))l.add("ctcudd@ad-test.wisc.edu");
+            if(attributeName.equals("wiscedumsolupn"))l.add("ctcudd@wisctest.wisc.edu");
             return l;
 
 		}

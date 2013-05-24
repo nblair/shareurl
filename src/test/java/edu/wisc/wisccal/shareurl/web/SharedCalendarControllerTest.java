@@ -32,7 +32,6 @@ import net.fortuna.ical4j.model.property.Uid;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.ICalendarAccountDao;
-import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -41,6 +40,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ModelMap;
 
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
+import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -468,7 +468,7 @@ public class SharedCalendarControllerTest {
 		SharedCalendarController controller = new SharedCalendarController();
 		
 		IShareDao shareDao = mock(IShareDao.class);
-		ICalendarDataDao calendarDataDao = mock(ICalendarDataDao.class);
+		IShareCalendarDataDao calendarDataDao = mock(IShareCalendarDataDao.class);
 		CalendarDataProcessor dataProcessor = mock(CalendarDataProcessor.class);
 		IEventFilter eventFilter = mock(IEventFilter.class);
 		AutomaticPublicShareService autoPublicShareService = mock(AutomaticPublicShareService.class);
@@ -485,7 +485,7 @@ public class SharedCalendarControllerTest {
 		when(calendarAccountDao.getCalendarAccountFromUniqueId("bbadger@wisc.edu")).thenReturn(account);
 		
 		Calendar agenda = new Calendar();
-		when(calendarDataDao.getCalendar(eq(account), isA(java.util.Date.class), isA(java.util.Date.class))).thenReturn(agenda);
+		when(calendarDataDao.getCalendar(eq(account), eq(share), isA(java.util.Date.class), isA(java.util.Date.class))).thenReturn(agenda);
 		
 		dataProcessor.noRecurrence(eq(agenda), isA(java.util.Date.class), isA(java.util.Date.class), isA(Boolean.class));
 		dataProcessor.filterAgendaForDateRange(isA(Calendar.class), isA(IShareRequestDetails.class));

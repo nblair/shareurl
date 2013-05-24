@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UrlPathHelper;
 
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
+import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -130,7 +131,7 @@ public class SharedCalendarController {
 	private static final String VFB = ".vfb";
 
 	private IShareDao shareDao;
-	private ICalendarDataDao calendarDataDao;
+	private IShareCalendarDataDao calendarDataDao;
 	private ICalendarAccountDao calendarAccountDao;
 	private IEventFilter eventFilter;
 	private CalendarDataProcessor calendarDataProcessor;
@@ -148,7 +149,7 @@ public class SharedCalendarController {
 	 * @param calendarDataDao the calendarDataDao to set
 	 */
 	@Autowired
-	public void setCalendarDataDao(@Qualifier("caldavCalendarDataDao") ICalendarDataDao calendarDataDao) {
+	public void setCalendarDataDao(@Qualifier("caldavCalendarDataDao") IShareCalendarDataDao calendarDataDao) {
 		this.calendarDataDao = calendarDataDao;
 	}
 	/**
@@ -422,7 +423,9 @@ public class SharedCalendarController {
 				return "data/display-mobileconfig";
 			}
 
-			Calendar agenda = obtainAgenda(account, requestDetails, share.getSharePreferences());
+			//Calendar agenda = obtainAgenda(account, requestDetails, share.getSharePreferences());
+			Calendar agenda = obtainAgenda(account, requestDetails, share);
+			
 			calendarDataProcessor.removeEmailAlarms(agenda);
 			if(share.getSharePreferences().isFreeBusyOnly()) {
 				// this share is free busy only
@@ -451,6 +454,7 @@ public class SharedCalendarController {
 			return viewName;
 		} 
 	}
+
 	/**
 	 * Retrieve the agenda, and perform base required filtering.
 	 * 
@@ -460,8 +464,14 @@ public class SharedCalendarController {
 	 * @param share
 	 * @return the {@link Calendar}, post filtering
 	 */
-	protected Calendar obtainAgenda(ICalendarAccount account, ShareRequestDetails requestDetails, SharePreferences preferences) {
-		Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate());
+	private Calendar obtainAgenda(ICalendarAccount account, ShareRequestDetails requestDetails, Share share) {
+		Calendar agenda = calendarDataDao.getCalendar(account, share, requestDetails.getStartDate(), requestDetails.getEndDate());
+		
+		return checkAndFilterAgenda(account, requestDetails, share.getSharePreferences(), agenda);
+	}
+	
+	protected Calendar checkAndFilterAgenda(ICalendarAccount account, ShareRequestDetails requestDetails, SharePreferences preferences, Calendar agenda){
+		
 		if(LOG.isDebugEnabled()) {
 			List<String> eventUids = eventDebugIds(agenda);
 			LOG.debug("begin processing " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
@@ -486,7 +496,6 @@ public class SharedCalendarController {
 		}
 		return agenda;
 	}
-	
 	
 	List<String> eventDebugIds(Calendar calendar) {
 		if(calendar == null) {

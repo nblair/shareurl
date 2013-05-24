@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-	<bean id="marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+	<bean id="chubClientMarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
 		<property name="contextPaths">
 			<list>
 				<value>edu.wisc.services.ebo.curricular.v1_4</value>
@@ -14,8 +14,8 @@
 
 	<bean id="chubClient"
 		class="edu.wisc.services.chub.v1_4.client.CurricularDataServiceClient">
-		<property name="marshaller" ref="marshaller" />
-		<property name="unmarshaller" ref="marshaller" />
+		<property name="marshaller" ref="chubClientMarshaller" />
+		<property name="unmarshaller" ref="chubClientMarshaller" />
 		<property name="destinationProvider">
 			<!-- NOTE the different DestinationProvider implementation from chub-client-common -->
 			<bean

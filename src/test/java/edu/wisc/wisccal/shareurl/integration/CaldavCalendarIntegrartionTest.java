@@ -16,7 +16,6 @@ import net.sf.ehcache.CacheManager;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.ICalendarDataDao;
-import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
 import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.InputFormatException;
 import org.junit.Assert;
@@ -28,6 +27,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,7 +35,7 @@ import edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl;
 public class CaldavCalendarIntegrartionTest extends AbstractCalendarIntegrationTest {
 
 	@Autowired
-	CaldavCalendarDataDao caldavDataDao;
+	IShareCalendarDataDao caldavDataDao;
 	
 	@Autowired
 	CacheManager cacheManager;
