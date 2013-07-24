@@ -16,11 +16,11 @@
 	<description>ShareURL 3.2; implemented using Jasig Scheduling Assistant libraries.</description>
 
 	<scm>
-		<connection>scm:svn:https://code.doit.wisc.edu/svn/wisccal/shareurl/trunk</connection>
-		<developerConnection>scm:svn:https://code.doit.wisc.edu/svn/wisccal/shareurl/trunk</developerConnection>
-		<url>https://code.doit.wisc.edu/fisheye/browse/wisccal/shareurl/trunk</url>
-	</scm>
-
+		<connection>scm:git:git@github.com:ctcudd/shareurl.git</connection>
+		<developerConnection>scm:git:git@github.com:ctcudd/shareurl.git</developerConnection>
+		<url>https://github.com/ctcudd/shareurl</url>
+  </scm>
+  
 	<repositories>
 		<repository>
 			<id>sonatype-snapshots</id>
