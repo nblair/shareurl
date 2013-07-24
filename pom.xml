@@ -1,5 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+		<groupId>edu.wisc.doit.code</groupId>
+		<artifactId>shared-tools-public-parent</artifactId>
+		<version>7</version>
+	</parent>
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.wisc.wisccal</groupId>
 	<artifactId>shareurl</artifactId>
@@ -37,17 +44,18 @@
 		<spring-ldap.version>1.3.1.RELEASE</spring-ldap.version>
 		<spring-security.version>3.0.5.RELEASE</spring-security.version>
 		<spring-webflow.version>2.0.9.RELEASE</spring-webflow.version>
-		<jasig.schedassist.version>1.2.0-SNAPSHOT</jasig.schedassist.version>
+		<schedassist.groupid>edu.wisc.wisccal.sched-assist</schedassist.groupid>
+		<schedassist.version>1.2.3</schedassist.version>
 		<jasig.resourceserver.version>1.0.24</jasig.resourceserver.version>
 		<junit.version>4.8.2</junit.version>
 		<log4j.version>1.2.16</log4j.version>
 		<mockito.version>1.8.5</mockito.version>
 		<easymock.version>2.5.2</easymock.version>
+		<project.resources.tcrypt.privateKey>/Users/ctcudd/wiscshareurl-keys/private-wiscshareurl.pem</project.resources.tcrypt.privateKey>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
-
 			<dependency>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -93,13 +101,13 @@
 	<dependencies>
 		<dependency>
 			<artifactId>sched-assist-mock</artifactId>
-			<groupId>org.jasig.sched-assist</groupId>
-			<version>1.2.0-SNAPSHOT</version>
+			<groupId>${schedassist.groupid}</groupId>
+			<version>${schedassist.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jasig.sched-assist</groupId>
 			<artifactId>sched-assist-spi-exchange</artifactId>
-			<version>1.2.0-SNAPSHOT</version>
+			<groupId>${schedassist.groupid}</groupId>
+			<version>${schedassist.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.xml.wsit</groupId>
@@ -122,9 +130,9 @@
 			<version>1.4.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jasig.sched-assist</groupId>
 			<artifactId>sched-assist-spi-caldav</artifactId>
-			<version>${jasig.schedassist.version}</version>
+			<groupId>${schedassist.groupid}</groupId>
+			<version>${schedassist.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -242,7 +250,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -277,9 +284,78 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
+				<dependencies>
+					<dependency>
+						<groupId>edu.wisc.doit.tcrypt</groupId>
+						<artifactId>tcrypt-filtering-resources-plugin</artifactId>
+						<version>1.0.8</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<mavenFilteringHints>
+						<mavenFilteringHint>custom</mavenFilteringHint>
+					</mavenFilteringHints>
+				</configuration>
+			</plugin>
 		</plugins>
+
+		<resources>
+			<!-- | Enables token decruption and general property filtering of all 
+				.properties files. | As a side effect only .properties files are copied into 
+				the the build directory. + -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<!-- | Enables copying of the rest of the resources into the build directory 
+				without | filtering. + -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+				</excludes>
+			</resource> 
+		</resources>
+		
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</testResource>
+			<!-- | Enables copying of the rest of the resources into the build directory 
+				without | filtering. + -->
+			<testResource>
+				<directory>src/test/resources</directory>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+				</excludes>
+			</testResource>
+		</testResources>
+
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.jasig.maven</groupId>
+					<artifactId>maven-notice-plugin</artifactId>
+					<version>1.0.5</version>
+					<configuration>
+						<noticeTemplate>https://source.jasig.org/licenses/NOTICE.template</noticeTemplate>
+						<licenseMapping>
+							<param>https://source.jasig.org/licenses/license-mappings.xml</param>
+							<param>${session.executionRootDirectory}/license-mappings.xml</param>
+						</licenseMapping>
+					</configuration>
+				</plugin>
+			
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>

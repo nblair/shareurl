@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Licensed to Jasig under one or more contributor license
-    agreements. See the NOTICE file distributed with this work
-    for additional information regarding copyright ownership.
-    Jasig licenses this file to you under the Apache License,
+    Copyright 2012, Board of Regents of the University of
+    Wisconsin System. See the NOTICE file distributed with
+    this work for additional information regarding copyright
+    ownership. Board of Regents of the University of Wisconsin
+    System licenses this file to you under the Apache License,
     Version 2.0 (the "License"); you may not use this file
     except in compliance with the License. You may obtain a
     copy of the License at:
@@ -19,7 +20,6 @@
     under the License.
 
 -->
-
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
@@ -54,7 +54,7 @@
     <bean id="ownerExchangeCalendarAccount" class="edu.wisc.wisccal.shareurl.impl.mock.MockExchangeCalendarAccount">
         <property name="calendarUniqueId" value="ctcudd"/>
         <property name="displayName" value="Cudd, Collin "/>
-        <property name="emailAddress" value="ctcudd@ad-test.wisc.edu"/>
+        <property name="emailAddress" value="ctcudd@o365preview.wisctest.wisc.edu"/>
         <property name="username" value="ctcudd"/>
         <property name="eligible" value="true" />
         <qualifier value="owner3"/>
@@ -63,7 +63,7 @@
     <bean id="resourceCalendarAccount1" class="edu.wisc.wisccal.shareurl.impl.mock.MockExchangeDelegateCalendarAccount">
     	<property name="calendarUniqueId" value="ctcudd"/>
         <property name="displayName" value="Cudd, Collin "/>
-        <property name="emailAddress" value="ctcudd@ad-test.wisc.edu"/>
+        <property name="emailAddress" value="ctcudd@o365preview.wisctest.wisc.edu"/>
         <property name="username" value="ctcudd"/>
         <property name="eligible" value="true" />
         <qualifier value="resource1"/>

@@ -1,8 +1,9 @@
 /**
- * Licensed to Jasig under one or more contributor license
- * agreements. See the NOTICE file distributed with this work
- * for additional information regarding copyright ownership.
- * Jasig licenses this file to you under the Apache License,
+ * Copyright 2012, Board of Regents of the University of
+ * Wisconsin System. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Board of Regents of the University of Wisconsin
+ * System licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a
  * copy of the License at:
@@ -16,7 +17,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package edu.wisc.wisccal.shareurl.support;
 
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import net.fortuna.ical4j.model.property.Transp;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
+import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDao;
@@ -69,19 +70,19 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 	private CacheManager cacheManager;
 	
 	
-	private ExchangeCalendarDataDao exchangeCalendarDataDao;
+	private ICalendarDataDao exchangeCalendarDataDao;
 	
 	/**
 	 * @return the exchangeCalendarDataDao
 	 */
-	public ExchangeCalendarDataDao getExchangeCalendarDataDao() {
+	public ICalendarDataDao getExchangeCalendarDataDao() {
 		return exchangeCalendarDataDao;
 	}
 	/**
 	 * @param exchangeCalendarDataDao the exchangeCalendarDataDao to set
 	 */
 	@Autowired
-	public void setExchangeCalendarDataDao(ExchangeCalendarDataDao exchangeCalendarDataDao) {
+	public void setExchangeCalendarDataDao(ICalendarDataDao exchangeCalendarDataDao) {
 		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
 	}
 	/**
@@ -358,7 +359,8 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 
 
 	public Calendar getCalDavCalendars(ICalendarAccount account, Date start, Date end) {
-		return getCalDavCalendars(account, start, end, null);
+		String temp = null;
+		return getCalDavCalendars(account, start, end, temp);
 	}
 	
 	public Calendar getCalDavCalendars(ICalendarAccount calendarAccount, Date startDate, Date endDate, String accountUri){

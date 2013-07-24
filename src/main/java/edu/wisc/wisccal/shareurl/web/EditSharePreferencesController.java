@@ -1,8 +1,9 @@
 /**
- * Licensed to Jasig under one or more contributor license
- * agreements. See the NOTICE file distributed with this work
- * for additional information regarding copyright ownership.
- * Jasig licenses this file to you under the Apache License,
+ * Copyright 2012, Board of Regents of the University of
+ * Wisconsin System. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Board of Regents of the University of Wisconsin
+ * System licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a
  * copy of the License at:
@@ -16,7 +17,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package edu.wisc.wisccal.shareurl.web;
 
 
@@ -42,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDao;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -91,7 +92,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	private AutomaticPublicShareService automaticPublicShareService;
 	
 	
-	private ExchangeCalendarDataDao exchangeCalendarDataDao;
+	private ICalendarDataDao exchangeCalendarDataDao;
 	private IShareCalendarDataDao caldavCalendarDataDao;
 	
 	/**
@@ -274,7 +275,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		//if candidate is not null and calendar isCalendarSelect()
 		if(candidate != null && !candidate.isCalendarSelect()){
 			//add CalendarMatchPref for default calendar
-			candidate = shareDao.addSharePreference(candidate, new CalendarMatchPreference("WiscCal - calendar", "calendar/"));
+			candidate = shareDao.addSharePreference(candidate, new CalendarMatchPreference(ICalendarDataDao.CALDAV_NAME_PREFIX+"calendar", "calendar/"));
 			model.addAttribute("share", candidate);
 		}else{
 			StringBuilder err = new StringBuilder(" Failed to set CalendarSelect. ");
@@ -765,12 +766,12 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	boolean checkboxParameterToBoolean(String value) {
 		return ON.equalsIgnoreCase(value);
 	}
-	public ExchangeCalendarDataDao getExchangeCalendarDataDao() {
+	public ICalendarDataDao getExchangeCalendarDataDao() {
 		return exchangeCalendarDataDao;
 	}
 	
 	@Autowired
-	public void setExchangeCalendarDataDao(ExchangeCalendarDataDao exchangeCalendarDataDao) {
+	public void setExchangeCalendarDataDao(ICalendarDataDao exchangeCalendarDataDao) {
 		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
 	}
 	public IShareCalendarDataDao getCaldavCalendarDataDao() {
