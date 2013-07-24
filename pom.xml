@@ -19,8 +19,8 @@
 		<connection>scm:git:git@github.com:ctcudd/shareurl.git</connection>
 		<developerConnection>scm:git:git@github.com:ctcudd/shareurl.git</developerConnection>
 		<url>https://github.com/ctcudd/shareurl</url>
-  </scm>
-  
+	</scm>
+
 	<repositories>
 		<repository>
 			<id>sonatype-snapshots</id>
@@ -300,6 +300,27 @@
 					</mavenFilteringHints>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+<!-- 				<configuration> -->
+<!-- 					<webResources> -->
+<!-- 						<resource> -->
+<!-- 							<directory>${project.basedir}/src/main/webapp/META-INF</directory> -->
+<!-- 							<filtering>true</filtering> -->
+<!-- 							<includes> -->
+<!-- 								<include>context.xml</include> -->
+<!-- 							</includes> -->
+<!-- 						</resource> -->
+<!-- 						<resource> -->
+<!-- 							<directory>src/main/webapp/META-INF</directory> -->
+<!-- 							<excludes> -->
+<!-- 								<exclude>context.xml</exclude> -->
+<!-- 							</excludes> -->
+<!-- 						</resource> -->
+<!-- 					</webResources> -->
+<!-- 				</configuration> -->
+			</plugin>
 		</plugins>
 
 		<resources>
@@ -313,6 +334,15 @@
 					<include>**/*.properties</include>
 				</includes>
 			</resource>
+<!-- 			<resource> -->
+<!-- 				<directory>src/main/webapp/META-INF</directory> -->
+<!-- 				<filtering>true</filtering> -->
+<!-- 				<includes> -->
+<!-- 					<include>context.xml</include> -->
+<!-- 				</includes> -->
+				
+<!-- 				<targetPath>${project.build.directory}/${project.build.finalName}/META-INF</targetPath> -->
+<!-- 			</resource> -->
 			<!-- | Enables copying of the rest of the resources into the build directory 
 				without | filtering. + -->
 			<resource>
@@ -320,9 +350,9 @@
 				<excludes>
 					<exclude>**/*.properties</exclude>
 				</excludes>
-			</resource> 
+			</resource>
 		</resources>
-		
+
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
@@ -341,6 +371,7 @@
 			</testResource>
 		</testResources>
 
+
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -355,7 +386,7 @@
 						</licenseMapping>
 					</configuration>
 				</plugin>
-			
+
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
