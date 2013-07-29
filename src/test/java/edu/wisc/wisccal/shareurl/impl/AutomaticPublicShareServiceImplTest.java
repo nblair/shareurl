@@ -30,6 +30,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -395,8 +396,10 @@ public class AutomaticPublicShareServiceImplTest {
 		}
 		@Override
 		public List<String> getAllEmailAddresses() {
-			// TODO Auto-generated method stub
-			return null;
+			List<String> emails = new ArrayList<String>();
+			emails.add(getEmailAddress());
+			emails.add(getUpn());
+			return emails;
 		}
 	}
 }
