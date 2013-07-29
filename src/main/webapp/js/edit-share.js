@@ -89,9 +89,8 @@ function renderFilterCalendarPreferences(share, revokeIconPath, formAction, disp
 	}
 }
 function renderFilterPreferences(share, revokeIconPath, formAction, displayEmptySet) {
-	$('#contentFilters').empty();
-	
-	if(!share.freeBusyOnly) {
+	if(share.calendarSelect) {
+		$('#contentFilters').empty();
 		//if propertymatchprefs exist
 		if(!$.isEmptyObject(share.sharePreferences.propertyMatchPreferences)) {
 			
