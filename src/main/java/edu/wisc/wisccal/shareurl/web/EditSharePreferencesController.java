@@ -263,9 +263,10 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	 * @param shareKey
 	 * @param model
 	 * @return
+	 * @throws GuessableShareAlreadyExistsException 
 	 */
 	@RequestMapping(value="/rest/tocs", method=RequestMethod.POST)
-	public String toCalSelect(@RequestParam String shareKey, ModelMap model) {
+	public String toCalSelect(@RequestParam String shareKey, ModelMap model) throws GuessableShareAlreadyExistsException {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		if(log.isDebugEnabled()) {
@@ -275,6 +276,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		//if candidate is not null and calendar isCalendarSelect()
 		if(candidate != null && !candidate.isCalendarSelect()){
 			//add CalendarMatchPref for default calendar
+			candidate = justInTimeReplace(candidate, activeAccount);
 			candidate = shareDao.addSharePreference(candidate, new CalendarMatchPreference(ICalendarDataDao.CALDAV_NAME_PREFIX+"calendar", "calendar/"));
 			model.addAttribute("share", candidate);
 		}else{
