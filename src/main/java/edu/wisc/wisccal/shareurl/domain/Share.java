@@ -66,10 +66,7 @@ public class Share implements Serializable {
 	private String label;
 	private SharePreferences sharePreferences = new SharePreferences();
 	private boolean valid = true;
-
-	
-
-
+	private Map<String, String> calendarMap;
 	
 	/**
 	 * @return the key
@@ -210,6 +207,12 @@ public class Share implements Serializable {
 			.append("label", this.label)
 			.append("sharePreferences", sharePreferences)
 			.toString();
+	}
+	public Map<String, String> getCalendarMap() {
+		return calendarMap;
+	}
+	public void setCalendarMap(Map<String, String> calendarMap) {
+		this.calendarMap = calendarMap;
 	}
 	
 }

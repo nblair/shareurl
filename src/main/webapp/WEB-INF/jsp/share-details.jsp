@@ -48,6 +48,10 @@
 	margin: 3px;
 }
 
+.padTop {
+	padding-top: 5px;
+}
+
 .padding1 {
 	padding: 1em;
 }
@@ -170,12 +174,22 @@
 <script type="text/javascript" src="<c:url value="/js/edit-share.js"/>"></script>
 
 <script type="text/javascript">
-    function setExchangeCalType(sel) {
-    	 $("#exchangeCalType").val($("#exchangeCalendarNames option:selected").text());
+//     function setExchangeCalType(sel) {
+//     	 $("#exchangeCalType").val($("#exchangeCalendarNames option:selected").text());
+//     }
+//     function setWiscCalType(sel) {
+//     	 $("#wiscCalType").val($("#wiscCalCalendarNames option:selected").text());   	
+//   	}
+    
+    function setCalType(){
+    	var calendarName = $('#allCalendarSelect option:selected').text();
+    	var calendarId   = $('#allCalendarSelect option:selected').val();
+    	var calType = calendarName.substring(0, calendarName.indexOf("-")).trim();
+    	//alert("type="+calType);
+    	$("#calendarType").val(calType);
+		//return false;
     }
-    function setWiscCalType(sel) {
-    	 $("#wiscCalType").val($("#wiscCalCalendarNames option:selected").text());   	
-  	}
+    
 </script>
 
 
@@ -223,7 +237,8 @@ $(function() {
 					  "sharePreferences": {
 							"classificationFilters": ${viewhelper:classificationFiltersToJSON(share.sharePreferences.classificationFilters)},
 							"contentFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.contentFilters)},
-							"calendarFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.calendarFilters)}
+							"calendarFilters": ${viewhelper:contentFiltersToJSON(share.sharePreferences.calendarFilters)},
+							"test":"true",
 			} };
 	var lastShare = initShare;
 	renderShareControls(initShare);
@@ -267,10 +282,14 @@ function setupFormHandlers() {
 	    $('#tocs').submit();
 	});
 	
-	applySubmitHandlerIfPresent('#exchangeCalendarFilter', '${addCalendarFilter}', '#labelindicatorExchangeCalCalf', function() {
-		setupRemoveCalendarFilterForms();
-	});
-	applySubmitHandlerIfPresent('#wiscCalCalendarFilter', '${addCalendarFilter}', '#labelindicatorWiscCalCalf', function() {
+// 	applySubmitHandlerIfPresent('#exchangeCalendarFilter', '${addCalendarFilter}', '#labelindicatorExchangeCalCalf', function() {
+// 		setupRemoveCalendarFilterForms();
+// 	});
+// 	applySubmitHandlerIfPresent('#wiscCalCalendarFilter', '${addCalendarFilter}', '#labelindicatorWiscCalCalf', function() {
+// 		setupRemoveCalendarFilterForms();
+// 	});
+	
+	applySubmitHandlerIfPresent('#allCalendarFilterForm', '${addCalendarFilter}', '#calendarSelectLabelIndicator', function() {
 		setupRemoveCalendarFilterForms();
 	});
 	
@@ -290,12 +309,12 @@ function setupFormHandlers() {
 
 function setupRemoveCalendarFilterForms(){
 	$('.removeCalendarFilter').each(function(i) {
-		applySubmitHandlerIfPresent($(this), '${removeCalendarFilter}', '#labelindicatorWiscCalCalf', function() {
+		applySubmitHandlerIfPresent($(this), '${removeCalendarFilter}', '#calendarSelectLabelIndicator', function() {
 			setupRemoveCalendarFilterForms();
 		});
-		applySubmitHandlerIfPresent($(this), '${removeCalendarFilter}', '#labelindicatorExchangeCalCalf', function() {
-			setupRemoveCalendarFilterForms();
-		});
+// 		applySubmitHandlerIfPresent($(this), '${removeCalendarFilter}', '#labelindicatorExchangeCalCalf', function() {
+// 			setupRemoveCalendarFilterForms();
+// 		});
 	});
 	
 	$('#calendarFilters .revokeHandle').unbind('click');
@@ -332,12 +351,13 @@ function postAndRenderPreferences(url, form, indicator, callback) {
 			formdata,
 			function(responsedata) {
 				if(responsedata.share) {
+					
 					lastShare = responsedata.share;
 					$(indicator).empty();
                     $('<img src="${tickIcon}"/>').appendTo(indicator);
 					renderShareControls(responsedata.share);
 					renderFilterPreferences(responsedata.share, '${revokeIcon}', '${removeContentFilter}', responsedata.removeContentFilter);
-					renderFilterCalendarPreferences(responsedata.share, '${revokeIcon}', '${removeCalendarFilter}', responsedata.removeCalendarFilter);
+					renderFilterCalendarPreferences(responsedata.share, '${revokeIcon}', '${removeCalendarFilter}', responsedata.calendarMap, responsedata.removeCalendarFilter);
 					
 					if(callback && typeof(callback) == 'function') {
 						callback(responsedata);
@@ -417,8 +437,10 @@ function postSetLabel(form) {
 				</div>
 			</c:if>
 
+	<p class="padTop"><strong>Which calendar(s) do you want to include in your ShareURL?</strong></p>
+	<div id="outerCalendarSelect" class="bordered padding1 margin3">
 
-			<div id="calDefault" class="bordered padding1 margin3">
+			<div id="calDefault" >
 				<form action="${tocd }" method="post" id="tocd">
 					<fieldset>
 						<input id="cdRadio" type="radio" name="calDefault" value="true" /><label
@@ -430,8 +452,13 @@ function postSetLabel(form) {
 					<p>Only display events contained in your default WiscCal Calendar</p>
 				</div>
 			</div>
+			<!-- end calDefault -->
 
-			<div id="calSelect" class="bordered padding1 margin3">
+			<br />
+			<hr />
+			<br />
+
+			<div id="calSelect" >
 				<form action="${tocs }" method="post" id="tocs">
 					<fieldset>
 						<input id="csRadio" type="radio" name="calSelect" value="true" /><label
@@ -443,6 +470,21 @@ function postSetLabel(form) {
 					<p>Display events from selected Calendars</p>
 				
 					<div id="calSelectFilters">
+							
+							<form action="${addCalendarFilter}" method="post" id="allCalendarFilterForm">
+								<fieldset>
+									<span>Include events from the following calendar</span>
+									<form:select path="share" name="calendarId" id="allCalendarSelect" class="calSelectDDL">
+										<form:options items="${allCalendarList}" />
+					 				</form:select>
+					 				<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setCalType();" />&nbsp;
+					 				<input id="calendarType" name="calendarType" type="hidden" value="" />
+					 				<span id="calendarSelectLabelIndicator"	class="ind"></span><br />
+								</fieldset>
+							
+							</form>
+							
+							<!-- 
 							<form action="${addCalendarFilter}" method="post"
 								id="exchangeCalendarFilter">
 								<fieldset>
@@ -469,15 +511,18 @@ function postSetLabel(form) {
 									<span id="labelindicatorWiscCalCalf"	class="ind"></span><br />
 								</fieldset>
 							</form>
+							 -->
+							 
+							 
 							<ul id="calendarFilters">
 								<c:choose>
 									<c:when test="${empty share.sharePreferences.calendarMatchPreferences}" >
-										<li><span class="removable">WiscCal - calendar</span>&nbsp;
+										<li><span class="removable"><c:out value="${allCalendarList['calendar/']}" /></span>&nbsp;
 												<form class="removeCalendarFilter inlineblock"
 													action="${removeCalendarFilter}" method="post"
 													id="removeCalendarFilter${status.index}">
 													<fieldset>
-														<input type="hidden" name="calendarName" value="WiscCal - calendar" /><input
+														<input type="hidden" name="calendarName" value="<c:out value="${allCalendarList['calendar/']}" />" /><input
 															type="hidden" name="calendarId" value="calendar/" />
 													</fieldset>
 													<img class="revokeHandle" src="${revokeIcon }"
@@ -488,12 +533,12 @@ function postSetLabel(form) {
 										<c:forEach
 											items="${share.sharePreferences.calendarMatchPreferences }"
 											var="pref" varStatus="status">
-											<li><span class="removable">${pref.displayName }</span>&nbsp;
+											<li><span class="removable"><c:out value="${allCalendarList[pref.value]}" /></span>&nbsp;
 												<form class="removeCalendarFilter inlineblock"
 													action="${removeCalendarFilter}" method="post"
 													id="removeCalendarFilter${status.index}">
 													<fieldset>
-														<input type="hidden" name="calendarName" value="${pref.key}" /><input
+														<input type="hidden" name="calendarName" value="<c:out value="${allCalendarList[pref.value]}" />" /><input
 															type="hidden" name="calendarId" value="${pref.value}" />
 													</fieldset>
 													<img class="revokeHandle" src="${revokeIcon }"
@@ -509,8 +554,13 @@ function postSetLabel(form) {
 					<!-- end scCalSelectInner -->
 			</div>
 			<!-- end calSelect -->
-
-			<div id="scFreeBusy" class="bordered padding1 margin3">
+			
+		</div>
+		<!--  end outerCalendarSelect -->
+		 
+		 <p class="padTop"><strong>How much event information do you want to include in your ShareURL?</strong></p>
+		 <div id="outerDetailsSelect" class="bordered padding1 margin3" >
+			<div id="scFreeBusy" >
 				<form action="${tofb }" method="post" id="tofb">
 					<fieldset>
 						<input id="fbRadio" type="radio" name="freebusyonly" value="true" /><label
@@ -525,8 +575,11 @@ function postSetLabel(form) {
 				</div>
 			</div>
 			<!-- end scFreeBusy -->
-
-			<div id="scAllCalendar" class="bordered padding1 margin3">
+			<br />
+			<hr />
+			<br />
+			
+			<div id="scAllCalendar" >
 
 				<form action="${toac }" method="post" id="toac">
 					<fieldset>
@@ -556,8 +609,7 @@ function postSetLabel(form) {
 					<div id="filters" class="padding2">
 						<form action="${addPrivacyFilter}" method="post"
 							id="privacyFilter">
-							<p>
-								Limit results to include only events with the following <a
+							<p>Only include events with the following <a
 									target="_new_visibilityHelp"
 									href="https://kb.wisc.edu/helpdesk/page.php?id=24155">visibility</a>&nbsp;<span
 									id="labelindicatorcl" class="ind"></span>:
@@ -575,7 +627,7 @@ function postSetLabel(form) {
 						<form action="${addContentFilter}" method="post"
 							id="contentFilter">
 							<fieldset>
-								<span>Include only events with </span> <select id="propertyName"
+								<span>Only include events with </span> <select id="propertyName"
 									name="propertyName"><option value="SUMMARY">Title</option>
 									<option value="LOCATION">Location</option>
 									<option value="DESCRIPTION">Description</option></select> <span>&nbsp;containing&nbsp;</span><input
@@ -607,6 +659,9 @@ function postSetLabel(form) {
 				<!-- end scAllCalendarInner -->
 			</div>
 			<!-- end scAllCalendar -->
+			
+			</div>
+		<!--  end outerDetailsSelect -->
 
 			<div id="revoke" class="margin3 padding1">
 				<c:choose>

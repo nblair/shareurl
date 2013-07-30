@@ -74,13 +74,13 @@ function renderShareControls(share) {
 	
 }
 
-function renderFilterCalendarPreferences(share, revokeIconPath, formAction, displayEmptySet) {
-	$('#calendarFilters').empty();
-	if(!share.freeBusyOnly) {
+function renderFilterCalendarPreferences(share, revokeIconPath, formAction,calendarMap, displayEmptySet) {
+	if(share.calendarSelect) {
+		$('#calendarFilters').empty();
 		//if calendarMatch prefs exist
 		if(!$.isEmptyObject(share.sharePreferences.calendarMatchPreferences)) {
 			$.each(share.sharePreferences.calendarMatchPreferences, function(i, obj) {
-				$('<li><span class="removable">' + obj.displayName + '</span>&nbsp;<form class="removeCalendarFilter inlineblock" action="' + formAction + '" method="post"><fieldset><input type="hidden" name="calendarName" value="' + obj.key + '"/><input type="hidden" name="calendarId" value="' + obj.value + '"/></fieldset><img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></form></li>').appendTo('#calendarFilters');
+				$('<li><span class="removable">' + calendarMap[obj.value] + '</span>&nbsp;<form class="removeCalendarFilter inlineblock" action="' + formAction + '" method="post"><fieldset><input type="hidden" name="calendarName" value="' + obj.key + '"/><input type="hidden" name="calendarId" value="' + obj.value + '"/></fieldset><img src="' + revokeIconPath + '" title="Remove this filter" class="revokeHandle"/></form></li>').appendTo('#calendarFilters');
 			});
 		} else if (displayEmptySet){
 			$('<li>No filters: all events returned.</li>').appendTo('#calendarFilters');
@@ -89,8 +89,8 @@ function renderFilterCalendarPreferences(share, revokeIconPath, formAction, disp
 	}
 }
 function renderFilterPreferences(share, revokeIconPath, formAction, displayEmptySet) {
-	if(share.calendarSelect) {
-		$('#contentFilters').empty();
+	$('#contentFilters').empty();
+	if(!share.freeBusyOnly) {
 		//if propertymatchprefs exist
 		if(!$.isEmptyObject(share.sharePreferences.propertyMatchPreferences)) {
 			

@@ -158,8 +158,14 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 			message.append("Retrieving caldav calendars for the following ids: ");
 			for(String cid: caldavCalendarIds){
 				message.append("\n"+cid);
-				List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate,cid );
-				if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
+				try{
+					List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate,cid );
+					if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
+				}catch(Exception e){
+					log.warn("FAILED TO GET CALDAV CALENDAR FOR : "+cid+".  This calendar may no longer exist and should be removed from the share's preferences.  Exception="+e.getMessage());
+					continue;
+				} 
+				
 			}
 		}
 		
