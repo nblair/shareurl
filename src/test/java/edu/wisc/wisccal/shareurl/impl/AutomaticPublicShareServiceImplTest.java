@@ -401,5 +401,9 @@ public class AutomaticPublicShareServiceImplTest {
 			emails.add(getUpn());
 			return emails;
 		}
+		@Override
+		public String getCalendarEmailAddress() {
+			return getEmailAddress();
+		}
 	}
 }
