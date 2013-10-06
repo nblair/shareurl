@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2012, Board of Regents of the University of
+    Wisconsin System. See the NOTICE file distributed with
+    this work for additional information regarding copyright
+    ownership. Board of Regents of the University of Wisconsin
+    System licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="	http://www.springframework.org/schema/beans 
+       						http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+
+	<bean id="shareDao" class="edu.wisc.wisccal.shareurl.impl.SpringJDBCShareDaoImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="createDdl" class="org.springframework.core.io.ClassPathResource">
+		<constructor-arg value="ddl/shareurl-hsql.ddl" />
+	</bean>
+	<bean id="destroyDdl" class="org.springframework.core.io.ClassPathResource">
+		<constructor-arg value="ddl/shareurl-destroy-hsql.ddl" />
+	</bean>
+
+	<bean id="optOutDao" class="edu.wisc.wisccal.shareurl.impl.SpringJDBCOptOutDaoImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+
+	<!-- DEV (HSQL) DATASOURCE -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
+		<property name="driverClassName">
+			<value>org.hsqldb.jdbcDriver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:hsqldb:mem:storagedb</value>
+		</property>
+		<property name="username">
+			<value>SA</value>
+		</property>
+		<property name="password">
+			<value></value>
+		</property>
+	</bean>
+
+	<bean id="ownerIdSequenceGenerator"
+		class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource" />
+		<property name="incrementerName" value="ownerid_seq" />
+		<property name="columnName" value="user_id" />
+		<qualifier value="owners" />
+	</bean>
+	<bean id="eventIdSequenceGenerator"
+		class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="incrementerName">
+			<value>eventid_seq</value>
+		</property>
+		<property name="columnName">
+			<value>event_id</value>
+		</property>
+		<qualifier value="statistics" />
+	</bean>
+	<bean id="reminderIdSequenceGenerator"
+		class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource" />
+		<property name="incrementerName" value="reminderid_seq" />
+		<property name="columnName" value="reminder_id" />
+		<qualifier value="reminders" />
+	</bean>
+
+
+
+
+
+	<!-- TEST (JNDI) DATASOURCE -->
+	<!-- <bean id="dataSource" class="org.jasig.portlet.utils.jdbc.TomcatDataSourceFactory" 
+		> <property name="driverClassName" value="${database.driverClassName}" /> 
+		<property name="url" value="${database.url}" /> <property name="username" 
+		value="${database.username}" /> <property name="password" value="${database.password}" 
+		/> </bean> <bean id="ownerIdSequence" class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer"> 
+		<property name="dataSource" ref="dataSource"/> <property name="incrementerName" 
+		value="ownerid_seq"/> <qualifier value="owners"/> </bean> <bean id="eventIdSequence" 
+		class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer"> 
+		<property name="dataSource" ref="dataSource"/> <property name="incrementerName" 
+		value="eventid_seq"/> <qualifier value="statistics"/> </bean> <bean id="reminderIdSequence" 
+		class="org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer"> 
+		<property name="dataSource" ref="dataSource"/> <property name="incrementerName" 
+		value="reminderid_seq"/> <qualifier value="reminders"/> </bean> -->
+</beans>
