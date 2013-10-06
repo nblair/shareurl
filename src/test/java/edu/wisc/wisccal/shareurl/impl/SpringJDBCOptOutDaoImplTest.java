@@ -33,13 +33,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * @author Nicholas Blair
  */
 public class SpringJDBCOptOutDaoImplTest extends AbstractDatabaseDependentTest {
 
-	@Autowired
+	@Autowired 
 	private SpringJDBCOptOutDaoImpl optOutDao;
 	
 	/**

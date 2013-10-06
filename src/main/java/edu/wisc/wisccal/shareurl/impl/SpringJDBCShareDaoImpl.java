@@ -27,11 +27,13 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.ICalendarDataDao;
+import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -43,7 +45,9 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.microsoft.exchange.types.FolderIdType;
+
 import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
@@ -88,7 +92,7 @@ IShareDao {
 	
 	
 	@Autowired
-	IShareCalendarDataDao caldavDataDao;
+	CaldavCalendarDataDao caldavDataDao;
 
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.IShareDao#generateNewShare(edu.wisc.wisccal.calendarkey.ICalendarAccount, edu.wisc.wisccal.calendarkey.SharePreferences)
@@ -114,6 +118,11 @@ IShareDao {
 			SharePreferences preferences)  throws GuessableShareAlreadyExistsException {
 		String key = account.getEmailAddress();
 		Share existing = internalRetrieveByKey(key);
+		if(null == existing){
+			key = account.getUpn();
+			existing = internalRetrieveByKey(key);
+		}
+		
 		if(null != existing) {
 			if(existing.isValid()) {
 				throw new GuessableShareAlreadyExistsException();
@@ -124,7 +133,9 @@ IShareDao {
 			}
 		} else {
 			preferences.addPreference(new GuessableSharePreference());
-			final String ownerUniqueId = account.getCalendarUniqueId();
+			String ownerUniqueId = account.getCalendarUniqueId();
+			if(StringUtils.isBlank(ownerUniqueId)) ownerUniqueId = account.getUpn();
+			
 			return storeNewShare(key, ownerUniqueId, preferences);
 		}
 	}
@@ -391,10 +402,12 @@ IShareDao {
 	 * @return
 	 */
 	protected List<Share> internalRetrieveByOwner(final ICalendarAccount owner, final String validity) {
+		String ownerUniqueId = owner.getCalendarUniqueId();
+		if(StringUtils.isBlank(ownerUniqueId)) ownerUniqueId = owner.getUpn();
 		List<Share> shares = this.getSimpleJdbcTemplate().query(
 				"select * from shares where owner = ? and valid like ?",
 				new ShareRowMapper(), 
-				owner.getCalendarUniqueId(), 
+				ownerUniqueId, 
 				validity);
 
 		for(Share s : shares) {

@@ -45,6 +45,7 @@ import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarDataDao;
+import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDao;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -69,6 +70,7 @@ import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.IncludeParticipantsPreference;
+import edu.wisc.wisccal.shareurl.domain.IncludeSourceCalendarPreference;
 import edu.wisc.wisccal.shareurl.domain.PropertyMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
@@ -94,8 +96,8 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	private AutomaticPublicShareService automaticPublicShareService;
 	
 	
-	private ICalendarDataDao exchangeCalendarDataDao;
-	private IShareCalendarDataDao caldavCalendarDataDao;
+	private ExchangeCalendarDataDao exchangeCalendarDataDao;
+	private CaldavCalendarDataDao caldavCalendarDataDao;
 	
 	/**
 	 * @return the shareDao
@@ -150,13 +152,17 @@ public class EditSharePreferencesController extends WebContentGenerator {
 			allCalendarsList.putAll(exchangeListCalendars);
 			
 			model.addAttribute("allCalendarList", allCalendarsList);
+			Map<String, String> calendarMap = getCalendarMap(activeAccount);
+			if(null != calendarMap){
+				String defaultCalendarId = getDefaultCalendarId(calendarMap);
+				model.addAttribute("defaultCalendarId",defaultCalendarId);
+			}
 			model.addAttribute("exchangeCalendarList", exchangeListCalendars);
 			model.addAttribute("caldavCalendarList", caldavListCalendars);
 			
-			
 			log.debug("share object: "+ candidate.toString());
 			model.addAttribute("share", candidate);
-			model.addAttribute("calendarMap", getCalendarMap(activeAccount));
+			model.addAttribute("calendarMap", calendarMap);
 			// also grab eligibility
 			model.addAttribute("ineligibleStatus", automaticPublicShareService.getEligibilityStatus(activeAccount));
 			preventCaching(response);
@@ -251,6 +257,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		if(log.isDebugEnabled()) {
 			log.debug("Handling toFreeBusy request request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
 		}
+
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		if(candidate != null && !candidate.isFreeBusyOnly()) {
 			Set<ISharePreference> prefs = candidate.getSharePreferences().getPreferences();
@@ -288,7 +295,15 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		if(candidate != null && !candidate.isCalendarSelect()){
 			//add CalendarMatchPref for default calendar
 			candidate = justInTimeReplace(candidate, activeAccount);
-			candidate = shareDao.addSharePreference(candidate, new CalendarMatchPreference(ICalendarDataDao.CALDAV_NAME_PREFIX+"calendar", "calendar/"));
+			Map<String, String> calendarMap = getCalendarMap(activeAccount);
+			if(null != calendarMap){
+				String defaultCalendarId = getDefaultCalendarId(calendarMap);
+				String defaultCalendarName = calendarMap.get(defaultCalendarId);
+				candidate = shareDao.addSharePreference(candidate, new CalendarMatchPreference(defaultCalendarName, defaultCalendarId));
+			}else{
+				log.warn("I've made a huge mistake");
+			}
+			
 			model.addAttribute("share", candidate);
 			
 		}else{
@@ -367,6 +382,42 @@ public class EditSharePreferencesController extends WebContentGenerator {
 			model.addAttribute("share", candidate);
 		} else if (!ON.equalsIgnoreCase(includeParticipants) && candidate.isIncludeParticipants()) {
 			candidate = shareDao.removeSharePreference(candidate, new IncludeParticipantsPreference(true));
+			model.addAttribute("share", candidate);
+		}
+		
+		return JSON_VIEW;
+	}
+	
+	/**
+	 * Add the {@link IncludeSourceCalendarPreference}, if not present.
+	 * 
+	 * @param shareKey
+	 * @param model
+	 * @return the json view
+	 */
+	@RequestMapping(value="/rest/includeSC", method=RequestMethod.POST)
+	public String includeSourceCalendar(@RequestParam String shareKey, @RequestParam(required=false) String includeSourceCalendar, ModelMap model) {
+		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		if(log.isDebugEnabled()) {
+			log.debug("handling includeParticipants request for shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId());
+		}
+		model.addAttribute("calendarMap", getCalendarMap(activeAccount));
+		Share candidate = identifyCandidate(shareKey, activeAccount);
+		if(candidate == null || candidate.isFreeBusyOnly()) {
+			StringBuilder err = new StringBuilder("Failed to include source calendar (");
+			if(candidate == null) err.append("Candidate is null, ");
+			if(candidate.isFreeBusyOnly()) err.append("Candidate is FB only");
+			err.append(")");
+			return JSON_VIEW;
+		}
+		
+		IncludeSourceCalendarPreference sharePreference = new IncludeSourceCalendarPreference(true);
+		if(ON.equalsIgnoreCase(includeSourceCalendar) && !candidate.isIncludeSourceCalendar()) {
+			candidate = shareDao.addSharePreference(candidate, sharePreference);
+			model.addAttribute("share", candidate);
+		} else if (!ON.equalsIgnoreCase(includeSourceCalendar) && candidate.isIncludeSourceCalendar()) {
+			candidate = shareDao.removeSharePreference(candidate, sharePreference);
 			model.addAttribute("share", candidate);
 		}
 		
@@ -460,7 +511,8 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
-		model.addAttribute("calendarMap", getCalendarMap(activeAccount));
+		Map<String, String> calendarMap = getCalendarMap(activeAccount);
+		model.addAttribute("calendarMap", calendarMap);
 		if(log.isDebugEnabled()) {
 			log.debug("Handling addCalendarFilter request for  shareKey="+shareKey+", account="+activeAccount.getCalendarUniqueId()+ 
 					", calendarType="+calendarType+", calendarId="+calendarId);
@@ -471,7 +523,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		
 		//FB candidates may still specify calendars...
 		//if(candidate != null && !candidate.isFreeBusyOnly() && validatePropertyFilter(candidate, calendarType, calendarId)) {
-		if(candidate != null  && validatePropertyFilter(candidate, calendarType, calendarId)) {
+		if(candidate != null  && calendarMap.containsKey(calendarId)) {
 			
 			//String calendarName = getCalendarName(activeAccount, calendarId);
 			
@@ -518,8 +570,7 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		
 		Share candidate = identifyCandidate(shareKey, activeAccount);
 		StringBuilder err = new StringBuilder("Failed to remove calendar filter");
-		
-		;
+
 		
 		if(candidate != null) {
 			//ISharePreference sharePreference = SharePreferences.construct(CalendarMatchPreference.CALENDAR_MATCH,calendarName, calendarId);
@@ -682,7 +733,9 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		} else {
 			model.addAttribute("error", "Label invalid");
 		}
-		model.addAttribute("calendarMap", getCalendarMap(activeAccount));
+		Map<String, String> calendarMap = getCalendarMap(activeAccount);
+		model.addAttribute("calendarMap", calendarMap);
+		
 		return JSON_VIEW;
 	}
 	/**
@@ -779,6 +832,13 @@ public class EditSharePreferencesController extends WebContentGenerator {
 				return s;
 			}
 		}
+		//sharekey not found, look for upn 
+		for(Share s: shares) {
+			if(s.getKey().equals(activeAccount.getUpn())) {
+				return s;
+			}
+		}
+		
 		Share publicShare = automaticPublicShareService.getAutomaticPublicShare(activeAccount.getEmailAddress());
 		if(publicShare != null && publicShare.getKey().equals(shareKey)) {
 			return publicShare;
@@ -816,6 +876,19 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		return allCalendarsList;
 	}
 	
+	public String getDefaultCalendarId(Map<String,String> calendarMap){
+		if(calendarMap.containsKey(ICalendarDataDao.DEFAULT_CALENDAR_PATH)) return  ICalendarDataDao.DEFAULT_CALENDAR_PATH;
+		if(calendarMap.containsValue(ICalendarDataDao.DEFAULT_EXCHANGE_CALENDAR)){
+			for(String key : calendarMap.keySet()){
+				String name = calendarMap.get(key);
+				if(name.equals(ICalendarDataDao.DEFAULT_EXCHANGE_CALENDAR)) return key;
+			}
+		}
+		log.warn("NO DEFAULT CALENDAR FOUND!!!");
+		return null;
+		
+	}
+	
 	/**
 	 * 
 	 * @param value
@@ -824,20 +897,20 @@ public class EditSharePreferencesController extends WebContentGenerator {
 	boolean checkboxParameterToBoolean(String value) {
 		return ON.equalsIgnoreCase(value);
 	}
-	public ICalendarDataDao getExchangeCalendarDataDao() {
+	public ExchangeCalendarDataDao getExchangeCalendarDataDao() {
 		return exchangeCalendarDataDao;
 	}
 	
 	@Autowired
-	public void setExchangeCalendarDataDao(ICalendarDataDao exchangeCalendarDataDao) {
+	public void setExchangeCalendarDataDao(ExchangeCalendarDataDao exchangeCalendarDataDao) {
 		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
 	}
-	public IShareCalendarDataDao getCaldavCalendarDataDao() {
+	public CaldavCalendarDataDao getCaldavCalendarDataDao() {
 		return caldavCalendarDataDao;
 	}
 	
 	@Autowired
-	public void setCaldavCalendarDataDao(IShareCalendarDataDao caldavCalendarDataDao) {
+	public void setCaldavCalendarDataDao(CaldavCalendarDataDao caldavCalendarDataDao) {
 		this.caldavCalendarDataDao = caldavCalendarDataDao;
 	}
 }

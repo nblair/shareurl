@@ -117,6 +117,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	private static final Pattern DATE_PATTERN_2 = Pattern.compile(DATE_REGEX_2);
 
 	private final PathData pathData;
+	private String ipAddress;
 	private Client client;
 	private ShareDisplayFormat displayFormat;
 	private boolean overrideBreakRecurrence = false;
@@ -133,6 +134,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 * @param request
 	 */
 	public ShareRequestDetails(final HttpServletRequest request) {
+		
 		String requestPath = new UrlPathHelper().getPathWithinServletMapping(request);
 		if(requestPath.startsWith(URL_PATH_SEPARATOR)) {
 			requestPath = requestPath.substring(1, requestPath.length());
@@ -211,6 +213,8 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		if(request.getParameter(UW_SUPPORT_RDATE) != null) {
 			this.requiresProblemRecurringPreference = true;
 		}
+		
+		this.ipAddress = extractIpAddress(request);
 
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(this);
@@ -510,12 +514,14 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 	 */
 	@Override
 	public String toString() {
-		return "ShareRequestDetails [pathData=" + pathData + ", client="
-				+ client + ", displayFormat=" + displayFormat
-				+ ", overrideBreakRecurrence=" + overrideBreakRecurrence
-				+ ", overrideConvertClass=" + overrideConvertClass
-				+ ", getEndDate()=" + getEndDate() + ", getStartDate()="
-				+ getStartDate() + "]";
+		return "ShareRequestDetails [pathData=" + pathData + 
+				", client=" + client + 
+				", ipAddress="  + ipAddress +
+				", displayFormat=" + displayFormat +
+				", overrideBreakRecurrence=" + overrideBreakRecurrence +
+				", overrideConvertClass=" + overrideConvertClass +
+				", getEndDate()=" + getEndDate() + 
+				", getStartDate()=" + getStartDate() + "]";
 	}
 
 	/* (non-Javadoc)
@@ -532,6 +538,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		builder.append(this.pathData, rhs.pathData);
 		builder.append(this.displayFormat, rhs.displayFormat);
 		builder.append(this.client, rhs.client);
+		builder.append(this.ipAddress, rhs.ipAddress);
 		builder.append(this.overrideBreakRecurrence, rhs.overrideBreakRecurrence);
 		builder.append(this.overrideConvertClass, rhs.overrideConvertClass);
 		return builder.isEquals();
@@ -547,6 +554,7 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		return builder.append(this.pathData)
 				.append(displayFormat)
 				.append(client)
+				.append(ipAddress)
 				.append(overrideBreakRecurrence)
 				.append(overrideConvertClass)
 				.toHashCode();
@@ -823,6 +831,27 @@ public final class ShareRequestDetails implements IShareRequestDetails {
 		datePhraseBuilder.append(")");
 		return datePhraseBuilder.toString();
 	}
+	
+	public String extractIpAddress(HttpServletRequest request){
+		String ip = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        return ip; 
+	}
+	
 	/**
 	 * 
 	 * @author Nicholas Blair

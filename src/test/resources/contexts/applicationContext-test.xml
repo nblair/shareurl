@@ -33,37 +33,23 @@
        					http://www.springframework.org/schema/util 
        					http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
+	<context:property-placeholder location="shareurl.properties" ignore-unresolvable="true" />
+    <context:component-scan base-package="edu.wisc.wisccal.shareurl"  annotation-config="true" />
 
-	<context:property-placeholder location="support.properties, shareurl.properties" ignore-unresolvable="true"/>
-	<!-- <import resource="classpath:contexts/applicationContext-test.xml" /> -->
-	
-	<context:component-scan base-package="edu.wisc.wisccal.shareurl"  annotation-config="true" >
-		<context:exclude-filter type="aspectj" expression="edu.wisc.wisccal.shareurl.support.*"/>
-	</context:component-scan>
-	
-	<import resource="classpath:contexts/integration/chubClientContext.xml" />
-	<import resource="classpath:contexts/integration/calendarAccounts-ldap.xml" />
-	<import resource="classpath:contexts/integration/cacheContext.xml" />
-	<import resource="classpath:contexts/integration-test/databaseContext-oracle.xml" />
-	
-	<import resource="classpath:integration/calendarData-caldav.xml" />
-	<import resource="classpath:integration/calendarData-exchange.xml" />
-	
-<!-- 	<bean id="dataSource" -->
-<!-- 		class="org.springframework.jdbc.datasource.SingleConnectionDataSource"> -->
-<!-- 		<property name="driverClassName" value="${support.database.driverClassName}" /> -->
-<!-- 		<property name="username" value="${support.database.username}" /> -->
-<!-- 		<property name="password" value="${support.database.password}" /> -->
-<!-- 		<property name="url" value="${support.database.url}" /> -->
-<!-- 	</bean> -->
+	<bean id="caldavCalendarDataDao" class="edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl" />
 
-	<bean id="caldavCalendarDataDao"
-		class="edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl" />
-		
-<!-- 	<bean id="exchangeCalendarDataDao" -->
-<!-- 		class="org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl" /> -->
-
-	<bean id="calendars" class="edu.wisc.wisccal.shareurl.support.Calendars" />
+	<!-- sched-assist accounts currently make an additional dao call to determine calendar write pref.  shareurl must override account config -->
+	<!-- 	<import resource="classpath*:/org/jasig/schedassist/impl/ldap/calendarAccounts-ldap.xml" /> -->
+	<import resource="classpath:/contexts/integration/calendarAccounts-ldap.xml" />
 	
+	<!-- shareurl also uses some additional caches -->
+    <import resource="classpath:/contexts/integration/ehcache.xml" />
 
+	<import resource="classpath:/contexts/integration-test/databaseContext-test.xml" />
+	
+	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml" />
+	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caldav/calendarData-caldav.xml" />
+	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caching/cacheContext.xml" />
+	<import resource="classpath*:/contexts/org/jasig/schedassist/model/mock/mockCalendarAccounts.xml" />
+	<import resource="classpath*:/contexts/edu/wisc/services/chub/chub-client-v1_4.xml" />
 </beans>

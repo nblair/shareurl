@@ -24,12 +24,10 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.xml.bind.JAXBElement;
+
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.sf.ehcache.CacheManager;
@@ -37,37 +35,12 @@ import net.sf.ehcache.CacheManager;
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDao;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import com.microsoft.exchange.DateHelp;
-import com.microsoft.exchange.ExchangeEventConverter;
-import com.microsoft.exchange.ExchangeRequestHelp;
-import com.microsoft.exchange.impl.ExchangeWebServicesClient;
-import com.microsoft.exchange.messages.FindItem;
-import com.microsoft.exchange.messages.FindItemResponse;
-import com.microsoft.exchange.messages.FindItemResponseMessageType;
-import com.microsoft.exchange.messages.GetItem;
-import com.microsoft.exchange.messages.GetItemResponse;
-import com.microsoft.exchange.messages.ItemInfoResponseMessageType;
-import com.microsoft.exchange.messages.ResponseMessageType;
-import com.microsoft.exchange.types.ArrayOfRealItemsType;
-import com.microsoft.exchange.types.CalendarItemType;
-import com.microsoft.exchange.types.DefaultShapeNamesType;
-import com.microsoft.exchange.types.FindItemParentType;
-import com.microsoft.exchange.types.ItemType;
+import org.apache.commons.lang.time.StopWatch;
 
 import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
 
-import org.apache.commons.lang.time.StopWatch;
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:/contexts/exchangeContext-test.xml"})
-public class ExchangeCalendarIntegrationTest extends
-		AbstractCalendarIntegrationTest {
+public class ExchangeCalendarIntegrationTest extends AbstractCalendarIntegrationTest {
 
 	@Autowired
 	ExchangeCalendarDataDao exchangeCalendarDataDao;
@@ -84,7 +57,7 @@ public class ExchangeCalendarIntegrationTest extends
 		assertNotNull(exchangeCalendarDataDao);
 
 		Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(
-				account, startDate, endDate);
+				ownerCalendarAccount1, startDate, endDate);
 		CalendarWithURI exchangeCalendarWithURI = new CalendarWithURI(
 				exchangeCalendar, "exchangeCalendarDataTest");
 
@@ -94,28 +67,29 @@ public class ExchangeCalendarIntegrationTest extends
 	@Test
 	public void getMultipleCalendarsTest() {
 		Map<String, String> msolcals = exchangeCalendarDataDao
-				.listCalendars(account);
+				.listCalendars(ownerCalendarAccount1);
 		List<String> msoCalIds = new ArrayList<String>();
 		Iterator<Entry<String, String>> it = msolcals.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it
 					.next();
-
 			log.debug("Found MS calendar [" + pairs.getValue() + " = "
 					+ pairs.getKey() + "]");
 			msoCalIds.add(pairs.getKey());
-
 		}
 
 		Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(
-				account, startDate, endDate, msoCalIds);
+				ownerCalendarAccount1, startDate, endDate, msoCalIds);
 		CalendarWithURI exchangeCalendarWithURI = new CalendarWithURI(
 				exchangeCalendar, "exchangeCalendarDataTest");
 
 		log.debug(exchangeCalendarWithURI);
 	}
 
-	@Test
+	/**
+	 * Assert Exception is thrown but calendar is still returned
+	 */
+	@Test(expected=org.jasig.schedassist.impl.exchange.ExchangeCalendarDataAccessException.class)
 	public void getCalendarBadIdTest() {
 		String uri = "exchangeCalendarDataTest";
 		String id = "GIBBERISHIDHEREAAMkADQ3ZmU3ZjYwLTllNjEtNDAzZi04ODM0LTllZTFkOGE4YzM3NAAuAAAAAAB/QZc5IOmFS4w/sb90KyZcAQDtFHiPdqQ8T4ySs/EY0e9MAAANKVQlAAA=";
@@ -125,7 +99,7 @@ public class ExchangeCalendarIntegrationTest extends
 		CalendarWithURI emptyCalendarWithUri = new CalendarWithURI(emptyCalendar, uri);
 		
 		Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(
-				account, startDate, endDate, ids);
+				ownerCalendarAccount1, startDate, endDate, ids);
 		CalendarWithURI exchangeCalendarWithURI = new CalendarWithURI(
 				exchangeCalendar, uri);
 		
@@ -137,7 +111,7 @@ public class ExchangeCalendarIntegrationTest extends
 
 	/**
 	 * 
-	 * Obtain a Map<String=CalendarId, String=CalendarName> of all calendars for an account.
+	 * Obtain a Map<String=CalendarId, String=CalendarName> of all calendars for an ownerCalendarAccount1.
 	 * Issue one findItem request for all CalendarIds 
 	 * Issue a getItem request for every eventId returned
 	 * Verify every event returned contains a X-CALNEDAR_MATCH property with a valid calendarId
@@ -147,7 +121,7 @@ public class ExchangeCalendarIntegrationTest extends
 	@Test
 	public void getCalendarByIdTest() {
 		Map<String, String> msolcals = exchangeCalendarDataDao
-				.listCalendars(account);
+				.listCalendars(ownerCalendarAccount1);
 		List<String> msoCalIds = new ArrayList<String>();
 		Iterator<Entry<String, String>> it = msolcals.entrySet().iterator();
 		while (it.hasNext()) {
@@ -162,7 +136,7 @@ public class ExchangeCalendarIntegrationTest extends
 		}
 
 		Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(
-				account, startDate, endDate, msoCalIds);
+				ownerCalendarAccount1, startDate, endDate, msoCalIds);
 		
 		assert(!exchangeCalendar.getComponents(VEvent.VEVENT).isEmpty());
 		
@@ -193,9 +167,9 @@ public class ExchangeCalendarIntegrationTest extends
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		
-		Map<String, String> msolcals = exchangeCalendarDataDao.listCalendars(account);
+		Map<String, String> msolcals = exchangeCalendarDataDao.listCalendars(ownerCalendarAccount1);
 		for (int i = 0; i < 10; i++) {
-			msolcals = exchangeCalendarDataDao.listCalendars(account);
+			msolcals = exchangeCalendarDataDao.listCalendars(ownerCalendarAccount1);
 		}
 		
 		long time = stopWatch.getTime();
@@ -213,7 +187,7 @@ public class ExchangeCalendarIntegrationTest extends
 	@Test
 	public void listCalendarsTest() {
 		Map<String, String> msolcals = exchangeCalendarDataDao
-				.listCalendars(account);
+				.listCalendars(ownerCalendarAccount1);
 		assertNotNull(msolcals);
 
 		Iterator<Entry<String, String>> it = msolcals.entrySet().iterator();
@@ -224,72 +198,5 @@ public class ExchangeCalendarIntegrationTest extends
 			log.debug(pairs.getValue() + " = " + pairs.getKey());
 
 		}
-	}
-
-	@Deprecated
-	@Test
-	public void getExchangeCalendars() {
-		ArrayList<CalendarWithURI> eCalendars = new ArrayList<CalendarWithURI>();
-		ApplicationContext ewsContext = new ClassPathXmlApplicationContext(
-				"classpath:com/microsoft/exchange/exchangeContext-usingImpersonation.xml");
-		ExchangeWebServicesClient ewsClient = ewsContext
-				.getBean(ExchangeWebServicesClient.class);
-		String startDateString = "2013-04-12";
-		String endDateString = "2013-04-13";
-		String emailAddress = "ctcudd@ad-test.wisc.edu";
-
-		ExchangeEventConverter eec = new ExchangeEventConverter();
-		ExchangeRequestHelp erh = new ExchangeRequestHelp();
-
-		erh.initializeCredentials(emailAddress);
-		FindItem request = erh.constructFindItemRequest(
-				DateHelp.makeDate(startDateString),
-				DateHelp.makeDate(endDateString), emailAddress,
-				DefaultShapeNamesType.ID_ONLY);
-		FindItemResponse response = ewsClient.findItem(request);
-
-		List<JAXBElement<? extends ResponseMessageType>> responseList = response
-				.getResponseMessages()
-				.getCreateItemResponseMessagesAndDeleteItemResponseMessagesAndGetItemResponseMessages();
-
-		// iterate over responses
-		for (JAXBElement<? extends ResponseMessageType> rm : responseList) {
-			FindItemResponseMessageType itemType = (FindItemResponseMessageType) rm
-					.getValue();
-			FindItemParentType rootFolder = itemType.getRootFolder();
-			ArrayOfRealItemsType itemArray = rootFolder.getItems();
-			List<ItemType> items = itemArray
-					.getItemsAndMessagesAndCalendarItems();
-
-			// iterate over items in each response
-			for (ItemType item : items) {
-				CalendarItemType calItem = (CalendarItemType) item;
-				GetItem getItemRequest = erh.constructGetItemRequest(calItem);
-				GetItemResponse getItemResponse = ewsClient
-						.getItem(getItemRequest);
-				log.info("GetItemResponse " + getItemResponse.toString());
-
-				// iterate over getItemResponseMessages
-				List<JAXBElement<? extends ResponseMessageType>> getItemResponseList = getItemResponse
-						.getResponseMessages()
-						.getCreateItemResponseMessagesAndDeleteItemResponseMessagesAndGetItemResponseMessages();
-
-				// iterate over getItemResponseList
-				for (JAXBElement<? extends ResponseMessageType> getItemResponseMessage : getItemResponseList) {
-					ItemInfoResponseMessageType itemInfoResponseMessageType = (ItemInfoResponseMessageType) getItemResponseMessage
-							.getValue();
-					ArrayOfRealItemsType itemsArray = itemInfoResponseMessageType
-							.getItems();
-					for (ItemType currentCalItem : itemsArray
-							.getItemsAndMessagesAndCalendarItems()) {
-						eec.add((CalendarItemType) currentCalItem);
-					}
-				}
-			}
-			eCalendars.add(new CalendarWithURI(eec.ical, "microsoftEWSTest"));
-		}
-		log.debug("GetCalenderObjects returned: " + eec.ical.toString());
-
-		assertNotNull(eCalendars);
 	}
 }

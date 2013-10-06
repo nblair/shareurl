@@ -49,8 +49,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="classpath:contexts/caldavContext-test.xml")
 public class CaldavCalendarIntegrartionTest extends AbstractCalendarIntegrationTest {
 
 	@Autowired
@@ -60,26 +58,25 @@ public class CaldavCalendarIntegrartionTest extends AbstractCalendarIntegrationT
 	CacheManager cacheManager;
 	
 	/**
-	 * Simple integration test to see if {@link ICalendarDataDao#getCalendar(org.jasig.schedassist.model.ICalendarAccount, Date, Date)}
+	 * Simple integration test to see if {@link ICalendarDataDao#getCalendar(org.jasig.schedassist.model.ICalendarownerCalendarAccount1, Date, Date)}
 	 * returns data.
 	 * 
-	 * Before you run this test for the first time, import the event below into ownerCalendarAccount1's personal calendar:
+	 * Before you run this test for the first time, import the event below into ownerCalendarownerCalendarAccount11's personal calendar:
 	 * <pre>
 	 * src/test/resources/vevent-examples/example-non-scheduling-assistant-conflict.ics
 	 * </pre>
 	 * 
-	 * This test will fail until the aforementioned event is imported into the ownerCalendarAccount1 personal calendar.
+	 * This test will fail until the aforementioned event is imported into the ownerCalendarownerCalendarAccount11 personal calendar.
 	 * 
 	 * @throws InputFormatException 
 	 */
 	@Test
 	public void testGetCalendar() throws InputFormatException {
-		//this test only works if the test hsql db has been started?
 		
 		Date start = CommonDateOperations.parseDateTimePhrase("20130507-1300");
 		Date end = DateUtils.addHours(start, 1);
-		log.info("getCalendar test, " + start + " to " + end + " for account " + account);
-		Calendar calendar = caldavDataDao.getCalDavCalendars(account, start, end, null);
+		log.info("getCalendar test, " + start + " to " + end + " for ownerCalendarAccount1 " + ownerCalendarAccount1);
+		Calendar calendar = caldavDataDao.getCalDavCalendars(ownerCalendarAccount1, start, end, null);
 		Assert.assertNotNull(calendar);
 		ComponentList events = calendar.getComponents(VEvent.VEVENT);
 		Assert.assertEquals(1, events.size());
@@ -97,9 +94,9 @@ public class CaldavCalendarIntegrartionTest extends AbstractCalendarIntegrationT
 		assertNotNull(caldavDataDao);
 		assertNotNull(cacheManager);
 		
-		Map<String, String> caldavNames = caldavDataDao.listCalendars(account);
+		Map<String, String> caldavNames = caldavDataDao.listCalendars(ownerCalendarAccount1);
 		for (int i = 0; i < 10; i++) {
-			caldavNames = caldavDataDao.listCalendars(account);
+			caldavNames = caldavDataDao.listCalendars(ownerCalendarAccount1);
 		}
 		assertNotNull(caldavNames);
 		
@@ -115,7 +112,7 @@ public class CaldavCalendarIntegrartionTest extends AbstractCalendarIntegrationT
 	public void listCalDavCalendarsTest(){
 		assertNotNull(caldavDataDao);
 		
-		Map<String, String> caldavNames = caldavDataDao.listCalendars(account);
+		Map<String, String> caldavNames = caldavDataDao.listCalendars(ownerCalendarAccount1);
 		assertNotNull(caldavNames);
 		
         Iterator<Entry<String, String>> it = caldavNames.entrySet().iterator();

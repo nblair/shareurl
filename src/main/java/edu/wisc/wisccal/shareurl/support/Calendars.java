@@ -26,16 +26,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+
 import net.fortuna.ical4j.model.Calendar;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
+import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -44,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.microsoft.exchange.*;
 import com.microsoft.exchange.impl.ExchangeOnlineThrottlingPolicy;
 import com.microsoft.exchange.impl.ExchangeWebServicesClient;
@@ -78,8 +83,7 @@ public final class Calendars {
 			"edu.wisc.wisccal.shareurl.support.Calendars.CONFIG", 
 			"cli.xml");
 	private static final Log MAIN_LOG = LogFactory.getLog(Calendars.class);
-	private SupportCaldavCalendarDataDaoImpl calendarDataDao;
-	private ExchangeCalendarDataDaoImpl exchangeCalendarDataDao;
+	private Calkey115CalendarDataDaoImpl calendarDataDao;
 	private ICalendarAccountDao calendarAccountDao;
 	private String targetAccount;
 	private Date startDate;
@@ -87,27 +91,17 @@ public final class Calendars {
 	private String dateFormat = "yyyyMMdd";
 	
 	
-	
-	public ExchangeCalendarDataDaoImpl getExchangeCalendarDataDao() {
-		return exchangeCalendarDataDao;
-	}
-	
-	@Autowired
-	public void setExchangeCalendarDataDao(ExchangeCalendarDataDaoImpl exchangeCalendarDataDao) {
-		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
-	}
-	
 	/**
 	 * @return the calendarDataDao
 	 */
-	public SupportCaldavCalendarDataDaoImpl getCalendarDataDao() {
+	public Calkey115CalendarDataDaoImpl getCalendarDataDao() {
 		return calendarDataDao;
 	}
 	/**
 	 * @param calendarDataDao the calendarDataDao to set
 	 */
 	@Autowired
-	public void setCalendarDataDao(SupportCaldavCalendarDataDaoImpl calendarDataDao) {
+	public void setCalendarDataDao(Calkey115CalendarDataDaoImpl calendarDataDao) {
 		this.calendarDataDao = calendarDataDao;
 	}
 	/**
@@ -204,8 +198,9 @@ public final class Calendars {
 	public static void main(String[] args) {
 		
 		ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG);
+				
 		Calendars instance = context.getBean(Calendars.class);
-		SupportCaldavCalendarDataDaoImpl cInstance = instance.getCalendarDataDao();
+		Calkey115CalendarDataDaoImpl cInstance = instance.getCalendarDataDao();
 		ICalendarAccount account = instance.getCalendarAccountDao().getCalendarAccount(instance.getTargetAccount());
 		
 		Date startDate = instance.getStartDate();
@@ -217,12 +212,6 @@ public final class Calendars {
 		assert(null != cInstance);
 		assert(null != account);
 		
-//		ApplicationContext ewsContext = 
-//				new ClassPathXmlApplicationContext("classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml");
-//		ExchangeCalendarDataDaoImpl exchangeCalendarDataDao =  (ExchangeCalendarDataDaoImpl) ewsContext.getBean("exchangeCalendarDataDao");
-//		Map<FolderIdType, String> msolcals = exchangeCalendarDataDao.listCalendars(account);
-			
-		//Map<String, String> calendarNames = cInstance.listCalendarsInternal(account);
 		
 		MAIN_LOG.info("calling getCalendarsInternal for " + account.getEmailAddress() + " and date range " + startDate + " through " + endDate);
 		List<CalendarWithURI> calendars = cInstance.getCalendarsInternal(account,startDate,endDate);
@@ -230,6 +219,8 @@ public final class Calendars {
 		MAIN_LOG.info("getCalendarsInternal returns: " + calendars);
 		Calendar consolidated = cInstance.consolidate(calendars);
 		MAIN_LOG.info("after consolidate: " + consolidated);
+		
+		System.exit(0);
 		}
 	
 	

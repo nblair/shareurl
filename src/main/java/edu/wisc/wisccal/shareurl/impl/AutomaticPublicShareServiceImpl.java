@@ -195,15 +195,17 @@ AutomaticPublicShareService {
 		if(calendarAccount != null) {
 			Share share = new Share();
 			share.setKey(emailAddress);
-			share.setOwnerCalendarUniqueId(calendarAccount.getCalendarUniqueId());
+			String calendarUniqueId = calendarAccount.getCalendarUniqueId();
+			String upn = calendarAccount.getUpn();
 			share.setValid(true);
-//			Set<String> msolAddresses = new HashSet<String>();
-//			String temp = calendarAccount.getAttributeValue("wiscedumsolupn");
-//			log.debug("msoladdress found = "+temp);
-			
-			
-//			share.setCalAddresses(msolAddresses);
-//			
+			if(StringUtils.isNotBlank(calendarUniqueId)) {
+				share.setOwnerCalendarUniqueId(calendarUniqueId);
+			}else if(StringUtils.isNotBlank(upn)){				
+				share.setOwnerCalendarUniqueId(upn);
+			}else{
+				share.setValid(false);
+			}
+				
 			share.getSharePreferences().addPreference(new FreeBusyPreference());
 			share.getSharePreferences().addPreference(new GuessableSharePreference());
 			// mark to prevent revokeShare from working

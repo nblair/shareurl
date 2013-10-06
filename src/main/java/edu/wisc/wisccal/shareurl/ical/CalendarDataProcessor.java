@@ -220,4 +220,9 @@ public interface CalendarDataProcessor {
 	 * @param calendar
 	 */
 	void removeEmailAlarms(Calendar calendar);
+
+	void setRequestDetailsProperty(Calendar agenda,
+			ShareRequestDetails requestDetails);
+
+	String getRequestDetails(Calendar agenda);
 }

@@ -178,6 +178,16 @@ public class SharePreferences implements Serializable {
 		return !containsAny(NonRevocablePreference.NON_REVOCABLE);
 	}
 	
+	
+	public boolean isIncludeSourceCalendar() {
+		Set<ISharePreference> prefs = getPreferencesByType(IncludeSourceCalendarPreference.INCLUDE_SOURCE_CALENDAR);
+		for(ISharePreference pref: prefs) {
+			return Boolean.parseBoolean(pref.getValue());
+		}
+		//preference not present, default is false
+		return false;
+	}
+	
 	/**
 	 * Short cut to determine if this share has an
 	 * IncludeParticipants preference set to true.
@@ -360,6 +370,8 @@ public class SharePreferences implements Serializable {
 		}else if( CalendarMatchPreference.CALENDAR_MATCH.equals(preferenceType)){
 			LOG.debug("new CalendarMatchPreference(preferenceKey="+preferenceKey+", preferenceValue="+preferenceValue+")");
 			return new CalendarMatchPreference(preferenceKey, preferenceValue);
+		}else if(IncludeSourceCalendarPreference.INCLUDE_SOURCE_CALENDAR.equals(preferenceType)) {
+			return new IncludeSourceCalendarPreference(Boolean.parseBoolean(preferenceValue));
 		} else {
 			LOG.warn("could not match any preference types for type=" + preferenceType + ", key=" + preferenceKey + ", value=" + preferenceValue + ", returning null");
 			return null;

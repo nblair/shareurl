@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javassist.expr.NewArray;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
@@ -83,6 +84,7 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.stereotype.Service;
 
 import edu.wisc.wisccal.shareurl.web.IShareRequestDetails;
+import edu.wisc.wisccal.shareurl.web.ShareRequestDetails;
 
 /**
  * {@link CalendarDataProcessor} implementation.
@@ -101,6 +103,10 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	protected static final String X_SHAREURL_RECURRENCE_EXPAND = "X-SHAREURL-RECURRENCE-EXPAND";
 
 	public static final String X_SHAREURL_OLD_RECURRENCE_ID = "X-SHAREURL-OLD-RECUR-ID";
+	
+	public static final String X_CALENDAR_MATCH = "X-CALENDAR_MATCH";
+	
+	public static final String X_SHAREURL_REQUEST_DETAILS = "X-SHAREURL-REQUEST-DETAILS";
 
 	public static final long MILLISECS_PER_MINUTE = 60*1000;
 
@@ -113,7 +119,7 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 	protected final Set<String> retainedPropertyNamesOnStripDetails = new HashSet<String>(
 			Arrays.asList(new String[] { Uid.UID, DtStart.DTSTART, DtEnd.DTEND, DtStamp.DTSTAMP, 
 					RecurrenceId.RECURRENCE_ID, Status.STATUS, Clazz.CLASS, Created.CREATED, LastModified.LAST_MODIFIED,
-					X_SHAREURL_OLD_RECURRENCE_ID, X_SHAREURL_RECURRENCE_EXPAND, Transp.TRANSP }));
+					X_SHAREURL_OLD_RECURRENCE_ID, X_SHAREURL_RECURRENCE_EXPAND, X_CALENDAR_MATCH, Transp.TRANSP }));
 
 	/**
 	 * 
@@ -367,6 +373,20 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 			return null;
 		}
 	}
+	
+	@Override
+	public void setRequestDetailsProperty(Calendar agenda, ShareRequestDetails requestDetails) {
+		agenda.getProperties().add(new XProperty(X_SHAREURL_REQUEST_DETAILS,requestDetails.toString()));
+	}
+	
+	@Override
+	public String getRequestDetails(Calendar agenda) {
+		Property property = agenda.getProperty(X_SHAREURL_REQUEST_DETAILS);
+		if(property != null && StringUtils.isNotBlank(property.getValue())) {
+			return property.getValue();
+		}
+		return null;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -389,6 +409,12 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		copy.getProperties().add(newDtStart);
 		copy.getProperties().add(newDtEnd);
 		copy.getProperties().add(new XProperty(X_SHAREURL_RECURRENCE_EXPAND, period.toString()));
+		if(null != original.getProperty(X_CALENDAR_MATCH)) {
+			copy.getProperties().add(original.getProperty(X_CALENDAR_MATCH));
+		}
+		if(null != original.getProperty(X_SHAREURL_REQUEST_DETAILS)){
+			copy.getProperties().add(original.getProperty(X_SHAREURL_REQUEST_DETAILS));
+		}
 		if(setRecurrenceId) {
 			copy.getProperties().add(propertyCopy(original.getUid()));
 			final RecurrenceId newRecurrenceId;
@@ -845,6 +871,33 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		result.getProperties().add(new ProdId(prodId));
 		return result;
 	}
+	
+	public static Calendar wrapEvent(VEvent event, String prodId,ShareRequestDetails details) {
+		ComponentList components = new ComponentList();
+		DtStart dtstart = event.getStartDate();
+		Parameter tzid = dtstart.getParameter(TzId.TZID);
+		if(tzid != null) {
+			// make sure we add the right timezone to the calendar
+			TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+			TimeZone timeZone = registry.getTimeZone(tzid.getValue());
+			if(timeZone != null) {
+				components.add(timeZone.getVTimeZone());
+			} else {
+				LOG.warn("could not find TimeZone with id " + tzid.getValue() + " on " + staticGetDebugId(event));
+			}
+		}
+
+		components.add(event);
+		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
+		result.getProperties().add(Version.VERSION_2_0);
+		result.getProperties().add(new ProdId(prodId));
+		result.getProperties().add(new XProperty(X_SHAREURL_REQUEST_DETAILS,details.toString()));
+		return result;
+	}
+	
+	public static Calendar wrapEvent(VEvent event, ShareRequestDetails details) {
+		return wrapEvent(event, SHAREURL_PROD_ID, details);
+	}
 
 	/**
 	 * 
@@ -912,6 +965,14 @@ public final class CalendarDataUtils implements CalendarDataProcessor {
 		}
 
 		return event.getProperties(Attendee.ATTENDEE);
+	}
+	
+	public static String getSourceCalendarName(VEvent event) {
+		Property property = event.getProperty(X_CALENDAR_MATCH);
+		if(property != null && StringUtils.isNotBlank(property.getValue())) {
+			return property.getValue();
+		}
+		return null;
 	}
 	/**
 	 * 

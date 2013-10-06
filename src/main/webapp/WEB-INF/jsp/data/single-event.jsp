@@ -155,6 +155,17 @@ ${descriptionSection}<br />
 					</ul>
 				</c:if>
 			</c:if>
+			
+			<c:if test="${includeSourceCalendar }">
+				<c:if test="${not empty oevent:getSourceCalendarName(event) }">
+					<p>
+						<span class="label">Source Calendar:&nbsp;</span> <span
+							class="organizer">${calendarMap[oevent:getSourceCalendarName(event)]}
+						</span>
+					</p>
+				</c:if>
+			</c:if>
+			
 		</div>
 		<!-- close event div -->
 	</div>

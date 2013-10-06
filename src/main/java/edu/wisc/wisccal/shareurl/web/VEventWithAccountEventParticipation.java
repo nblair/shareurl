@@ -22,10 +22,11 @@
  */
 
 package edu.wisc.wisccal.shareurl.web;
-
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.XProperty;
+import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
 import edu.wisc.wisccal.shareurl.ical.EventParticipation;
 
 /**
@@ -50,6 +51,13 @@ public class VEventWithAccountEventParticipation extends VEvent {
 		super(properties, alarms);
 		this.accountEventParticipation = accountEventParticipation;
 	}
+	
+	public VEventWithAccountEventParticipation(PropertyList properties,
+			ComponentList alarms, EventParticipation accountEventParticipation, ShareRequestDetails requestDetails) {
+		this(properties, alarms, accountEventParticipation);
+		this.getProperties().add( new XProperty(CalendarDataUtils.X_SHAREURL_REQUEST_DETAILS, requestDetails.toString()));
+	}
+	
 	/**
 	 * @return the accountEventParticipation
 	 */

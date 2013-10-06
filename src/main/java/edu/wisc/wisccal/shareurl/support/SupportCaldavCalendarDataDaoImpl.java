@@ -32,6 +32,7 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Service;
 
 /**
  * Simple subclass of {@link CaldavCalendarDataDaoImpl} to expose some of it's protected methods
@@ -39,6 +40,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author Nicholas Blair
  */
+
 class SupportCaldavCalendarDataDaoImpl extends CaldavCalendarDataDaoImpl {
 
 	/* (non-Javadoc)

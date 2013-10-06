@@ -150,6 +150,13 @@ public class Share implements Serializable {
 		return this.sharePreferences.isIncludeParticipants();
 	}
 	/**
+	 * @see SharePreferences#isIncludeSourceCalendar()
+	 * @return true if this share will include event participants
+	 */
+	public boolean isIncludeSourceCalendar() {
+		return this.sharePreferences.isIncludeSourceCalendar();
+	}
+	/**
 	 * @see SharePreferences#isGuessable()
 	 * @return {@link SharePreferences#isGuessable()}
 	 */

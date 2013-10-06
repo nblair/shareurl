@@ -405,5 +405,10 @@ public class AutomaticPublicShareServiceImplTest {
 		public String getCalendarEmailAddress() {
 			return getEmailAddress();
 		}
+		@Override
+		public void setCalendarEmailAddress(String calendarEmailAddress) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 }

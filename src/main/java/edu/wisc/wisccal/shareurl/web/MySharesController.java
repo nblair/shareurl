@@ -20,9 +20,14 @@
 package edu.wisc.wisccal.shareurl.web;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.ICalendarDataDao;
+import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
+import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collections;
+
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareEligibilityStatus;
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
 import edu.wisc.wisccal.shareurl.IShareDao;
@@ -67,6 +73,26 @@ public class MySharesController  {
 		this.automaticPublicShareService = automaticPublicShareService;
 	}
 
+	private ExchangeCalendarDataDao exchangeCalendarDataDao;
+	private CaldavCalendarDataDao caldavCalendarDataDao;
+	
+	public ExchangeCalendarDataDao getExchangeCalendarDataDao() {
+		return exchangeCalendarDataDao;
+	}
+	
+	@Autowired
+	public void setExchangeCalendarDataDao(ExchangeCalendarDataDao exchangeCalendarDataDao) {
+		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
+	}
+	public CaldavCalendarDataDao getCaldavCalendarDataDao() {
+		return caldavCalendarDataDao;
+	}
+	
+	@Autowired
+	public void setCaldavCalendarDataDao(CaldavCalendarDataDao caldavCalendarDataDao) {
+		this.caldavCalendarDataDao = caldavCalendarDataDao;
+	}
+	
 	/**
 	 * 
 	 * @param model
@@ -77,6 +103,18 @@ public class MySharesController  {
 	public String showView(ModelMap model, @RequestParam(required=false, defaultValue="") String format) {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		
+		Map<String, String> exchangeListCalendars = exchangeCalendarDataDao.listCalendars(activeAccount);
+		Map<String, String> caldavListCalendars = caldavCalendarDataDao.listCalendars(activeAccount);
+		Map<String, String> allCalendarsList = new TreeMap<String, String>();
+		allCalendarsList.putAll(caldavListCalendars);
+		allCalendarsList.putAll(exchangeListCalendars);
+		
+		model.addAttribute("allCalendarList", allCalendarsList);
+		
+		String defaultCalendarId = getDefaultCalendarId(allCalendarsList);
+		model.addAttribute("defaultCalendarId",defaultCalendarId);
+		
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("displaying manage share form for " + activeAccount + ", format=" + format);
 		}
@@ -116,5 +154,18 @@ public class MySharesController  {
 			return "jsonView";
 		}
 		return "my-shares";
+	}
+
+	public String getDefaultCalendarId(Map<String,String> calendarMap){
+		if(calendarMap.containsKey(ICalendarDataDao.DEFAULT_CALENDAR_PATH)) return  ICalendarDataDao.DEFAULT_CALENDAR_PATH;
+		if(calendarMap.containsValue(ICalendarDataDao.DEFAULT_EXCHANGE_CALENDAR)){
+			for(String key : calendarMap.keySet()){
+				String name = calendarMap.get(key);
+				if(name.equals(ICalendarDataDao.DEFAULT_EXCHANGE_CALENDAR)) return key;
+			}
+		}
+		//log.warn("NO DEFAULT CALENDAR FOUND!!!");
+		return null;
+		
 	}
 }

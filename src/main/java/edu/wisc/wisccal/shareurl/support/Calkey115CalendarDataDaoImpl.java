@@ -24,7 +24,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
@@ -38,6 +40,7 @@ import net.fortuna.ical4j.model.property.Transp;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
+import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
 import org.jasig.schedassist.impl.caldav.CalendarWithURI;
@@ -70,19 +73,19 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 	private CacheManager cacheManager;
 	
 	
-	private ICalendarDataDao exchangeCalendarDataDao;
+	private ExchangeCalendarDataDao exchangeCalendarDataDao;
 	
 	/**
 	 * @return the exchangeCalendarDataDao
 	 */
-	public ICalendarDataDao getExchangeCalendarDataDao() {
+	public ExchangeCalendarDataDao getExchangeCalendarDataDao() {
 		return exchangeCalendarDataDao;
 	}
 	/**
 	 * @param exchangeCalendarDataDao the exchangeCalendarDataDao to set
 	 */
 	@Autowired
-	public void setExchangeCalendarDataDao(ICalendarDataDao exchangeCalendarDataDao) {
+	public void setExchangeCalendarDataDao(ExchangeCalendarDataDao exchangeCalendarDataDao) {
 		this.exchangeCalendarDataDao = exchangeCalendarDataDao;
 	}
 	/**
@@ -112,6 +115,16 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 		this.cacheManager = cacheManager;
 	}
 
+	@Override
+	public Map<String, String> getCalendarMap(ICalendarAccount activeAccount ){
+		Map<String, String> exchangeListCalendars = exchangeCalendarDataDao.listCalendars(activeAccount);
+		Map<String, String> caldavListCalendars = super.listCalendars(activeAccount);
+		Map<String, String> allCalendarsList = new TreeMap<String, String>();
+		allCalendarsList.putAll(caldavListCalendars);
+		allCalendarsList.putAll(exchangeListCalendars);
+		return allCalendarsList;
+	}
+	
 	protected List<CalendarWithURI> getCalendarsInternal(ICalendarAccount calendarAccount, Share share, Date startDate, Date endDate) {
 		List<CalendarWithURI> calendars = new ArrayList<CalendarWithURI>();
 		List<String> exchangeCalendarIds = new ArrayList<String>();
@@ -171,23 +184,22 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 		
 		//if no calendarIds are found retrieve the default 
 		if(exchangeCalendarIds.isEmpty() && caldavCalendarIds.isEmpty()){
-			message.append("No Calendar IDs found.  Retrieving default calDav calendar.");
-			List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate );
-			if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
+			message.append("No Calendar IDs found.\n"); 
+			if(StringUtils.isNotBlank(calendarAccount.getCalendarUniqueId())){
+				message.append("Getting default caldav calendar for calendarUniqueId="+calendarAccount.getCalendarUniqueId());
+				List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate );
+				if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
+			}
+			if(StringUtils.isNotBlank(calendarAccount.getUpn())){
+				message.append("Getting default exchange calendar for upn="+calendarAccount.getUpn());
+				CalendarWithURI exchangeCalendars = getExchangeCalendars(calendarAccount, startDate, endDate);
+				if(exchangeCalendars !=null) calendars.add(exchangeCalendars);
+			}
+			if(StringUtils.isBlank(calendarAccount.getCalendarUniqueId()) && StringUtils.isBlank(calendarAccount.getUpn())){
+				log.warn("no calendar identifier for account="+calendarAccount);
+			}
 		}
-		
 		log.debug(message.toString());
-		
-		for(String c : cacheManager.getCacheNames()){
-			log.debug(c+" stats: "+ cacheManager.getCache(c));
-		}
-		
-		assert(null != calendars);
-		//the calendarid must be added to every event returned
-		for(CalendarWithURI cwu : calendars){
-			log.debug("GetCalendarsInternal returned calendar with URI: "+cwu.getUri().toString());
-		}
-		
 		log.debug("GetCalendarsInternal returned: "+ calendars.toString());	
 		return calendars;
 	}
@@ -202,8 +214,7 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 	 * @see org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl#getCalendarsInternal(org.jasig.schedassist.model.ICalendarAccount, java.util.Date, java.util.Date)
 	 */
 	@Override
-	protected List<CalendarWithURI> getCalendarsInternal(ICalendarAccount calendarAccount, Date startDate, Date endDate) {
-		
+	protected List<CalendarWithURI> getCalendarsInternal(ICalendarAccount calendarAccount, Date startDate, Date endDate) {		
 		List<CalendarWithURI> calendars = new ArrayList<CalendarWithURI>();
 		List<String> exchangeCalendarIds = new ArrayList<String>();
 		List<String> caldavCalendarIds = new ArrayList<String>();

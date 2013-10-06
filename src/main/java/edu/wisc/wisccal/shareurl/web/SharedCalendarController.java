@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -130,8 +132,9 @@ public class SharedCalendarController {
 	private static final String UTF_8 = "UTF-8";
 
 	private Log LOG = LogFactory.getLog(this.getClass());
+	private Log requestLog = LogFactory.getLog("SHARURL_REQUEST_LOGGER");
 
-	private static final String ICS = ".ics";
+	private static final String ICS = ".ics";	
 	private static final String VFB = ".vfb";
 
 	private IShareDao shareDao;
@@ -258,6 +261,13 @@ public class SharedCalendarController {
 		} else if (requestDetails.isPersonalOnly()) {
 			calendarDataProcessor.personalOnly(agenda, account);
 		}
+		
+		if(calendarDataDao != null) {
+			Map<String, String> calendarMap = calendarDataDao.getCalendarMap(account);
+			model.addAttribute("calendarMap", calendarMap);
+			calendarDataProcessor.setRequestDetailsProperty(agenda, requestDetails);
+		}
+		
 		// are we targeting a markup display?
 		if(display.isMarkupLanguage()) {
 			// - expandrecurrence first priority, want VEVENTs for each recurrence instance
@@ -266,6 +276,9 @@ public class SharedCalendarController {
 			// - filter VEvents to those only with DTSTART within requestDetails start/end
 			calendarDataProcessor.filterAgendaForDateRange(agenda, requestDetails);
 
+			//add XProperty containing request details
+			//calendarDataProcessor.setRequestDetailsProperty(agenda, requestDetails);
+			
 			// targeting a specific event?
 			// set agenda to point to a single event?
 			if(null != requestDetails.getEventId()) {
@@ -281,7 +294,7 @@ public class SharedCalendarController {
 					} else {
 						EventParticipation participation = calendarDataProcessor.getEventParticipation(matchingEvent, account);
 						// wrap the event with the participation bundled
-						matchingEvent = new VEventWithAccountEventParticipation(matchingEvent.getProperties(), matchingEvent.getAlarms(), participation);
+						matchingEvent = new VEventWithAccountEventParticipation(matchingEvent.getProperties(), matchingEvent.getAlarms(), participation, requestDetails);
 						if(null != matchingEvent.getDescription()) {
 							String descriptionValue = matchingEvent.getDescription().getValue();
 							String [] descriptionSections = descriptionValue.split("\n");
@@ -289,6 +302,7 @@ public class SharedCalendarController {
 						}
 						model.put("event", matchingEvent);
 						model.put("includeParticipants", sharePreferences.isIncludeParticipants());
+						model.put("includeSourceCalendar", sharePreferences.isIncludeSourceCalendar());
 					}
 				} else {
 					LOG.debug("matching event id NOT found");
@@ -302,7 +316,7 @@ public class SharedCalendarController {
 				for(Iterator<?> i = components.iterator(); i.hasNext(); ) {
 					VEvent event = (VEvent) i.next();
 					EventParticipation participation = calendarDataProcessor.getEventParticipation(event, account);
-					allEvents.add(new VEventWithAccountEventParticipation(event.getProperties(), event.getAlarms(), participation));
+					allEvents.add(new VEventWithAccountEventParticipation(event.getProperties(), event.getAlarms(), participation,requestDetails));
 				}
 				Collections.sort(allEvents, new VEventComparator());
 				
@@ -327,7 +341,7 @@ public class SharedCalendarController {
 				if(matchingEvent == null) {
 					return false;
 				} else {
-					agenda = CalendarDataUtils.wrapEvent(matchingEvent);
+					agenda = CalendarDataUtils.wrapEvent(matchingEvent,requestDetails);
 				}
 			}
 			
@@ -349,6 +363,7 @@ public class SharedCalendarController {
 				calendarDataProcessor.convertClassPublic(agenda);
 			}
 
+			
 			model.put("ical", agenda.toString());
 		}
 		return true;
@@ -384,6 +399,10 @@ public class SharedCalendarController {
 			coerceIcal = true;
 		} 
 		final ShareRequestDetails requestDetails = new ShareRequestDetails(request);
+		
+		//log requestDetails
+		requestLog.info(requestDetails);
+		
 		if(requestDetails.getEventId() == null) {
 			// store non single event requestDetails in the session to track the "last" so we can render a "return" link
 			request.getSession().setAttribute("lastNonSingleEventRequestDetails", requestDetails);

@@ -49,6 +49,16 @@
     </function>
     
     <function>
+        <description>Tests if a VEvent is an all day event</description>
+        <name>getSourceCalendarName</name>
+        <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>
+        <function-signature>String getSourceCalendarName(net.fortuna.ical4j.model.component.VEvent)</function-signature>
+        <example>
+              &lt;c:out value="${oevent:getSourceCalendarName(vevent)}"&gt;
+        </example>
+    </function>
+    
+    <function>
         <description>Tests if a Period is an "all day" period</description>
         <name>isAllDayPeriod</name>
         <function-class>edu.wisc.wisccal.shareurl.ical.CalendarDataUtils</function-class>

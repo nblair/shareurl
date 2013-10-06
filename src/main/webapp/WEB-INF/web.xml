@@ -38,7 +38,7 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			classpath:contexts/applicationContext.xml,classpath:contexts/cacheContext.xml,classpath:contexts/calendarAccounts-ldap.xml,classpath:contexts/security.xml,classpath:contexts/chubClientContext.xml,classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml
+			classpath:contexts/applicationContext.xml,classpath:contexts/security.xml,classpath:contexts/integration/*.xml
 		</param-value>
 	</context-param>
 	<listener>

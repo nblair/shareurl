@@ -125,6 +125,9 @@
 #includeParticipantsHelp {
 	font-size: 80%;
 }
+#includeSourceCalendarHelp {
+	font-size: 80%;
+}
 </style>
 <c:url value="/u/${share.key}" var="baseShareUrl" />
 <c:url value="/rest/shareDetails" var="shareDetails">
@@ -133,6 +136,9 @@
 
 <c:url value="/rest/includeP" var="includeP" />
 <c:url value="/rest/excludeP" var="excludeP" />
+
+<c:url value="/rest/includeSC" var="includeSC" />
+<c:url value="/rest/excludeSC" var="excludeSC" />
 
 <c:url value="/rest/toac" var="toac" />
 <c:url value="/rest/tofb" var="tofb" />
@@ -205,6 +211,16 @@ $(function() {
 	    $("#includeParticipantsHelp").dialog( "open" );
 	});
 	
+	$("#includeSourceCalendarHelp").dialog({ autoOpen: false, 
+		buttons: { Ok: function() { $( this ).dialog( "close" ); } } ,
+		modal: true,
+		width: 500
+	});
+	$('#iSCTrigger').click(function(e) {
+		e.preventDefault();
+	    $("#includeSourceCalendarHelp").dialog( "open" );
+	});
+	
 	$('.revokeform').submit(function(e) {
 		e.preventDefault();
 		var confirmed = confirm('${revokeMessage}');
@@ -257,6 +273,7 @@ function setupFormHandlers() {
 	applySubmitHandlerIfPresent('#tofb', '${tofb}', '#labelindicatorfb');
 	applySubmitHandlerIfPresent('#toac', '${toac}', '#labelindicatorac');
 	applySubmitHandlerIfPresent('#includeP1', '${includeP}', '#labelindicatorip');
+	applySubmitHandlerIfPresent('#includeSC', '${includeSC}', '#labelindicatorsc');
 	$('#fbRadio').click(function() {
 	    $('#tofb').submit();
 	});
@@ -266,12 +283,13 @@ function setupFormHandlers() {
 	$('#ip').click(function() {
 	    $('#includeP1').submit();
 	});
+	$('#isc').click(function() {
+	    $('#includeSC').submit();
+	});
 	
 	applySubmitHandlerIfPresent('#contentFilter', '${addContentFilter}', '#labelindicatorcf', function() {
 		setupRemoveContentFilterForms();
 	});
-	
-	// ctcudd
 	
 	applySubmitHandlerIfPresent('#tocd', '${tocd}', '#labelindicatorcd');
 	applySubmitHandlerIfPresent('#tocs', '${tocs}', '#labelindicatorcs');
@@ -407,7 +425,7 @@ function postSetLabel(form) {
 	<%@ include file="/WEB-INF/jsp/login-info.jsp"%>
 
 	<div id="content" class="main col">
-
+		<h1 style='font-size:18px;'>Edit your ShareURL</h1><hr/><br/>
 		<div id="shareDetails" class="margin3">
 			<p>
 				<strong>You are editing the privacy settings for:</strong>
@@ -444,7 +462,7 @@ function postSetLabel(form) {
 				<form action="${tocd }" method="post" id="tocd">
 					<fieldset>
 						<input id="cdRadio" type="radio" name="calDefault" value="true" /><label
-							for="calDefault"><strong>Default Calendar Only</strong></label>&nbsp;<span
+							for="calDefault"><strong>Default WiscCal calendar Only</strong></label>&nbsp;<span
 							id="labelindicatorcd" class="ind"></span>
 					</fieldset>
 				</form>
@@ -512,18 +530,18 @@ function postSetLabel(form) {
 								</fieldset>
 							</form>
 							 -->
-							 
+							
 							 
 							<ul id="calendarFilters">
 								<c:choose>
 									<c:when test="${empty share.sharePreferences.calendarMatchPreferences}" >
-										<li><span class="removable"><c:out value="${allCalendarList['calendar/']}" /></span>&nbsp;
+										<li><span class="removable"><c:out value="${allCalendarList[defaultCalendarId]} " /></span>&nbsp;
 												<form class="removeCalendarFilter inlineblock"
 													action="${removeCalendarFilter}" method="post"
 													id="removeCalendarFilter${status.index}">
 													<fieldset>
-														<input type="hidden" name="calendarName" value="<c:out value="${allCalendarList['calendar/']}" />" /><input
-															type="hidden" name="calendarId" value="calendar/" />
+														<input type="hidden" name="calendarName" value="<c:out value="${allCalendarList[defaultCalendarId]}" />" /><input
+															type="hidden" name="calendarId" value="<c:out value="${defaultCalendarId}" />" />
 													</fieldset>
 													<img class="revokeHandle" src="${revokeIcon }"
 														title="Remove this filter" />
@@ -603,6 +621,17 @@ function postSetLabel(form) {
 								class="ind"></span>&nbsp;<a id="ipTrigger"
 								href="#includeParticipantsHelp"
 								title="Include Participants Option Help">What's this?</a>
+						</fieldset>
+					</form>
+					
+					<form action="${includeSC}" method="post" id="includeSC">
+						<fieldset>
+							<input id="isc" type="checkbox" name="includeSourceCalendar"
+								<c:if test="${share.includeSourceCalendar }">checked="checked"</c:if> />&nbsp;<label
+								for="includeSourceCalendar">Include the name of the calendar which contains this event</label>&nbsp;<span id="labelindicatorsc"
+								class="ind"></span>&nbsp;<a id="iSCTrigger"
+								href="#includeSourceCalendarHelp"
+								title="Include Source Calendar Option Help">What's this?</a>
 						</fieldset>
 					</form>
 
@@ -764,6 +793,10 @@ function postSetLabel(form) {
 				with a wide audience. The WiscCal team recommends you avoid using
 				this setting on your Public ShareURL.
 			</p>
+		</div>
+		<div id="includeSourceCalendarHelp" title="Include Source Calendar Help">
+			<p>This setting controls whether or not the name of your calendar is included
+				in the data for events displayed by your ShareURL.</p>
 		</div>
 	</div>
 	<!-- content -->

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<parent>
 		<groupId>edu.wisc.doit.code</groupId>
@@ -18,13 +19,13 @@
 		<connection>scm:git:git@github.com:ctcudd/shareurl.git</connection>
 		<developerConnection>scm:git:git@github.com:ctcudd/shareurl.git</developerConnection>
 		<url>https://github.com/ctcudd/shareurl</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<repositories>
 		<repository>
-			<id>sonatype-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<id>code.doit-public-snapshots</id>
+			<url>https://code.doit.wisc.edu/maven/content/repositories/public-snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
@@ -40,9 +41,10 @@
 
 	<properties>
 		<schedassist.groupid>edu.wisc.wisccal.sched-assist</schedassist.groupid>
-		<schedassist.version>1.2.6</schedassist.version>
+		<schedassist.version>1.2.13-SNAPSHOT</schedassist.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.framework.version>3.0.7.RELEASE</spring.framework.version>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<spring.framework.version>3.1.1.RELEASE</spring.framework.version>
 		<spring-ldap.version>1.3.1.RELEASE</spring-ldap.version>
 		<spring-security.version>3.0.5.RELEASE</spring-security.version>
 		<spring-webflow.version>2.0.9.RELEASE</spring-webflow.version>
@@ -52,6 +54,8 @@
 		<mockito.version>1.8.5</mockito.version>
 		<easymock.version>2.5.2</easymock.version>
 		<project.resources.tcrypt.privateKey>/Users/ctcudd/wiscshareurl-keys/private-wiscshareurl.pem</project.resources.tcrypt.privateKey>
+		<ehcache.version>2.1.0</ehcache.version>
+		<ehcache-spring-annotations.version>1.1.2</ehcache-spring-annotations.version>
 	</properties>
 
 	<dependencyManagement>
@@ -100,6 +104,33 @@
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
+			<artifactId>portlet-jdbc-util</artifactId>
+			<groupId>org.jasig.portlet.utils</groupId>
+			<version>1.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+			<version>${ehcache.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.ehcache-spring-annotations</groupId>
+			<artifactId>ehcache-spring-annotations</artifactId>
+			<version>${ehcache-spring-annotations.version}</version>
+		</dependency>
+
+		<dependency>
+			<artifactId>sched-assist-api</artifactId>
+			<groupId>${schedassist.groupid}</groupId>
+			<version>${schedassist.version}</version>
+		</dependency>
+		<dependency>
 			<artifactId>sched-assist-mock</artifactId>
 			<groupId>${schedassist.groupid}</groupId>
 			<version>${schedassist.version}</version>
@@ -120,6 +151,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<artifactId>sched-assist-spi-caldav</artifactId>
+			<groupId>${schedassist.groupid}</groupId>
+			<version>${schedassist.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
@@ -128,11 +164,6 @@
 			<groupId>edu.wisc.services.chub</groupId>
 			<artifactId>chub-ws-client-1.4</artifactId>
 			<version>1.4.0</version>
-		</dependency>
-		<dependency>
-			<artifactId>sched-assist-spi-caldav</artifactId>
-			<groupId>${schedassist.groupid}</groupId>
-			<version>${schedassist.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -303,23 +334,15 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-<!-- 				<configuration> -->
-<!-- 					<webResources> -->
-<!-- 						<resource> -->
-<!-- 							<directory>${project.basedir}/src/main/webapp/META-INF</directory> -->
-<!-- 							<filtering>true</filtering> -->
-<!-- 							<includes> -->
-<!-- 								<include>context.xml</include> -->
-<!-- 							</includes> -->
-<!-- 						</resource> -->
-<!-- 						<resource> -->
-<!-- 							<directory>src/main/webapp/META-INF</directory> -->
-<!-- 							<excludes> -->
-<!-- 								<exclude>context.xml</exclude> -->
-<!-- 							</excludes> -->
-<!-- 						</resource> -->
-<!-- 					</webResources> -->
-<!-- 				</configuration> -->
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.12</version>
+				<configuration>
+					<includes>
+						<include>**/*IntegrationTest.java</include>
+					</includes>
+				</configuration>
 			</plugin>
 		</plugins>
 
@@ -334,15 +357,15 @@
 					<include>**/*.properties</include>
 				</includes>
 			</resource>
-<!-- 			<resource> -->
-<!-- 				<directory>src/main/webapp/META-INF</directory> -->
-<!-- 				<filtering>true</filtering> -->
-<!-- 				<includes> -->
-<!-- 					<include>context.xml</include> -->
-<!-- 				</includes> -->
-				
-<!-- 				<targetPath>${project.build.directory}/${project.build.finalName}/META-INF</targetPath> -->
-<!-- 			</resource> -->
+			<!-- <resource> -->
+			<!-- <directory>src/main/webapp/META-INF</directory> -->
+			<!-- <filtering>true</filtering> -->
+			<!-- <includes> -->
+			<!-- <include>context.xml</include> -->
+			<!-- </includes> -->
+
+			<!-- <targetPath>${project.build.directory}/${project.build.finalName}/META-INF</targetPath> -->
+			<!-- </resource> -->
 			<!-- | Enables copying of the rest of the resources into the build directory 
 				without | filtering. + -->
 			<resource>
@@ -419,6 +442,21 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.12</version>
+					<executions>
+						<execution>
+							<id>integration-test</id>
+							<goals>
+								<goal>integration-test</goal>
+								<goal>verify</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
 			</plugins>
 		</pluginManagement>
 	</build>

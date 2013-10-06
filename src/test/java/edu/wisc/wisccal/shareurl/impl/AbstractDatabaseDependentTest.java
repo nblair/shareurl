@@ -39,7 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Nicholas Blair
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:database-test.xml", "classpath:applicationContext-test.xml" })
+@ContextConfiguration(locations={"classpath:/contexts/applicationContext-test.xml" })
 public abstract class AbstractDatabaseDependentTest extends AbstractJUnit4SpringContextTests {
 	/**
 	 * 

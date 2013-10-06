@@ -37,8 +37,8 @@
 		http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring
      	http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd">
 
-
-	<ehcache:annotation-driven cache-manager="cacheManager" />
+	
+	<ehcache:annotation-driven cache-manager="cacheManager" create-missing-caches="true" />
 	<ehcache:config>
 		<ehcache:evict-expired-elements
 			interval="20" />

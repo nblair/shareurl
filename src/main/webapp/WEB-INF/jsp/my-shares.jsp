@@ -342,40 +342,52 @@ function postCreateTraditional() {
 									value="Edit Privacy Settings for ${share.key }" />
 							</c:otherwise>
 						</c:choose>
-						<c:choose>
-							<c:when test="${share.freeBusyOnly == true}">
-								<li class="share"><a
+						<li class="share"><a
 									title="View Details and/or Manage ${share.key}"
 									href="${manageUrl}"><span class="key large">${linkText}<c:if
 												test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
 											</c:if></span></a><br />
-								<span class="details">Free Busy only.</span></li>
+											
+						<c:choose>
+							<c:when test="${share.freeBusyOnly == true}">
+								
+								<span class="details">Free Busy only.</span>
 							</c:when>
 							<c:otherwise>
 								<c:choose>
 									<c:when test="${share.eventFilterCount == 0}">
-										<li class="share"><a
-											title="View Details and/or Manage ${share.key}"
-											href="${manageUrl}"><span class="key large">${linkText}<c:if
-														test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
-													</c:if></span></a><br />
+										
 										<span class="details">All Calendar Data<c:if
 													test="${share.includeParticipants}">, Include Participants</c:if>.
-										</span></li>
+										</span>
 									</c:when>
 									<c:otherwise>
-										<li class="share"><a
-											title="View Details and/or Manage ${share.key}"
-											href="${manageUrl}"><span class="key large">${linkText}<c:if
-														test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
-													</c:if></span></a><br />
 										<span class="details">${share.sharePreferences.filterDisplay}<c:if
 													test="${share.includeParticipants}">, Include Participants</c:if>.
-										</span></li>
+										</span>
 									</c:otherwise>
 								</c:choose>
 							</c:otherwise>
 						</c:choose>
+						<br /><span class="details">Selected Calendars: 
+						<c:choose>
+							<c:when test="${empty share.sharePreferences.calendarMatchPreferences}" >
+								<c:out value="${allCalendarList[defaultCalendarId]}" />
+							</c:when>
+							<c:otherwise>
+								
+								<c:forEach items="${share.sharePreferences.calendarMatchPreferences }" var="pref" varStatus="status">
+									<c:out value="${allCalendarList[pref.value]}" />
+									<c:choose>
+										<c:when test="${status.last }">. </c:when>
+										<c:otherwise>, </c:otherwise>
+									</c:choose>
+								</c:forEach>
+								
+							</c:otherwise>
+						</c:choose>
+						</span>
+						</li>
 					</c:forEach>
 				</ul>
 			</c:if>

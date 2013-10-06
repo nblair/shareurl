@@ -55,6 +55,7 @@
 		<property name="delegateOwnerAttributeName" value="owner" />
 		<property name="eligibilityAttributeName" value="icsstatus" />
 		<property name="upnAttributeName"  value="wiscedumsolupn" />
+		<property name="upnSearchAttributeName"  value="wiscEduMSOLAddresses" />
 	</bean>
 	<bean id="peopleCalendarAccountDao"
 		class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
@@ -75,7 +76,9 @@
 		<property name="delegateOwnerAttributeName" value="owner" />
 		<property name="eligibilityAttributeName" value="icsstatus" />
 		<property name="upnAttributeName"  value="wiscedumsolupn" />
+		<property name="upnSearchAttributeName"  value="wiscEduMSOLAddresses" />
 	</bean>
+	
 	<bean id="delegateAccountDao"
 		class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl">
 		<property name="ldapTemplate" ref="ldapTemplate" />

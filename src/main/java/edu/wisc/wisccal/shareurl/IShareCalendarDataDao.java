@@ -52,6 +52,8 @@ public interface IShareCalendarDataDao extends ICalendarDataDao {
 
 	List<CalendarWithURI> peekAtAvailableScheduleReflections(
 			IScheduleOwner owner1, Date start, Date end);
+
+	Map<String, String> getCalendarMap(ICalendarAccount activeAccount);
 	
 
 }
