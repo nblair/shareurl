@@ -44,12 +44,13 @@
 	
 	<!-- shareurl also uses some additional caches -->
     <import resource="classpath:/contexts/integration/ehcache.xml" />
+    <import resource="classpath:/contexts/integration/cacheContext.xml" />
 
 	<import resource="classpath:/contexts/integration-test/databaseContext-test.xml" />
 	
 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml" />
 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caldav/calendarData-caldav.xml" />
-	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caching/cacheContext.xml" />
+<!-- 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caching/cacheContext.xml" /> -->
 	<import resource="classpath*:/contexts/org/jasig/schedassist/model/mock/mockCalendarAccounts.xml" />
 	<import resource="classpath*:/contexts/edu/wisc/services/chub/chub-client-v1_4.xml" />
 </beans>

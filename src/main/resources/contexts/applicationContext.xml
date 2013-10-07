@@ -46,5 +46,6 @@
 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caldav/calendarData-caldav.xml" />
 	<import resource="classpath*:/contexts/edu/wisc/services/chub/chub-client-v1_4.xml" />
 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/ldap/calendarAccounts-ldap.xml" />
-	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caching/cacheContext.xml" />
+<!-- 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/caching/cacheContext.xml" /> -->
+
 </beans>
