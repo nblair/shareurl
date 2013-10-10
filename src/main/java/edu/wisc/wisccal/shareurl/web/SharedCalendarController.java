@@ -19,6 +19,7 @@
  */
 package edu.wisc.wisccal.shareurl.web;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -26,14 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.PeriodList;
+import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VFreeBusy;
 import net.fortuna.ical4j.model.property.FreeBusy;
@@ -45,6 +49,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.ICalendarDataDao;
+import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -363,7 +368,7 @@ public class SharedCalendarController {
 				calendarDataProcessor.convertClassPublic(agenda);
 			}
 
-			
+	
 			model.put("ical", agenda.toString());
 		}
 		return true;
@@ -466,6 +471,7 @@ public class SharedCalendarController {
 			if(!success) {
 				response.setStatus(404);
 				return "event-not-found";
+				
 			}
 			// determine the view
 			String viewName = pickEventDetailViewName(requestDetails, response);
@@ -474,6 +480,22 @@ public class SharedCalendarController {
 				model.remove("requestDetails");
 				model.remove("descriptionSections");
 			}
+			if(viewName.equals("ICAL")) {
+				try {
+					ServletOutputStream outputStream = response.getOutputStream();
+					response.setContentType("text/calendar");
+					CalendarOutputter calendarOutputter = new CalendarOutputter();
+					calendarOutputter.output(agenda, outputStream);
+					return null;
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ValidationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			return viewName;
 		} 
 	}

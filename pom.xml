@@ -41,7 +41,7 @@
 
 	<properties>
 		<schedassist.groupid>edu.wisc.wisccal.sched-assist</schedassist.groupid>
-		<schedassist.version>1.2.13-SNAPSHOT</schedassist.version>
+		<schedassist.version>1.2.15-SNAPSHOT</schedassist.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<spring.framework.version>3.1.1.RELEASE</spring.framework.version>
@@ -56,6 +56,7 @@
 		<project.resources.tcrypt.privateKey>/Users/ctcudd/wiscshareurl-keys/private-wiscshareurl.pem</project.resources.tcrypt.privateKey>
 		<ehcache.version>2.1.0</ehcache.version>
 		<ehcache-spring-annotations.version>1.1.2</ehcache-spring-annotations.version>
+		<skipITs>true</skipITs>
 	</properties>
 
 	<dependencyManagement>
@@ -293,6 +294,7 @@
 				<configuration>
 					<excludes>
 						<exclude>edu/wisc/wisccal/shareurl/integration/**</exclude>
+						<exclude>**/*IntegrationTest.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -315,22 +317,22 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
-				<dependencies>
-					<dependency>
-						<groupId>edu.wisc.doit.tcrypt</groupId>
-						<artifactId>tcrypt-filtering-resources-plugin</artifactId>
-						<version>1.0.8</version>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<mavenFilteringHints>
-						<mavenFilteringHint>custom</mavenFilteringHint>
-					</mavenFilteringHints>
-				</configuration>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<artifactId>maven-resources-plugin</artifactId> -->
+<!-- 				<version>2.6</version> -->
+<!-- 				<dependencies> -->
+<!-- 					<dependency> -->
+<!-- 						<groupId>edu.wisc.doit.tcrypt</groupId> -->
+<!-- 						<artifactId>tcrypt-filtering-resources-plugin</artifactId> -->
+<!-- 						<version>1.0.8</version> -->
+<!-- 					</dependency> -->
+<!-- 				</dependencies> -->
+<!-- 				<configuration> -->
+<!-- 					<mavenFilteringHints> -->
+<!-- 						<mavenFilteringHint>custom</mavenFilteringHint> -->
+<!-- 					</mavenFilteringHints> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
@@ -346,53 +348,6 @@
 			</plugin>
 		</plugins>
 
-		<resources>
-			<!-- | Enables token decruption and general property filtering of all 
-				.properties files. | As a side effect only .properties files are copied into 
-				the the build directory. + -->
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>**/*.properties</include>
-				</includes>
-			</resource>
-			<!-- <resource> -->
-			<!-- <directory>src/main/webapp/META-INF</directory> -->
-			<!-- <filtering>true</filtering> -->
-			<!-- <includes> -->
-			<!-- <include>context.xml</include> -->
-			<!-- </includes> -->
-
-			<!-- <targetPath>${project.build.directory}/${project.build.finalName}/META-INF</targetPath> -->
-			<!-- </resource> -->
-			<!-- | Enables copying of the rest of the resources into the build directory 
-				without | filtering. + -->
-			<resource>
-				<directory>src/main/resources</directory>
-				<excludes>
-					<exclude>**/*.properties</exclude>
-				</excludes>
-			</resource>
-		</resources>
-
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>**/*.properties</include>
-				</includes>
-			</testResource>
-			<!-- | Enables copying of the rest of the resources into the build directory 
-				without | filtering. + -->
-			<testResource>
-				<directory>src/test/resources</directory>
-				<excludes>
-					<exclude>**/*.properties</exclude>
-				</excludes>
-			</testResource>
-		</testResources>
 
 
 		<pluginManagement>
