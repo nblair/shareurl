@@ -156,7 +156,7 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 					List<CalendarWithURI> caldavCalendarWithURI =  super.getCalendarsInternal(calendarAccount, startDate, endDate,cid );
 					if(caldavCalendarWithURI != null)calendars.addAll(caldavCalendarWithURI);
 				}catch(Exception e){
-					log.warn("FAILED TO GET CALDAV CALENDAR FOR : "+cid+".  This calendar may no longer exist and should be removed from the share's preferences.  Exception="+e.getMessage());
+					log.warn("FAILED TO GET CALDAV CALENDAR FOR : "+cid+".  This calendar may no longer exist and should be removed from the share's preferences.",e);
 					continue;
 				} 
 				
@@ -181,7 +181,7 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 			}
 		}
 		log.debug(message.toString());
-		log.debug("GetCalendarsInternal returned: "+ calendars.toString());	
+		log.trace("GetCalendarsInternal returned: "+ calendars.toString());	
 		return calendars;
 	}
 	
@@ -259,9 +259,9 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 		
 		log.debug(message.toString());
 		
-		for(String c : cacheManager.getCacheNames()){
-			log.debug(c+" stats: "+ cacheManager.getCache(c));
-		}
+//		for(String c : cacheManager.getCacheNames()){
+//			log.debug(c+" stats: "+ cacheManager.getCache(c));
+//		}
 		
 		assert(null != calendars);
 		//the calendarid must be added to every event returned
@@ -269,7 +269,7 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 			log.debug("GetCalendarsInternal returned calendar with URI: "+cwu.getUri().toString());
 		}
 		
-		log.debug("GetCalendarsInternal returned: "+ calendars.toString());	
+		log.trace("GetCalendarsInternal returned: "+ calendars.toString());	
 		return calendars;
 	}
 		
@@ -287,7 +287,9 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 			log.debug("getExchangeCalendar for "+ calendarAccount.getAttributeValues("wiscedumsolupn").get(0) + " from " + startDate + " to " + endDate);
 			
 			Calendar exchangeCalendar = exchangeCalendarDataDao.getCalendar(calendarAccount, startDate, endDate,calendarIds);
-			log.debug("exchange returned this: " + exchangeCalendar);
+			
+			log.trace("getExchangeCalendar returned: " + exchangeCalendar);
+			
 			assert(null != exchangeCalendar);
 			exchangeCalendarWithURI = new CalendarWithURI(exchangeCalendar, "exchangeCalendarDataTest");
 			

@@ -38,8 +38,10 @@ public class UWLDAPAttributesKeyImpl extends LDAPAttributesKeyImpl {
 		//TODO evaluate ldap attribute here...
 		if(!eligible){
 			values = attributes.get(getUpnAttributeName());
-			final String upnValue = values.get(0);
-			eligible = StringUtils.isNotBlank(upnValue);
+			if(null != values) {
+				final String upnValue = values.get(0);
+				eligible = StringUtils.isNotBlank(upnValue);
+			}	
 		}
 		
 		return eligible;

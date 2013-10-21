@@ -349,7 +349,7 @@ public class SharePreferences implements Serializable {
 		} else if (IncludeParticipantsPreference.INCLUDE_PARTICIPANTS.equals(preferenceType)) {
 			return new IncludeParticipantsPreference(Boolean.parseBoolean(preferenceValue));
 		}else if( CalendarMatchPreference.CALENDAR_MATCH.equals(preferenceType)){
-			LOG.debug("new CalendarMatchPreference(preferenceKey="+preferenceKey+", preferenceValue="+preferenceValue+")");
+			LOG.trace("new CalendarMatchPreference(preferenceKey="+preferenceKey+", preferenceValue="+preferenceValue+")");
 			return new CalendarMatchPreference(preferenceKey, preferenceValue);
 		}else if(IncludeSourceCalendarPreference.INCLUDE_SOURCE_CALENDAR.equals(preferenceType)) {
 			return new IncludeSourceCalendarPreference(Boolean.parseBoolean(preferenceValue));

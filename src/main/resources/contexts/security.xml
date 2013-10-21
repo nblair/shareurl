@@ -70,6 +70,8 @@
 						<entry
 							key="org.springframework.security.authentication.AuthenticationServiceException"
 							value="/serviceUnavailable.html"></entry>
+						<entry key="org.springframework.ldap.CommunicationException" 
+							value="/serviceUnavailable.html"></entry>
 					</map>
 				</property>
 			</bean>

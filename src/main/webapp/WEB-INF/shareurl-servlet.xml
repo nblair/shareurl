@@ -44,6 +44,7 @@
 				<prop
 					key="org.springframework.transaction.CannotCreateTransactionException">service-unavailable</prop>
 				<prop key="java.sql.SQLException">service-unavailable</prop>
+				<prop key="org.springframework.ldap.CommunicationException">service-unavailable</prop>
 				<prop key="java.lang.Exception">uncaught-error</prop>
 			</props>
 		</property>

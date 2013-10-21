@@ -463,7 +463,7 @@ public class SharedCalendarController {
 			boolean success = prepareModel(share.getSharePreferences(), requestDetails, agenda, account, model);
 			if(LOG.isDebugEnabled()) {
 				List<String> eventUids = eventDebugIds(agenda);
-				LOG.debug("post prepareModel; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+				LOG.debug("post prepareModel; " + account + " has " + eventUids.size() + " VEVENTs ");
 			}
 			if(LOG.isTraceEnabled()) {
 				LOG.trace("post prepareModel " + requestDetails + "; " + account + " has raw agenda " + agenda);
@@ -519,7 +519,7 @@ public class SharedCalendarController {
 		
 		if(LOG.isDebugEnabled()) {
 			List<String> eventUids = eventDebugIds(agenda);
-			LOG.debug("begin processing " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+			LOG.debug("begin processing " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs");
 		}
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("begin processing " + requestDetails + "; " + account + " has raw agenda " + agenda);
@@ -534,7 +534,7 @@ public class SharedCalendarController {
 
 		if(LOG.isDebugEnabled()) {
 			List<String> eventUids = eventDebugIds(agenda);
-			LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs; " + eventUids.toString());
+			LOG.debug("post filterEvents for " + requestDetails + "; " + account + " has " + eventUids.size() + " VEVENTs");
 		}
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("post filterEvents for " + requestDetails + "; " + account + " has raw agenda " + agenda);

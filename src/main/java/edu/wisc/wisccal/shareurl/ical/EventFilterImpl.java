@@ -65,7 +65,7 @@ public class EventFilterImpl implements IEventFilter {
 		Set<ISharePreference> propertyFilters = filterPreferences;
 		propertyFilters.removeAll(calendarFilters);
 		
-		log.info("filterEvents prefrernces = "+ preferences.toString());
+		log.debug("filterEvents prefrernces = "+ preferences.toString());
 		
 		if(filterPreferences.size() == 0 || preferences.isFreeBusyOnly()) {
 			// return original unfiltered calendar if no preferences exist or is freebusy only
@@ -96,9 +96,9 @@ public class EventFilterImpl implements IEventFilter {
 				}
 				if(log.isDebugEnabled()) {
 					if(kept) {
-						log.debug("propertyFilterPreference retained: " + calendarDataProcessor.getDebugId(event));
+						log.trace("propertyFilterPreference retained: " + calendarDataProcessor.getDebugId(event));
 					} else {
-						log.debug("propertyFilterPreference dropped: " + calendarDataProcessor.getDebugId(event));
+						log.trace("propertyFilterPreference dropped: " + calendarDataProcessor.getDebugId(event));
 					}
 				}
 			}
@@ -121,9 +121,9 @@ public class EventFilterImpl implements IEventFilter {
 				}
 				if(log.isDebugEnabled()) {
 					if(kept) {
-						log.debug("calendarMatchPreference retained: " + calendarDataProcessor.getDebugId(event));
+						log.trace("calendarMatchPreference retained: " + calendarDataProcessor.getDebugId(event));
 					} else {
-						log.debug("calendarMatchPreference dropped: " + calendarDataProcessor.getDebugId(event));
+						log.trace("calendarMatchPreference dropped: " + calendarDataProcessor.getDebugId(event));
 					}
 				}
 			}	

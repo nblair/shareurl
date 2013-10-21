@@ -99,10 +99,12 @@ IShareDao {
 			SharePreferences preferences)  throws GuessableShareAlreadyExistsException {
 		String key = account.getEmailAddress();
 		Share existing = internalRetrieveByKey(key);
-		if(null == existing){
-			key = account.getUpn();
-			existing = internalRetrieveByKey(key);
-		}
+		
+		//TODO WHY THIS?!?
+//		if(null == existing){
+//			key = account.getUpn();
+//			existing = internalRetrieveByKey(key);
+//		}
 		
 		if(null != existing) {
 			if(existing.isValid()) {

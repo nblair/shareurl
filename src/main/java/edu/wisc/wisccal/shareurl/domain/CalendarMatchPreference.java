@@ -75,21 +75,21 @@ public class CalendarMatchPreference extends AbstractSharePreference {
 		Property eventProperty = event.getProperties().getProperty(CALENDAR_MATCH_PROPERTY_NAME);
 				
 		if(null != eventProperty) {
-			log.debug("\nEvent contains: "+CALENDAR_MATCH_PROPERTY_NAME+" = "+eventProperty.getValue());
-			log.debug("CalendarMatch preference "+ this.getKey() + " = "+ this.getValue());
+			//log.debug("\nEvent contains: "+CALENDAR_MATCH_PROPERTY_NAME+" = "+eventProperty.getValue());
+			//log.debug("CalendarMatch preference "+ this.getKey() + " = "+ this.getValue());
 			
 			if(!filterEnabled) return true;
 			
 			//if exchange calendar properties should be equal
 			if(StringUtils.equals(eventProperty.getValue(), this.getValue())){
-				log.debug("Exchange match");
+				//log.debug("Exchange match");
 				return true;
 			}
 			
 			if(StringUtils.contains(eventProperty.getValue(), this.getValue())){
 				for(String part : eventProperty.getValue().split("/") ){
 					if(StringUtils.equals(part+"/", this.getValue())){
-						log.debug("WiscCal match");
+						//log.debug("WiscCal match");
 						return true;
 					}
 				}
