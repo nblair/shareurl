@@ -41,7 +41,7 @@
 
 	<properties>
 		<schedassist.groupid>edu.wisc.wisccal.sched-assist</schedassist.groupid>
-		<schedassist.version>1.2.15-SNAPSHOT</schedassist.version>
+		<schedassist.version>1.2.16-SNAPSHOT</schedassist.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<spring.framework.version>3.1.1.RELEASE</spring.framework.version>
@@ -411,7 +411,11 @@
 						</execution>
 					</executions>
 				</plugin>
-
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
