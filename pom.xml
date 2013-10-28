@@ -317,22 +317,6 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<artifactId>maven-resources-plugin</artifactId> -->
-<!-- 				<version>2.6</version> -->
-<!-- 				<dependencies> -->
-<!-- 					<dependency> -->
-<!-- 						<groupId>edu.wisc.doit.tcrypt</groupId> -->
-<!-- 						<artifactId>tcrypt-filtering-resources-plugin</artifactId> -->
-<!-- 						<version>1.0.8</version> -->
-<!-- 					</dependency> -->
-<!-- 				</dependencies> -->
-<!-- 				<configuration> -->
-<!-- 					<mavenFilteringHints> -->
-<!-- 						<mavenFilteringHint>custom</mavenFilteringHint> -->
-<!-- 					</mavenFilteringHints> -->
-<!-- 				</configuration> -->
-<!-- 			</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>

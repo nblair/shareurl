@@ -13,7 +13,7 @@
 
 	<context:component-scan base-package="edu.wisc.wisccal.shareurl.web" />
 	<context:annotation-config />
-	<context:property-placeholder location="classpath:integration.properties" />
+	<context:property-placeholder location="classpath:shareurl.properties" />
 
 	<bean id="handlerMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
