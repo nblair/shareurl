@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<parent>
 		<groupId>edu.wisc.doit.code</groupId>
@@ -10,7 +9,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.wisc.wisccal</groupId>
 	<artifactId>shareurl</artifactId>
-	<version>3.2.5-SNAPSHOT</version>
+	<version>3.2.5</version>
 	<packaging>war</packaging>
 	<name>shareurl</name>
 	<description>ShareURL 3.2; implemented using Jasig Scheduling Assistant libraries.</description>
@@ -19,7 +18,7 @@
 		<connection>scm:git:git@github.com:ctcudd/shareurl.git</connection>
 		<developerConnection>scm:git:git@github.com:ctcudd/shareurl.git</developerConnection>
 		<url>https://github.com/ctcudd/shareurl</url>
-		<tag>HEAD</tag>
+		<tag>shareurl-3.2.5</tag>
 	</scm>
 
 	<repositories>
