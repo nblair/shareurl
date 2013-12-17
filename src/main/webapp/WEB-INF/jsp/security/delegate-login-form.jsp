@@ -49,13 +49,20 @@
 <script type="text/javascript"
 	src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
-$(document).ready(function(){
-	$("#delegateName").autocomplete('<c:url value="/delegate-search.html"/>', {
-		width: 320,
-		scroll: true
-	});
-	$(':submit').lockSubmit();
-});
+	$(document).ready(
+			function() {
+				$("#delegateName").autocomplete(
+						'<c:url value="/delegate-search.html"/>', {
+							width : 320,
+							scroll : true
+						});
+				$(':submit').lockSubmit();
+			});
+	function submitLinkedLogin(e){
+		var linkedEmail = $(e).text();
+		$("#delegateName").val(linkedEmail);
+		$("#loginForm").submit();
+	}
 </script>
 </head>
 <body>
@@ -77,14 +84,39 @@ $(document).ready(function(){
 					documentation</a>.
 			</p>
 		</div>
+		<div id="listAccounts">
+
+			<c:forEach items="${ownerLinkedAccounts}" var="account">
+				<span class="linkedAccount"> <a class='loginLink'
+					onclick='submitLinkedLogin(this);'><c:out
+							value="${account.emailAddress}" /></a>
+				</span>
+				<br />
+			</c:forEach>
+
+			<c:forEach items="${ownerDelegagteAccounts}" var="account">
+				<span class="linkedAccount"> <a class='loginLink'
+					onclick='submitLinkedLogin(this);'><c:out
+							value="${account.emailAddress}" /></a>
+				</span>
+				<br />
+			</c:forEach>
+
+		</div>
+		<!-- 		<div id="lookupform"> -->
+		<%-- 			<form action="<c:url value="/delegate_switch_user"/>" method="post"> --%>
+		<!-- 				<fieldset> -->
+		<!-- 					<label for="delegateName">Resource Name:</label>&nbsp; <input -->
+		<!-- 						type="text" id="delegateName" name="j_username" /> <input -->
+		<!-- 						type="submit" value="Login" /> -->
+		<!-- 				</fieldset> -->
+		<!-- 			</form> -->
+		<!-- 		</div> -->
 
 		<div id="lookupform">
-			<form action="<c:url value="/delegate_switch_user"/>" method="post">
-				<fieldset>
-					<label for="delegateName">Resource Name:</label>&nbsp; <input
-						type="text" id="delegateName" name="j_username" /> <input
-						type="submit" value="Login" />
-				</fieldset>
+			<form id="loginForm" action="<c:url value="/delegate_switch_user"/>"
+				method="post">
+				<input type="hidden" id="delegateName" name="j_username" />
 			</form>
 		</div>
 	</div>

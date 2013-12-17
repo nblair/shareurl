@@ -99,4 +99,10 @@ public class MockExchangeCalendarAccount implements ICalendarAccountDao {
 		this.displayName = displayName;
 	}
 
+	@Override
+	public List<ICalendarAccount> getLinkedAccounts(ICalendarAccount owner) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

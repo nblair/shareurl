@@ -66,9 +66,11 @@ public class DelegateCalendarAccountUserDetailsServiceImpl implements
 			LOG.debug("caught NONE_PROVIDED being passed into loadUserByUsername");
 			throw new UsernameNotFoundException(NONE_PROVIDED);
 		}
-		
-		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegate(username, currentUser.getCalendarAccount());
+		Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) user;
+		//IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegate(username, currentUser.getCalendarAccount());
+		IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegateByMail(username, currentUser.getCalendarAccount());
+
 		if(null == delegate) {
 			throw new UsernameNotFoundException("no delegate account found with name " + username);
 		}

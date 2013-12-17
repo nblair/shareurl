@@ -31,7 +31,6 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
-
 	<bean id="ldapContextSource" class="org.springframework.ldap.core.support.LdapContextSource">
 		<property name="url" value="${ldap.url}" />
 		<property name="userDn" value="${ldap.userDn}" />
@@ -47,16 +46,16 @@
 	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
 		<constructor-arg ref="ldapContextSource" />
 	</bean>
-	<bean id="ldapAttributesKey"
-		class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
-		<property name="displayNameAttributeName" value="displayname" />
-		<property name="usernameAttributeName" value="mail" />
-		<property name="emailAddressAttributeName" value="mail" />
-		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid" />
-		<property name="delegateOwnerAttributeName" value="owner" />
-		<property name="eligibilityAttributeName" value="icsstatus" />
+	<bean id="ldapAttributesKey" class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
+		<property name="displayNameAttributeName" value="displayname"/>
+		<property name="usernameAttributeName" value="mail"/>
+		<property name="emailAddressAttributeName" value="mail"/>
+		<property name="uniqueIdentifierAttributeName" value="wisceducaldbid"/>
+		<property name="delegateOwnerAttributeName" value="owner"/>
+		<property name="eligibilityAttributeName" value="icsstatus"/>
 		<property name="upnAttributeName"  value="wiscedumsolupn" />
-		<property name="upnSearchAttributeName"  value="wiscEduMSOLAddresses" />
+		<property name="upnSearchAttributeName"  value="wiscedumsoladdresses" />
+		<property name="linkedAccountsAttributeName"  value="wiscedumailplusemailaddress" />
 	</bean>
 	<bean id="peopleCalendarAccountDao"
 		class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
@@ -85,7 +84,7 @@
 		<property name="ldapTemplate" ref="ldapTemplate" />
 		<property name="baseDn" value="${ldap.resourceAccountBaseDn}" />
 		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey" />
-		<property name="enforceSpecificObjectClass" value="true" />
+		<property name="enforceSpecificObjectClass" value="false" />
 		<property name="requiredObjectClass" value="wisceducalresource" />
 		<qualifier value="delegates" />
 	</bean>

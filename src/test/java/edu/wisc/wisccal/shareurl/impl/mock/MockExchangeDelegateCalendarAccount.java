@@ -21,6 +21,8 @@ package edu.wisc.wisccal.shareurl.impl.mock;
 
 import java.util.List;
 
+import javax.naming.Name;
+
 import org.jasig.schedassist.IDelegateCalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IDelegateCalendarAccount;
@@ -119,6 +121,21 @@ public class MockExchangeDelegateCalendarAccount implements
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+	}
+
+
+	@Override
+	public IDelegateCalendarAccount getDelegateByMail(String email,
+			ICalendarAccount owner) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<IDelegateCalendarAccount> getDelegateAccounts(
+			Name distinquishedName, ICalendarAccount owner) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
