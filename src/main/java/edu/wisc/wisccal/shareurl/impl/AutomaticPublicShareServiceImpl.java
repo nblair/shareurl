@@ -24,9 +24,7 @@
 package edu.wisc.wisccal.shareurl.impl;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.naming.Name;
 
@@ -68,10 +66,14 @@ AutomaticPublicShareService {
 	private OptOutDao optOutDao;
 	private ICalendarAccountDao calendarAccountDao;
 	private CurricularDataService curricularDataService;
+	//TODO these should be tied to ldapkey
 	private String pviAttributeName = "wiscedupvi";
 	private String mailAttributeName = "mail";
+	private String proxyAddressesAttributeName = "wiscedumsoladdresses";
 	private String unsearchableAttributeName = "wisceducalunsearchable";
 	private Name primaryWiscmailBaseDn;
+	
+	
 	/**
 	 * Default constructor, best for use with IoC.
 	 */
@@ -194,17 +196,10 @@ AutomaticPublicShareService {
 		ICalendarAccount calendarAccount = locateEligibleAccountForEmailAddress(emailAddress);
 		if(calendarAccount != null) {
 			Share share = new Share();
-			share.setKey(emailAddress);
-			String calendarUniqueId = calendarAccount.getCalendarUniqueId();
-			String upn = calendarAccount.getUpn();
+			//dont use original email or proxy shares will not work
+			share.setKey(calendarAccount.getEmailAddress());
+			share.setOwnerCalendarUniqueId(calendarAccount.getCalendarUniqueId());
 			share.setValid(true);
-			if(StringUtils.isNotBlank(calendarUniqueId)) {
-				share.setOwnerCalendarUniqueId(calendarUniqueId);
-			}else if(StringUtils.isNotBlank(upn)){				
-				share.setOwnerCalendarUniqueId(upn);
-			}else{
-				share.setValid(false);
-			}
 				
 			share.getSharePreferences().addPreference(new FreeBusyPreference());
 			share.getSharePreferences().addPreference(new GuessableSharePreference());
@@ -271,7 +266,10 @@ AutomaticPublicShareService {
 	 * @return
 	 */
 	protected ICalendarAccount locateEligibleAccountForEmailAddress(String emailAddress) {
-		ICalendarAccount result = calendarAccountDao.getCalendarAccount(getMailAttributeName(), emailAddress);
+		
+		//ICalendarAccount result = calendarAccountDao.getCalendarAccount(getMailAttributeName(), emailAddress);
+		ICalendarAccount result = calendarAccountDao.getCalendarAccount(getProxyAddressesAttributeName(), emailAddress);
+				
 		return isEligibleForAutomaticPublicShare(result) ? result : null;
 	}
 	/**
@@ -286,9 +284,15 @@ AutomaticPublicShareService {
 	 * @return true if the account is eligible
 	 */
 	protected boolean isEligibleForAutomaticPublicShare(ICalendarAccount calendarAccount) {
+		
 		return calendarAccount != null && calendarAccount.isEligible() 
-				&& !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount)
+				&& !hasOptedOut(calendarAccount)
 				&& !hasFerpaHold(calendarAccount);
+		//TODO ignore unsearchablestatus as it's not currently modifyable
+		//https://kb.wisc.edu/wisccal/page.php?id=24383
+//		return calendarAccount != null && calendarAccount.isEligible() 
+//				&& !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount)
+//				&& !hasFerpaHold(calendarAccount);
 	}
 
 	/**
@@ -343,5 +347,13 @@ AutomaticPublicShareService {
 			}
 			return false;
 		}
+	}
+
+	public String getProxyAddressesAttributeName() {
+		return proxyAddressesAttributeName;
+	}
+	public void setProxyAddressesAttributeName(
+			String proxyAddressesAttributeName) {
+		this.proxyAddressesAttributeName = proxyAddressesAttributeName;
 	}
 }

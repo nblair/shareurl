@@ -21,6 +21,7 @@ package edu.wisc.wisccal.shareurl.ical;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 
@@ -79,7 +81,7 @@ public class EventFilterImpl implements IEventFilter {
 	@Override
 	public Calendar filterEvents(final Calendar original, final SharePreferences preferences) {
 		final Set<ISharePreference> filterPreferences = preferences.getFilterPreferences();
-		Set<ISharePreference> calendarFilters = preferences.getCalendarMatchPreferences();
+		List<CalendarMatchPreference> calendarFilters = preferences.getCalendarMatchPreferences();
 		
 		Set<ISharePreference> propertyFilters = filterPreferences;
 		propertyFilters.removeAll(calendarFilters);

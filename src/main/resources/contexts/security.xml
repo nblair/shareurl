@@ -124,16 +124,16 @@
 			<bean class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
 				<property name="ldapTemplate" ref="ldapTemplate" />
 				<property name="baseDn" value="${ldap.primaryWiscmailDomainBaseDn}" />
-				<property name="ldapAttributesKey">
-					<bean class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl">
-						<property name="displayNameAttributeName" value="displayname" />
-						<property name="usernameAttributeName" value="uid" />
-						<property name="emailAddressAttributeName" value="mail" />
-						<property name="uniqueIdentifierAttributeName" value="wisceducaldbid" />
-						<property name="delegateOwnerAttributeName" value="wisceducalresourceownerid" />
-						<property name="eligibilityAttributeName" value="icsstatus" />
+				<property name="ldapAttributesKey" ref="ldapAttributesKey">
+<!-- 					<bean class="edu.wisc.wisccal.schedassist.ldap.UWLDAPAttributesKeyImpl"> -->
+<!-- 						<property name="displayNameAttributeName" value="displayname" /> -->
+<!-- 						<property name="usernameAttributeName" value="uid" /> -->
+<!-- 						<property name="emailAddressAttributeName" value="mail" /> -->
+<!-- 						<property name="uniqueIdentifierAttributeName" value="wisceducaldbid" /> -->
+<!-- 						<property name="delegateOwnerAttributeName" value="wisceducalresourceownerid" /> -->
+<!-- 						<property name="eligibilityAttributeName" value="icsstatus" /> -->
 <!-- 						<property name="additionalEmailsAttributeName" value="wiscEduGoogleAppsID" /> -->
-					</bean>
+<!-- 					</bean> -->
 				</property>
 				<qualifier value="primaryWiscmailDomain" />
 			</bean>

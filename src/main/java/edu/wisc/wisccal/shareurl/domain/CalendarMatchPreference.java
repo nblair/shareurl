@@ -47,11 +47,22 @@ public class CalendarMatchPreference extends AbstractSharePreference {
 	
 	public boolean filterEnabled = true;
 	
-	public CalendarMatchPreference(final String propertyName, final String propertyValue) {
-		this.propertyName = propertyName;
-		this.propertyValue = propertyValue;
+	public CalendarMatchPreference(final String calendarName, final String calendarId) {
+		this.propertyName = calendarName;
+		this.propertyValue = calendarId;
 	}
 	
+	public String getCalendarId() {
+		return getValue();
+	}
+	
+	public String getCalendarName(boolean decode) {
+		if(decode) {
+			return getDisplayName();
+		}else {
+			return getKey();
+		}
+	}
 	
 	@Override
 	public String getType() {
@@ -82,6 +93,10 @@ public class CalendarMatchPreference extends AbstractSharePreference {
 		return true;
 	}
 
+	
+	public boolean isExchange() {
+		return this.getKey().startsWith(EXCHANGE_CALENDAR_IDENTIFIER);
+	}
 	
 	/**
 	 * 

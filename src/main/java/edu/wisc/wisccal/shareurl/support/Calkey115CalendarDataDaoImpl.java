@@ -133,7 +133,7 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 		
 		log.debug("getCalendarsInternal for shareKey="+shareKey+", acccount="+calendarAccount.getCalendarUniqueId() +" from "+startDate +" to "+ endDate );
 		
-		Set<ISharePreference> prefs = share.getSharePreferences().getCalendarMatchPreferences();
+		List<CalendarMatchPreference> prefs = share.getSharePreferences().getCalendarMatchPreferences();
 		if(!prefs.isEmpty()){
 			for(ISharePreference p: prefs){
 				//p.getKey.StartsWith()
@@ -223,7 +223,7 @@ public class Calkey115CalendarDataDaoImpl extends CaldavCalendarDataDaoImpl impl
 		List<Share> shares = shareDao.retrieveByOwner(calendarAccount);
 		if(shares.size() > 0){
 			for( Share s : shares){
-				Set<ISharePreference> prefs = s.getSharePreferences().getCalendarMatchPreferences();
+				List<CalendarMatchPreference> prefs = s.getSharePreferences().getCalendarMatchPreferences();
 				//if a CALENDAR_MATCH pref exists, retrieve multiple calendars
 				if(!prefs.isEmpty()){
 					for(ISharePreference p: prefs){

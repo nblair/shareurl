@@ -19,44 +19,29 @@
  */
 package edu.wisc.wisccal.shareurl.impl;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jasig.schedassist.ICalendarAccountDao;
-import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDao;
-import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
-import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.microsoft.exchange.types.FolderIdType;
-
 import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
-import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
-import edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl;
 
 /**
  * Spring JDBC backed implementation of {@link IShareDao}.
@@ -89,10 +74,10 @@ IShareDao {
 	public SimpleJdbcTemplate getSimpleJdbcTemplate() {
 		return simpleJdbcTemplate;
 	}
-	
-	
-	@Autowired
-	CaldavCalendarDataDao caldavDataDao;
+
+//	WHY IS THIS HERE?
+//	@Autowired
+//	CaldavCalendarDataDao caldavDataDao;
 
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.calendarkey.IShareDao#generateNewShare(edu.wisc.wisccal.calendarkey.ICalendarAccount, edu.wisc.wisccal.calendarkey.SharePreferences)
@@ -405,7 +390,6 @@ IShareDao {
 	 */
 	protected List<Share> internalRetrieveByOwner(final ICalendarAccount owner, final String validity) {
 		String ownerUniqueId = owner.getCalendarUniqueId();
-		if(StringUtils.isBlank(ownerUniqueId)) ownerUniqueId = owner.getUpn();
 		List<Share> shares = this.getSimpleJdbcTemplate().query(
 				"select * from shares where owner = ? and valid like ?",
 				new ShareRowMapper(), 
@@ -420,27 +404,7 @@ IShareDao {
 				prefs.addPreference(p);
 			}
 			s.setSharePreferences(prefs);
-			
-//			//ctcudd make sure the msoladdresses are set.
-//			Set<String> msolAddresses = new HashSet<String>();
-//			
-//			String temp = owner.getAttributeValue("wiscedumsolupn");
-//			msolAddresses.add(temp);			
-//			s.setCalAddresses(msolAddresses);
-//			
-//			
-//			//set all calendarIds here?
-//			ApplicationContext ewsContext = 
-//					new ClassPathXmlApplicationContext("classpath:/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml");
-//			ExchangeCalendarDataDaoImpl exchangeCalendarDataDao =  (ExchangeCalendarDataDaoImpl) ewsContext.getBean("exchangeCalendarDataDao");
-//			s.setMsolCals(exchangeCalendarDataDao.listCalendars(owner));	
-//			
-//			Validate.notNull(caldavDataDao);
-////			ApplicationContext caldavContext = 
-////					new ClassPathXmlApplicationContext("classpath*:**/*applicationContext.xml");	
-////			Calkey115CalendarDataDaoImpl caldavDataDao = (Calkey115CalendarDataDaoImpl) caldavContext.getBean("caldavCalendarDataDao");
-//			s.setWiscCals(caldavDataDao.listCalendars(owner));
-			
+		
 		}
 		return shares;
 	}
@@ -452,5 +416,38 @@ IShareDao {
 	 */
 	protected ISharePreference castAppropriately(final PersistenceSharePreference persistencePref) {
 		return SharePreferences.construct(persistencePref.getPreferenceType(), persistencePref.getPreferenceKey(), persistencePref.getPreferenceValue());
+	}
+	
+	
+	@Override
+	public Share updateShareOwner(Share share, ICalendarAccount newOwner) {
+		String shareOwnerUniqueId = share.getOwnerCalendarUniqueId();
+		String newOwnerUniqueId   = newOwner.getCalendarUniqueId();
+		String shareKey = share.getKey();
+		if(shareOwnerUniqueId.equals(newOwnerUniqueId)){
+			LOG.warn("share["+shareKey+"] is already owned by account["+newOwner+"]");
+			return share;
+		}
+		
+		LOG.info("updateShareOwner for share["+shareKey+"] from oldOwner["+shareOwnerUniqueId+"] to newOwner["+newOwnerUniqueId+"]");
+		
+		int rows = this.getSimpleJdbcTemplate().update(
+				"update shares set owner = ?  where name = ? and owner = ?",
+				newOwnerUniqueId,
+				shareKey,
+				shareOwnerUniqueId);
+		if(rows == 1 && LOG.isInfoEnabled()) {
+			LOG.info("updateShareOwner successfully for share: " + share);
+		} else if (rows != 1) {
+			LOG.warn("updateShareOwner " + share + " returned unexpected number of rows affected: " + rows);
+		}
+		
+		Share updatedShare = retrieveByKey(shareKey);
+		if(!updatedShare.getOwnerCalendarUniqueId().equals(newOwnerUniqueId)) {
+			LOG.warn("updateShareOwner FAILED");
+			return null;
+		}
+		
+		return updatedShare;
 	}
 }

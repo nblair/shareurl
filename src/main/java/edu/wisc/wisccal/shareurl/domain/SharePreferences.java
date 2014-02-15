@@ -128,8 +128,16 @@ public class SharePreferences implements Serializable {
 		return getPreferencesByType(PropertyMatchPreference.PROPERTY_MATCH);
 	}
 	
-	public Set<ISharePreference> getCalendarMatchPreferences(){
-		return getPreferencesByType(CalendarMatchPreference.CALENDAR_MATCH);
+	public List<CalendarMatchPreference> getCalendarMatchPreferences(){
+		Set<ISharePreference> sharePrefs = getPreferencesByType(CalendarMatchPreference.CALENDAR_MATCH);
+		List<CalendarMatchPreference> calendarMatchPreferences = new ArrayList<CalendarMatchPreference>();
+		for(ISharePreference p: sharePrefs) {
+			if(p instanceof CalendarMatchPreference) {
+				CalendarMatchPreference preference = (CalendarMatchPreference) p;
+				calendarMatchPreferences.add(preference);
+			}
+		}
+		return calendarMatchPreferences;
 	}
 	/**
 	 * Never null, but potentially empty.

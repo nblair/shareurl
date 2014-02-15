@@ -25,8 +25,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -47,20 +45,21 @@ import net.fortuna.ical4j.model.property.Uid;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.ICalendarDataDao;
-import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UrlPathHelper;
 
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
-import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
+import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 import edu.wisc.wisccal.shareurl.domain.simple.SimpleCalendars;
@@ -143,7 +142,7 @@ public class SharedCalendarController {
 	private static final String VFB = ".vfb";
 
 	private IShareDao shareDao;
-	private IShareCalendarDataDao calendarDataDao;
+	private ICalendarDataDao calendarDataDao;
 	private ICalendarAccountDao calendarAccountDao;
 	private IEventFilter eventFilter;
 	private CalendarDataProcessor calendarDataProcessor;
@@ -161,7 +160,7 @@ public class SharedCalendarController {
 	 * @param calendarDataDao the calendarDataDao to set
 	 */
 	@Autowired
-	public void setCalendarDataDao(@Qualifier("caldavCalendarDataDao") IShareCalendarDataDao calendarDataDao) {
+	public void setCalendarDataDao(@Qualifier("compositeCalendarDataDao") ICalendarDataDao calendarDataDao) {
 		this.calendarDataDao = calendarDataDao;
 	}
 	/**
@@ -268,7 +267,7 @@ public class SharedCalendarController {
 		}
 		
 		if(calendarDataDao != null) {
-			Map<String, String> calendarMap = calendarDataDao.getCalendarMap(account);
+			Map<String, String> calendarMap = calendarDataDao.listCalendars(account);
 			model.addAttribute("calendarMap", calendarMap);
 			calendarDataProcessor.setRequestDetailsProperty(agenda, requestDetails);
 		}
@@ -392,6 +391,18 @@ public class SharedCalendarController {
 		return null;
 	}
 	
+//	private boolean transitionExchangeUser(ICalendarAccount account) {
+//		Validate.isTrue(account.isExchange(),"account is not exchange");
+//		Validate.isTrue(account.isEligible(),"account is not eligible");
+//		Validate.isTrue(account.getCalendarUniqueId() != account.getGuid(), "account is weird");
+//	
+//		//1) Get all shares
+//		List<Share> shares = shareDao.retrieveByOwner(account);
+//		
+//		
+//	}
+	
+	
 	/**
 	 * Main Request handler for ShareURL requests.
 	 */
@@ -413,6 +424,14 @@ public class SharedCalendarController {
 			request.getSession().setAttribute("lastNonSingleEventRequestDetails", requestDetails);
 		}
 		model.put("requestDetails", requestDetails);
+		
+		if(requestDetails.isPublicUrl()) {
+			boolean isValidEmail = EmailValidator.getInstance().isValid(requestDetails.getShareKey());
+			if(isValidEmail) {
+				//searchldap wiscedumsoladdress=requestDetails.getShareKey()
+				
+			}
+		}
 
 		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
 		if(null == share && requestDetails.isPublicUrl()) {
@@ -429,7 +448,19 @@ public class SharedCalendarController {
 			response.setStatus(404);
 			return "share-not-found";
 		} else {
+			
 			ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
+
+
+			//TODO FIX EXCHANGE ACCOUNTS POST TRANSITION
+//			if(account.isExchange()) {
+//				if(account.getCalendarUniqueId() != account.getGuid()) {
+//					transitionExchangeUser(account)
+//				}
+//			}
+			
+			
+			
 			if(null == account) {
 				// account not found for share, revoke and 404
 				if(LOG.isWarnEnabled()) {
@@ -510,8 +541,24 @@ public class SharedCalendarController {
 	 * @return the {@link Calendar}, post filtering
 	 */
 	private Calendar obtainAgenda(ICalendarAccount account, ShareRequestDetails requestDetails, Share share) {
-		Calendar agenda = calendarDataDao.getCalendar(account, share, requestDetails.getStartDate(), requestDetails.getEndDate());
+		//Calendar agenda = calendarDataDao.getCalendar(account, share, requestDetails.getStartDate(), requestDetails.getEndDate());
 		
+		List<String> calendarIdsList = new ArrayList<String>();
+		List<CalendarMatchPreference> calendarMatchPreferences = share.getSharePreferences().getCalendarMatchPreferences();
+		if(!CollectionUtils.isEmpty(calendarMatchPreferences)) {
+			for(CalendarMatchPreference p: calendarMatchPreferences){
+				String calendarId = p.getValue();
+				if(p.isExchange() && account.isExchange()) {
+					calendarIdsList.add(calendarId);
+				}else if(!p.isExchange() && !account.isExchange()) {
+					calendarIdsList.add(calendarId);
+				}else {
+					LOG.error("INVALID CALMATCH PREFERENCE FOR ACCOUNT="+account);
+				}
+			}
+		}
+		Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarIdsList);
+				
 		return checkAndFilterAgenda(account, requestDetails, share.getSharePreferences(), agenda);
 	}
 	

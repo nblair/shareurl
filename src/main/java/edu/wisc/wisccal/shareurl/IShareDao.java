@@ -138,4 +138,7 @@ public interface IShareDao {
 	 * @return the updated {@link Share}
 	 */
 	Share setLabel(Share share, String label);
+	
+	
+	Share updateShareOwner(Share share, ICalendarAccount newOwner);
 }

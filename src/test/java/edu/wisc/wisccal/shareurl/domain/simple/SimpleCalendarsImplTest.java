@@ -23,7 +23,9 @@
 package edu.wisc.wisccal.shareurl.domain.simple;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -31,18 +33,42 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Transp;
 
-import org.junit.Assert;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
 import edu.wisc.wisccal.shareurl.Tests;
 
 /**
+ * 
+ * 
  * @author Nicholas Blair
  *
  */
 public class SimpleCalendarsImplTest {
 
+	private Log log = LogFactory.getLog(this.getClass());
+	
+	
+	/**
+	 * Tests will fail in California without this...
+	 */
+	@BeforeClass
+	public static void setUp() {
+		TimeZone centralTimeZone = TimeZone.getTimeZone("America/Chicago");
+		TimeZone.setDefault(centralTimeZone);
+	}
+	
+	@Test
+	public void centralTimeZoneIsSet() {
+		TimeZone defaultTimeZone = TimeZone.getDefault();
+		TimeZone centralTimeZone = TimeZone.getTimeZone("America/Chicago");
+		assertEquals(centralTimeZone, defaultTimeZone);
+	}
+	
 	@Test
 	public void testControl() throws IOException, ParserException {
 		ClassPathResource resource = new ClassPathResource("/example-data/control.ics");
@@ -51,18 +77,26 @@ public class SimpleCalendarsImplTest {
 		
 		SimpleCalendarsImpl simpleCalendars = new SimpleCalendarsImpl();
 		Calendar simplified = simpleCalendars.simplify(calendar, false);
-		Assert.assertNotNull(simplified);
+		assertNotNull(simplified);
 		List<CalendarEntry> entries = simplified.getEntries();
-		Assert.assertEquals(1, entries.size());
+		assertEquals(1, entries.size());
 		CalendarEntry entry = entries.get(0);
-		Assert.assertTrue(entry instanceof Event);
+		assertTrue(entry instanceof Event);
 		Event event = (Event) entry;
-		Assert.assertEquals("234ea713-7fc9-4860-80fe-8b6140271af6", entry.getUid());
-		Assert.assertEquals("individual", event.getSummary());
-		Assert.assertEquals(FreeBusyStatus.BUSY, event.getShowTimeAs());
-		Assert.assertEquals(Tests.makeDateTime("20120629-1415"), event.getStartTime());
-		Assert.assertEquals(Tests.makeDateTime("20120629-1515"), event.getEndTime());
-		Assert.assertNull(event.getEventStatus());
+		assertEquals("234ea713-7fc9-4860-80fe-8b6140271af6", entry.getUid());
+		assertEquals("individual", event.getSummary());
+		assertEquals(FreeBusyStatus.BUSY, event.getShowTimeAs());
+		Date startTime = event.getStartTime();
+		
+		Date start = Tests.makeDateTime("20120629T141500", "yyyyMMdd'T'kkmmsS");
+		long diff = Math.abs(start.getTime() - startTime.getTime());
+		log.info("timeDiff="+diff);
+		
+		assertEquals(start, startTime);
+		
+		assertEquals(Tests.makeDateTime("20120629-1415"), startTime);
+		assertEquals(Tests.makeDateTime("20120629-1515"), event.getEndTime());
+		assertNull(event.getEventStatus());
 	}
 	
 	@Test
@@ -76,17 +110,19 @@ public class SimpleCalendarsImplTest {
 		
 		SimpleCalendarsImpl simpleCalendars = new SimpleCalendarsImpl();
 		Calendar simplified = simpleCalendars.simplify(calendar, false);
-		Assert.assertNotNull(simplified);
+		assertNotNull(simplified);
 		List<CalendarEntry> entries = simplified.getEntries();
-		Assert.assertEquals(1, entries.size());
+		assertEquals(1, entries.size());
 		CalendarEntry entry = entries.get(0);
-		Assert.assertTrue(entry instanceof Event);
+		assertTrue(entry instanceof Event);
 		Event event = (Event) entry;
-		Assert.assertEquals("234ea713-7fc9-4860-80fe-8b6140271af6", entry.getUid());
-		Assert.assertEquals("individual", event.getSummary());
-		Assert.assertEquals(FreeBusyStatus.FREE, event.getShowTimeAs());
-		Assert.assertEquals(Tests.makeDateTime("20120629-1415"), event.getStartTime());
-		Assert.assertEquals(Tests.makeDateTime("20120629-1515"), event.getEndTime());
+		assertEquals("234ea713-7fc9-4860-80fe-8b6140271af6", entry.getUid());
+		assertEquals("individual", event.getSummary());
+		assertEquals(FreeBusyStatus.FREE, event.getShowTimeAs());
+		
+		
+		assertEquals(Tests.makeDateTime("20120629-1415"), event.getStartTime());
+		assertEquals(Tests.makeDateTime("20120629-1515"), event.getEndTime());
 	}
 	
 	@Test
@@ -97,17 +133,17 @@ public class SimpleCalendarsImplTest {
 		((VEvent) calendar.getComponent(VEvent.VEVENT)).getProperties().add(Status.VEVENT_CANCELLED);
 		SimpleCalendarsImpl simpleCalendars = new SimpleCalendarsImpl();
 		Calendar simplified = simpleCalendars.simplify(calendar, false);
-		Assert.assertNotNull(simplified);
+		assertNotNull(simplified);
 		List<CalendarEntry> entries = simplified.getEntries();
-		Assert.assertEquals(1, entries.size());
+		assertEquals(1, entries.size());
 		CalendarEntry entry = entries.get(0);
-		Assert.assertTrue(entry instanceof Event);
+		assertTrue(entry instanceof Event);
 		Event event = (Event) entry;
-		Assert.assertEquals("234ea713-7fc9-4860-80fe-8b6140271af6", entry.getUid());
-		Assert.assertEquals("individual", event.getSummary());
-		Assert.assertEquals(FreeBusyStatus.BUSY, event.getShowTimeAs());
-		Assert.assertEquals(Tests.makeDateTime("20120629-1415"), event.getStartTime());
-		Assert.assertEquals(Tests.makeDateTime("20120629-1515"), event.getEndTime());
-		Assert.assertEquals("CANCELLED", event.getEventStatus());
+		assertEquals("234ea713-7fc9-4860-80fe-8b6140271af6", entry.getUid());
+		assertEquals("individual", event.getSummary());
+		assertEquals(FreeBusyStatus.BUSY, event.getShowTimeAs());
+		assertEquals(Tests.makeDateTime("20120629-1415"), event.getStartTime());
+		assertEquals(Tests.makeDateTime("20120629-1515"), event.getEndTime());
+		assertEquals("CANCELLED", event.getEventStatus());
 	}
 }
