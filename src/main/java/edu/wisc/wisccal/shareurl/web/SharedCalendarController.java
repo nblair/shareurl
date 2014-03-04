@@ -390,19 +390,6 @@ public class SharedCalendarController {
 		}
 		return null;
 	}
-	
-//	private boolean transitionExchangeUser(ICalendarAccount account) {
-//		Validate.isTrue(account.isExchange(),"account is not exchange");
-//		Validate.isTrue(account.isEligible(),"account is not eligible");
-//		Validate.isTrue(account.getCalendarUniqueId() != account.getGuid(), "account is weird");
-//	
-//		//1) Get all shares
-//		List<Share> shares = shareDao.retrieveByOwner(account);
-//		
-//		
-//	}
-	
-	
 	/**
 	 * Main Request handler for ShareURL requests.
 	 */
@@ -424,16 +411,24 @@ public class SharedCalendarController {
 			request.getSession().setAttribute("lastNonSingleEventRequestDetails", requestDetails);
 		}
 		model.put("requestDetails", requestDetails);
+	
+		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
 		
+		ICalendarAccount resolvedAccount=null;
 		if(requestDetails.isPublicUrl()) {
-			boolean isValidEmail = EmailValidator.getInstance().isValid(requestDetails.getShareKey());
-			if(isValidEmail) {
-				//searchldap wiscedumsoladdress=requestDetails.getShareKey()
-				
+			try {
+				resolvedAccount = calendarAccountDao.resolveAccount(requestDetails.getShareKey());
+				if(null != resolvedAccount && resolvedAccount.isExchange() && resolvedAccount.getProxyAddresses().contains(requestDetails.getShareKey())) {
+					Share guessableShare = shareDao.retrieveGuessableShare(resolvedAccount);
+					if(null != guessableShare && guessableShare.isValid()) {
+						share = guessableShare;
+					}
+				}
+			}catch(Exception e){
+				LOG.error(e);
 			}
 		}
 
-		Share share = shareDao.retrieveByKey(requestDetails.getShareKey());
 		if(null == share && requestDetails.isPublicUrl()) {
 			share = automaticPublicShareService.getAutomaticPublicShare(requestDetails.getShareKey());
 		}
@@ -448,19 +443,8 @@ public class SharedCalendarController {
 			response.setStatus(404);
 			return "share-not-found";
 		} else {
-			
+			//share is good, find account
 			ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
-
-
-			//TODO FIX EXCHANGE ACCOUNTS POST TRANSITION
-//			if(account.isExchange()) {
-//				if(account.getCalendarUniqueId() != account.getGuid()) {
-//					transitionExchangeUser(account)
-//				}
-//			}
-			
-			
-			
 			if(null == account) {
 				// account not found for share, revoke and 404
 				if(LOG.isWarnEnabled()) {
@@ -470,13 +454,15 @@ public class SharedCalendarController {
 				response.setStatus(404);
 				return "share-not-found";
 			}
+			//account is good, might as well put the share
+			model.put("share", share);
+			
 			response.setCharacterEncoding(UTF_8);	
 			if(coerceIcal && !ShareDisplayFormat.ICAL_ASTEXT.equals(requestDetails.getDisplayFormat())) {
 				requestDetails.setDisplayFormat(ShareDisplayFormat.ICAL);
 			}
 			if(ShareDisplayFormat.MOBILECONFIG.equals(requestDetails.getDisplayFormat())) {
 				// don't need data, short circuit
-				model.put("share", share);
 				String filename = buildMobileconfigFilename(requestDetails);
 				HTTPHelper.addContentDispositionHeader(response, filename);
 				return "data/display-mobileconfig";
@@ -530,6 +516,7 @@ public class SharedCalendarController {
 			return viewName;
 		} 
 	}
+	
 
 	/**
 	 * Retrieve the agenda, and perform base required filtering.
@@ -557,6 +544,7 @@ public class SharedCalendarController {
 				}
 			}
 		}
+		//TODO if exchange, try to avoid calling getCalendar as it must do a getItem() for every item in range.
 		Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarIdsList);
 				
 		return checkAndFilterAgenda(account, requestDetails, share.getSharePreferences(), agenda);

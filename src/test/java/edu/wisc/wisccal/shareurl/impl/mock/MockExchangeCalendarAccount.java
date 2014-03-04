@@ -23,7 +23,8 @@ import java.util.List;
 
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
-
+/**
+ */
 public class MockExchangeCalendarAccount implements ICalendarAccountDao {
 
 	private String calendarUniqueId;
@@ -101,6 +102,37 @@ public class MockExchangeCalendarAccount implements ICalendarAccountDao {
 
 	@Override
 	public List<ICalendarAccount> getLinkedAccounts(ICalendarAccount owner) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ICalendarAccount getAccountByProxyAddress(String proxyAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ICalendarAccount getAccountByEmailAddress(String emailAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ICalendarAccount getPrimaryExchangeCalendarAccount(
+			ICalendarAccount account) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ICalendarAccount resolveAccount(String emailAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ICalendarAccount> getServiceAccounts(ICalendarAccount owner) {
 		// TODO Auto-generated method stub
 		return null;
 	}

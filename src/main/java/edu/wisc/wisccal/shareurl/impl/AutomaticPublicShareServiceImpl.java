@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.impl.ldap.HasDistinguishedName;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.jasig.schedassist.model.IDelegateCalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.DistinguishedName;
@@ -72,6 +73,7 @@ AutomaticPublicShareService {
 	private String proxyAddressesAttributeName = "wiscedumsoladdresses";
 	private String unsearchableAttributeName = "wisceducalunsearchable";
 	private Name primaryWiscmailBaseDn;
+	private Name serviceAccountBaseDn;
 	
 	
 	/**
@@ -181,12 +183,20 @@ AutomaticPublicShareService {
 	public Name getPrimaryWiscmailBaseDn() {
 		return primaryWiscmailBaseDn;
 	}
+	
+	public Name getServiceAccountBaseDn() {
+		return serviceAccountBaseDn;
+	}
 	/**
 	 * @param primaryWiscmailBaseDn the primaryWiscmailBaseDn to set
 	 */
 	@Value("${ldap.primaryWiscmailDomainBaseDn}")
 	public void setPrimaryWiscmailBaseDn(String primaryWiscmailBaseDn) {
 		this.primaryWiscmailBaseDn = new DistinguishedName(primaryWiscmailBaseDn);
+	}
+	@Value("${ldap.serviceAccountBaseDn}")
+	public void setServiceAccountBaseDn(String serviceAccountBaseDn) {
+		this.serviceAccountBaseDn = new DistinguishedName(serviceAccountBaseDn);
 	}
 	/* (non-Javadoc)
 	 * @see edu.wisc.wisccal.shareurl.AutomaticPublicShareService#getAutomaticPublicShare(java.lang.String)
@@ -196,8 +206,7 @@ AutomaticPublicShareService {
 		ICalendarAccount calendarAccount = locateEligibleAccountForEmailAddress(emailAddress);
 		if(calendarAccount != null) {
 			Share share = new Share();
-			//dont use original email or proxy shares will not work
-			share.setKey(calendarAccount.getEmailAddress());
+			share.setKey(emailAddress);
 			share.setOwnerCalendarUniqueId(calendarAccount.getCalendarUniqueId());
 			share.setValid(true);
 				
@@ -266,9 +275,9 @@ AutomaticPublicShareService {
 	 * @return
 	 */
 	protected ICalendarAccount locateEligibleAccountForEmailAddress(String emailAddress) {
-		
+		ICalendarAccount result = calendarAccountDao.resolveAccount(emailAddress);
 		//ICalendarAccount result = calendarAccountDao.getCalendarAccount(getMailAttributeName(), emailAddress);
-		ICalendarAccount result = calendarAccountDao.getCalendarAccount(getProxyAddressesAttributeName(), emailAddress);
+		//ICalendarAccount result = calendarAccountDao.getCalendarAccount(getProxyAddressesAttributeName(), emailAddress);
 				
 		return isEligibleForAutomaticPublicShare(result) ? result : null;
 	}
@@ -285,14 +294,16 @@ AutomaticPublicShareService {
 	 */
 	protected boolean isEligibleForAutomaticPublicShare(ICalendarAccount calendarAccount) {
 		
-		return calendarAccount != null && calendarAccount.isEligible() 
-				&& !hasOptedOut(calendarAccount)
-				&& !hasFerpaHold(calendarAccount);
+//		return calendarAccount != null && calendarAccount.isEligible() 
+//				&& !hasOptedOut(calendarAccount);
+		
+		
+		//TODO ferpahold is ucrrently broken in esbtest		
 		//TODO ignore unsearchablestatus as it's not currently modifyable
 		//https://kb.wisc.edu/wisccal/page.php?id=24383
-//		return calendarAccount != null && calendarAccount.isEligible() 
-//				&& !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount)
-//				&& !hasFerpaHold(calendarAccount);
+		return calendarAccount != null && calendarAccount.isEligible() 
+				&& !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount)
+				&& !hasFerpaHold(calendarAccount);
 	}
 
 	/**
@@ -310,9 +321,10 @@ AutomaticPublicShareService {
 	 * @return true if the account has a FERPA hold specifically on the email address attribute
 	 */
 	protected boolean hasFerpaHold(ICalendarAccount calendarAccount) {
-		if(calendarAccount instanceof HasDistinguishedName) {
+		
+		if(calendarAccount instanceof HasDistinguishedName && !(calendarAccount instanceof IDelegateCalendarAccount)) {
 			final Name dn = ((HasDistinguishedName) calendarAccount).getDistinguishedName();
-			if(dn.startsWith(primaryWiscmailBaseDn)) {
+			if(dn.startsWith(primaryWiscmailBaseDn) && !dn.startsWith(serviceAccountBaseDn)) {
 				String pvi = calendarAccount.getAttributeValue(getPviAttributeName());
 				if(StringUtils.isBlank(pvi)) {
 					throw new IllegalStateException(calendarAccount + " is within " + primaryWiscmailBaseDn + " but does not have a value for " + getPviAttributeName());
@@ -343,7 +355,7 @@ AutomaticPublicShareService {
 			// IDelegateCalendarAccount, a.k.a "resources"
 			// we don't have to check resource accounts for FERPA holds
 			if(log.isDebugEnabled()) {
-				log.debug("skipping hasFerpaHold check for " + calendarAccount + " since it is not a HasDistinguishedName (it's likely a resource)");
+				log.debug("skipping hasFerpaHold check for " + calendarAccount + " since it is not a HasDistinguishedName (it's likely a resource or service account)");
 			}
 			return false;
 		}

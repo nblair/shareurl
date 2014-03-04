@@ -81,6 +81,8 @@
 		class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl">
 		<property name="ldapTemplate" ref="ldapTemplate" />
 		<property name="baseDn" value="${ldap.resourceAccountBaseDn}" />
+		<property name="userBaseDn" value="${ldap.userAccountBaseDn}" />
+		<property name="serviceAccountBaseDn" value="${ldap.serviceAccountBaseDn}" />
 		<property name="ldapAttributesKey" ref="resourceLdapAttributesKey" />
 		<property name="enforceSpecificObjectClass" value="false" />
 		<property name="requiredObjectClass" value="wisceducalresource" />

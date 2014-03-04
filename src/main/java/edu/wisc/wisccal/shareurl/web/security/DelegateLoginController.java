@@ -81,7 +81,17 @@ public class DelegateLoginController  {
 		ICalendarAccount calendarAccount = currentPrincipal.getCalendarAccount();
 		
 		LDAPPersonCalendarAccountImpl owner = (LDAPPersonCalendarAccountImpl) calendarAccount;
+		
+		//these are linked accounts, *note linkedExchange accounts are not allowed
 		List<ICalendarAccount> linkedAccounts = calendarAccountDao.getLinkedAccounts(owner);
+		
+		
+		//these are service accounts
+		List<ICalendarAccount> serviceAccounts = calendarAccountDao.getServiceAccounts(owner);
+		
+		linkedAccounts.addAll(serviceAccounts);
+	
+		//these are resources
 		List<IDelegateCalendarAccount> linkedDelegateAccounts = delegateCalendarAccountDao.getDelegateAccounts(owner.getDistinguishedName(), calendarAccount);
 		
 		model.addAttribute("ownerLinkedAccounts", linkedAccounts);
