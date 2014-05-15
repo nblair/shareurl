@@ -502,6 +502,7 @@ public class SharedCalendarControllerTest {
 		
 		ICalendarAccount account = mock(ICalendarAccount.class);
 		when(account.getEmailAddress()).thenReturn("bbadger@wisc.edu");
+		when(account.isEligible()).thenReturn(true);
 		when(calendarAccountDao.getCalendarAccountFromUniqueId("bbadger@wisc.edu")).thenReturn(account);
 		
 		Calendar agenda = new Calendar();

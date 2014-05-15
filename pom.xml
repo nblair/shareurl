@@ -56,6 +56,7 @@
 		<project.resources.tcrypt.privateKey>/Users/ctcudd/wiscshareurl-keys/private-wiscshareurl.pem</project.resources.tcrypt.privateKey>
 		<ehcache.version>2.1.0</ehcache.version>
 		<ehcache-spring-annotations.version>1.1.2</ehcache-spring-annotations.version>
+		<commons.httpclient.version>4.1.2</commons.httpclient.version>
 		<skipITs>true</skipITs>
 	</properties>
 
@@ -101,6 +102,11 @@
 				<artifactId>spring-tx</artifactId>
 				<version>${spring.framework.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${commons.httpclient.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -137,10 +143,20 @@
 			<version>${schedassist.version}</version>
 		</dependency>
 		<dependency>
+			<artifactId>sched-assist-spi-caldav</artifactId>
+			<groupId>${schedassist.groupid}</groupId>
+			<version>${schedassist.version}</version>
+
+		</dependency>
+		<dependency>
 			<artifactId>sched-assist-spi-exchange</artifactId>
 			<groupId>${schedassist.groupid}</groupId>
 			<version>${schedassist.version}</version>
 			<exclusions>
+				<exclusion>
+					<artifactId>guava</artifactId>
+					<groupId>com.google.guava</groupId>
+				</exclusion>
 				<exclusion>
 					<groupId>com.sun.xml.wsit</groupId>
 					<artifactId>xws-security</artifactId>
@@ -151,11 +167,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<artifactId>sched-assist-spi-caldav</artifactId>
-			<groupId>${schedassist.groupid}</groupId>
-			<version>${schedassist.version}</version>
-		</dependency>
+
 		<dependency>
 			<artifactId>sched-assist-spi-composite</artifactId>
 			<groupId>${schedassist.groupid}</groupId>

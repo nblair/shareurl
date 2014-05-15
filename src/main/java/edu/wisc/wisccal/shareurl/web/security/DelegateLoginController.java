@@ -19,7 +19,9 @@
  */
 package edu.wisc.wisccal.shareurl.web.security;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,7 +84,7 @@ public class DelegateLoginController  {
 		
 		LDAPPersonCalendarAccountImpl owner = (LDAPPersonCalendarAccountImpl) calendarAccount;
 		
-		//these are linked accounts, *note linkedExchange accounts are not allowed
+		//these are linked accounts
 		List<ICalendarAccount> linkedAccounts = calendarAccountDao.getLinkedAccounts(owner);
 		
 		
@@ -91,10 +93,12 @@ public class DelegateLoginController  {
 		
 		linkedAccounts.addAll(serviceAccounts);
 	
+		Set<ICalendarAccount> linkedSet  = new HashSet<ICalendarAccount>(linkedAccounts); 
+		
 		//these are resources
 		List<IDelegateCalendarAccount> linkedDelegateAccounts = delegateCalendarAccountDao.getDelegateAccounts(owner.getDistinguishedName(), calendarAccount);
 		
-		model.addAttribute("ownerLinkedAccounts", linkedAccounts);
+		model.addAttribute("ownerLinkedAccounts", linkedSet);
 		model.addAttribute("ownerDelegagteAccounts", linkedDelegateAccounts);
 		
 		return FORM_VIEW_NAME;

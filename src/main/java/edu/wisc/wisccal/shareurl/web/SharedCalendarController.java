@@ -446,11 +446,19 @@ public class SharedCalendarController {
 			//share is good, find account
 			ICalendarAccount account = calendarAccountDao.getCalendarAccountFromUniqueId(share.getOwnerCalendarUniqueId());
 			if(null == account) {
+				
 				// account not found for share, revoke and 404
-				if(LOG.isWarnEnabled()) {
-					LOG.warn("valid share exists, however calendarAccountDao returns no results for calendar id " + share.getOwnerCalendarUniqueId() + "; revoking share " + share.getKey());
-				}
+				LOG.warn("valid share exists, however calendarAccountDao returns no results for calendar id " + share.getOwnerCalendarUniqueId() + "; revoking share " + share.getKey());
+				
 				shareDao.revokeShare(share);
+				response.setStatus(404);
+				return "share-not-found";
+			}else if (!account.isEligible()) {
+				// account not found for share, revoke and 404
+				LOG.warn("valid share exists, however calendarAccount["+account+"] is NOT eligible for share " + share.getKey());
+				
+				//TODO revoke here?  can user become eligible again?
+								
 				response.setStatus(404);
 				return "share-not-found";
 			}
