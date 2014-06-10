@@ -132,4 +132,7 @@ public class CalendarMatchPreference extends AbstractSharePreference {
 		return false;
 	}
 
+	public static ISharePreference construct(String calendarName, String calendarId) {
+		return SharePreferences.construct(CALENDAR_MATCH, calendarName, calendarId);
+	}
 }

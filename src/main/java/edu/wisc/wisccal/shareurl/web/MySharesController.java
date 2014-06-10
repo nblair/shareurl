@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -104,11 +105,21 @@ public class MySharesController  {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
 		
-		Map<String, String> exchangeListCalendars = exchangeCalendarDataDao.listCalendars(activeAccount);
-		Map<String, String> caldavListCalendars = caldavCalendarDataDao.listCalendars(activeAccount);
+		model.put("calendarAccount",activeAccount);
 		Map<String, String> allCalendarsList = new TreeMap<String, String>();
-		allCalendarsList.putAll(caldavListCalendars);
-		allCalendarsList.putAll(exchangeListCalendars);
+		try{
+			Map<String, String> tempCalList = new TreeMap<String, String>();
+			if(activeAccount.isExchange()) {		
+				tempCalList = exchangeCalendarDataDao.listCalendars(activeAccount);
+			}else {
+				tempCalList = caldavCalendarDataDao.listCalendars(activeAccount);
+			}
+			if(!CollectionUtils.isEmpty(tempCalList)) {
+				allCalendarsList.putAll(tempCalList);
+			}
+		}catch(Exception e) {
+			LOG.error("Failed to list calendars for account="+activeAccount);
+		}
 		
 		model.addAttribute("allCalendarList", allCalendarsList);
 		

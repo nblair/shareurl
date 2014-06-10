@@ -40,8 +40,8 @@
 		<context:exclude-filter type="regex" expression="org.jasig.schedassist.web.*"/>
 	</context:component-scan>
 	
+	<bean id="ldapDao" class="edu.wisc.wisccal.caldav2Exchange.impl.ldap.Caldav2ExchangeLdapDao" />
 	<bean id="caldavCalendarDataDao" class="edu.wisc.wisccal.shareurl.support.Calkey115CalendarDataDaoImpl" />
-<!-- 	<bean id="caldavCalendarDataDao" 	class="org.jasig.schedassist.impl.CompositeCalendarDataDao" /> -->
 	<bean id="compositeCalendarDataDao" class="org.jasig.schedassist.impl.CompositeCalendarDataDao" />
 	
 	<import resource="classpath*:/contexts/org/jasig/schedassist/impl/exchange/calendarData-exchange.xml" />

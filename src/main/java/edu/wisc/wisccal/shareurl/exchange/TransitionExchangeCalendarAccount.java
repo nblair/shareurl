@@ -25,7 +25,7 @@ import edu.wisc.wisccal.shareurl.domain.ISharePreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
 import edu.wisc.wisccal.shareurl.domain.SharePreferences;
 
-@Component
+
 public class TransitionExchangeCalendarAccount {
 
 	@Autowired

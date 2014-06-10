@@ -58,8 +58,13 @@
 						});
 				$(':submit').lockSubmit();
 			});
+	function submitLogin(email){
+		$("#delegateName").val(email.trim());
+		$("#loginForm").submit();
+	}
+	
 	function submitLinkedLogin(e){
-		var linkedEmail = $(e).text();
+		var linkedEmail = $(e).text().trim();
 		$("#delegateName").val(linkedEmail);
 		$("#loginForm").submit();
 	}
@@ -69,49 +74,65 @@
 	<%@ include file="/WEB-INF/jsp/theme/body-start.jsp"%>
 	<%-- <%@ include file="/WEB-INF/jsp/login-info.jsp" %> --%>
 	<div id="content" class="main col">
-		<h3>Log in as a Resource account</h3>
-
+<!-- 		<h3>Log in as a Resource account</h3> -->
+<h3>Select an account:</h3>
 		<div class="info">
-			<p>Use this form to log in as an WiscCal Resource Account that
-				you administer. A list of resources will appear as you begin typing;
-				you must start with the 3-6 letter group identifier for the
-				resource.</p>
-			<br />
+<!-- 			<p>Use this form to log in as an WiscCal Resource Account that -->
+<!-- 				you administer. A list of resources will appear as you begin typing; -->
+<!-- 				you must start with the 3-6 letter group identifier for the -->
+<!-- 				resource.</p> -->
+<!-- 			<br /> -->
+<!-- 			<p> -->
+<!-- 				If no resources are displayed for your input, you may not be -->
+<!-- 				designated as the primary contact - please read the <a -->
+<!-- 					href="http://kb.wisc.edu/wisccal/page.php?id=5538">Help Desk -->
+<!-- 					documentation</a>. -->
+<!-- 			</p> -->
 			<p>
-				If no resources are displayed for your input, you may not be
-				designated as the primary contact - please read the <a
+				If no accounts are displayed please read the <a
 					href="http://kb.wisc.edu/wisccal/page.php?id=5538">Help Desk
 					documentation</a>.
 			</p>
 		</div>
 		<div id="listAccounts">
-
-			<c:forEach items="${ownerLinkedAccounts}" var="account">
-				<span class="linkedAccount"> <a class='loginLink'
-					onclick='submitLinkedLogin(this);'><c:out
-							value="${account.emailAddress}" /></a>
-				</span>
-				<br />
-			</c:forEach>
-
-			<c:forEach items="${ownerDelegagteAccounts}" var="account">
-				<span class="linkedAccount"> <a class='loginLink'
-					onclick='submitLinkedLogin(this);'><c:out
-							value="${account.emailAddress}" /></a>
-				</span>
-				<br />
-			</c:forEach>
-
+			<h4>Primary Account</h4>
+			<ul>
+				<li>
+					<span class="linkedAccount">
+						<a class='loginLink' onclick='submitLogin("${ownerEmail}");'>
+							<c:out value="${ownerPrimaryEmail}" />
+						</a>
+					</span>
+				</li>
+			</ul>
+					
+			<c:if test="${not empty ownerLinkedEmails }">
+				<h4>Linked Accounts</h4>
+				<ul>
+				<c:forEach items="${ownerLinkedEmails}" var="email">
+					<li>
+						<span class="linkedAccount"> 
+							<a class='loginLink' onclick='submitLinkedLogin(this);'><c:out value="${email}" /></a>
+						</span>
+					</li>	
+				</c:forEach>
+				</ul>
+			</c:if>
+			
+			<c:if test="${not empty ownerDelegagteEmails }">
+				<h4>Resource Accounts</h4>
+				<ul>
+				<c:forEach items="${ownerDelegagteEmails}" var="email">
+					<li>
+						<span class="linkedAccount"> 
+							<a class='loginLink' onclick='submitLinkedLogin(this);'><c:out value="${email}" /></a>
+						</span>
+					</li>					
+				</c:forEach>
+				</ul>
+			</c:if>
 		</div>
-		<!-- 		<div id="lookupform"> -->
-		<%-- 			<form action="<c:url value="/delegate_switch_user"/>" method="post"> --%>
-		<!-- 				<fieldset> -->
-		<!-- 					<label for="delegateName">Resource Name:</label>&nbsp; <input -->
-		<!-- 						type="text" id="delegateName" name="j_username" /> <input -->
-		<!-- 						type="submit" value="Login" /> -->
-		<!-- 				</fieldset> -->
-		<!-- 			</form> -->
-		<!-- 		</div> -->
+
 
 		<div id="lookupform">
 			<form id="loginForm" action="<c:url value="/delegate_switch_user"/>"
@@ -119,6 +140,7 @@
 				<input type="hidden" id="delegateName" name="j_username" />
 			</form>
 		</div>
+		
 	</div>
 	<!--  content -->
 

@@ -180,22 +180,14 @@
 <script type="text/javascript" src="<c:url value="/js/edit-share.js"/>"></script>
 
 <script type="text/javascript">
-//     function setExchangeCalType(sel) {
-//     	 $("#exchangeCalType").val($("#exchangeCalendarNames option:selected").text());
-//     }
-//     function setWiscCalType(sel) {
-//     	 $("#wiscCalType").val($("#wiscCalCalendarNames option:selected").text());   	
-//   	}
-    
     function setCalType(){
     	var calendarName = $('#allCalendarSelect option:selected').text();
     	var calendarId   = $('#allCalendarSelect option:selected').val();
-    	var calType = calendarName.substring(0, calendarName.indexOf("-")).trim();
+    //	var calType = calendarName.substring(0, calendarName.indexOf("-")).trim();
     	//alert("type="+calType);
-    	$("#calendarType").val(calType);
+    	//$("#calendarType").val(calType);
 		//return false;
     }
-    
 </script>
 
 
@@ -501,36 +493,6 @@ function postSetLabel(form) {
 								</fieldset>
 							
 							</form>
-							
-							<!-- 
-							<form action="${addCalendarFilter}" method="post"
-								id="exchangeCalendarFilter">
-								<fieldset>
-									<span>Include events from the following Office 365 calendar </span> 
-									<form:select 
-										name="calendarId" id="exchangeCalendarNames" class="calSelectDDL" path="share" onchange="setExchangeCalType(this);">
-										<form:options items="${exchangeCalendarList}" />
-									</form:select>
-									<input id="exchangeCalType" name="calendarType" type="hidden" value="exchange" />
-									<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setExchangeCalType(this);" />&nbsp;
-									<span id="labelindicatorExchangeCalCalf"	class="ind"></span><br />
-								</fieldset>
-							</form>
-							<form action="${addCalendarFilter}" method="post"
-								id="wiscCalCalendarFilter">
-								<fieldset>
-									<span>Include events from the following WiscCal calendar </span> 
-									<form:select 
-										name="calendarId" id="wiscCalCalendarNames" class="calSelectDDL" path="share" onchange="setWiscCalType(this);">
-										<form:options items="${caldavCalendarList}" />
-									</form:select>
-									<input id="wiscCalType" name="calendarType" type="hidden" value="wisccal" />
-									<input id="addCalFilter" type="submit" value="Add" class="calSelectButton" onclick="setWiscCalType(this);"/>&nbsp;
-									<span id="labelindicatorWiscCalCalf"	class="ind"></span><br />
-								</fieldset>
-							</form>
-							 -->
-							
 							 
 							<ul id="calendarFilters">
 								<c:choose>

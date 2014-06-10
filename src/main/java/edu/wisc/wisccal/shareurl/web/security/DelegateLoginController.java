@@ -19,10 +19,13 @@
  */
 package edu.wisc.wisccal.shareurl.web.security;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
@@ -35,6 +38,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.wisc.wisccal.shareurl.sasecurity.CalendarAccountUserDetails;
@@ -86,22 +90,40 @@ public class DelegateLoginController  {
 		
 		//these are linked accounts
 		List<ICalendarAccount> linkedAccounts = calendarAccountDao.getLinkedAccounts(owner);
-		
-		
+	
 		//these are service accounts
 		List<ICalendarAccount> serviceAccounts = calendarAccountDao.getServiceAccounts(owner);
 		
 		linkedAccounts.addAll(serviceAccounts);
-	
-		Set<ICalendarAccount> linkedSet  = new HashSet<ICalendarAccount>(linkedAccounts); 
 		
 		//these are resources
 		List<IDelegateCalendarAccount> linkedDelegateAccounts = delegateCalendarAccountDao.getDelegateAccounts(owner.getDistinguishedName(), calendarAccount);
 		
-		model.addAttribute("ownerLinkedAccounts", linkedSet);
-		model.addAttribute("ownerDelegagteAccounts", linkedDelegateAccounts);
+		
+		model.addAttribute("ownerPrimaryEmail",getPrimaryEmailIdentifier(calendarAccount));
+		model.addAttribute("ownerEmail",calendarAccount.getEmailAddress());
+		model.addAttribute("ownerLinkedEmails", getSortedEmailList(linkedAccounts));
+		model.addAttribute("ownerDelegagteEmails", getSortedEmailList(linkedDelegateAccounts));
 		
 		return FORM_VIEW_NAME;
 	}
 
+	private TreeSet<String> getSortedEmailList(Collection<? extends ICalendarAccount> accounts){
+		TreeSet<String> linkedEmails = new TreeSet<String>();
+		for(ICalendarAccount acct: accounts) {
+			String ident = getPrimaryEmailIdentifier(acct);
+			if(StringUtils.isNotBlank(ident)) {
+				linkedEmails.add(ident);
+			}
+		}
+		return linkedEmails;
+	}
+	
+	private String getPrimaryEmailIdentifier(ICalendarAccount acct) {
+		String ident = acct.getEmailAddress();
+		if(StringUtils.isNotBlank(acct.getPrimaryEmailAddress())) {
+			ident = acct.getPrimaryEmailAddress();
+		}
+		return ident;
+	}
 }

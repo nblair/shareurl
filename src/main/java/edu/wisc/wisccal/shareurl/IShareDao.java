@@ -141,4 +141,6 @@ public interface IShareDao {
 	
 	
 	Share updateShareOwner(Share share, ICalendarAccount newOwner);
+
+	boolean calendarMatchPreferenceExists(String shareKey);
 }

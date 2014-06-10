@@ -19,7 +19,9 @@
  */
 package edu.wisc.wisccal.shareurl.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -34,9 +36,11 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import edu.wisc.wisccal.shareurl.GuessableShareAlreadyExistsException;
 import edu.wisc.wisccal.shareurl.IShareDao;
+import edu.wisc.wisccal.shareurl.domain.CalendarMatchPreference;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.GuessableSharePreference;
 import edu.wisc.wisccal.shareurl.domain.ISharePreference;
@@ -101,14 +105,10 @@ IShareDao {
 	@Override
 	public Share generateGuessableShare(ICalendarAccount account,
 			SharePreferences preferences)  throws GuessableShareAlreadyExistsException {
-		String key = account.getEmailAddress();
-		Share existing = internalRetrieveByKey(key);
 		
-		//TODO WHY THIS?!?
-//		if(null == existing){
-//			key = account.getUpn();
-//			existing = internalRetrieveByKey(key);
-//		}
+		String key = account.isExchange() ? account.getUpn() : account.getEmailAddress();
+		
+		Share existing = internalRetrieveByKey(key);
 		
 		if(null != existing) {
 			if(existing.isValid()) {
@@ -170,7 +170,8 @@ IShareDao {
 	 */
 	@Override
 	public Share retrieveGuessableShare(ICalendarAccount account) {
-		Share share = internalRetrieveByKey(account.getEmailAddress(), VALID);
+		String key = account.isExchange() ? account.getUpn() :  account.getEmailAddress();
+		Share share = internalRetrieveByKey(key, VALID);
 		if(share != null && !share.getSharePreferences().isGuessable()) {
 			throw new IllegalStateException("found " + share + " with key matching email address (" + account + ") that is missing GuessableSharePreference");
 		}
@@ -225,6 +226,27 @@ IShareDao {
 			LOG.error("ignoring addSharePreference invocation to add GuessableSharePreference for " + share);
 			return share;
 		}
+		if(share != null && share.getSharePreferences() != null ) {
+			SharePreferences tPrefs = share.getSharePreferences();
+			if(!CollectionUtils.isEmpty(tPrefs.getPreferences()) && tPrefs.getPreferences().contains(sharePreference)) {
+				LOG.error("ignoring addSharePreference invocation to add duplicate sharePreference="+sharePreference+" for " + share);
+				return share;
+			}
+			if(sharePreference instanceof CalendarMatchPreference) {
+				List<CalendarMatchPreference> calendarMatchPreferences = tPrefs.getCalendarMatchPreferences();
+				if(!CollectionUtils.isEmpty(calendarMatchPreferences)) {
+					Set<String> calendarIds = new HashSet<String>();
+					for(CalendarMatchPreference p: calendarMatchPreferences) {
+						calendarIds.add(p.getCalendarId());
+					}
+					if(calendarIds.contains(sharePreference.getValue())) {
+						LOG.error("ignoring addSharePreference invocation to add duplicate CalendarMatchPreference="+sharePreference+" for " + share);
+						return share;
+					}
+				}
+			}
+		}
+		
 		storePreference(share.getKey(), sharePreference);
 		share.getSharePreferences().addPreference(sharePreference);
 		return share;
@@ -334,6 +356,14 @@ IShareDao {
 
 		return results;
 	}
+	@Override
+	public boolean calendarMatchPreferenceExists(final String shareKey) {
+		int result = this.getSimpleJdbcTemplate().queryForInt("select count(*) from share_preferences where preference_type=? and sharekey=? ",
+				CalendarMatchPreference.CALENDAR_MATCH,
+				shareKey);
+		return result > 0;
+	}
+	
 	/**
 	 * 
 	 * @param key
@@ -418,6 +448,7 @@ IShareDao {
 		return SharePreferences.construct(persistencePref.getPreferenceType(), persistencePref.getPreferenceKey(), persistencePref.getPreferenceValue());
 	}
 	
+
 	
 	@Override
 	public Share updateShareOwner(Share share, ICalendarAccount newOwner) {

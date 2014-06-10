@@ -187,7 +187,7 @@ function postCreateTraditional() {
                 }
                 setTimeout(function() {
                     $('#tsubmit').removeAttr('disabled');
-                }, 30000);
+                }, 5000);
             }, 'json');
 };
 </script>
@@ -334,20 +334,41 @@ function postCreateTraditional() {
 						</c:url>
 						<c:choose>
 							<c:when test="${share.guessable }">
-								<c:set var="linkText"
+								<c:choose>
+									<c:when test="${not empty calendarAccount.primaryEmailAddress }">
+										<c:set var="linkText" value="Edit Privacy Settings for ${calendarAccount.primaryEmailAddress } (Public ShareURL)" />
+									</c:when>
+									<c:otherwise>
+										<c:set var="linkText"
 									value="Edit Privacy Settings for ${share.key } (Public ShareURL)" />
+									</c:otherwise>
+								</c:choose>
+								<c:set var="additionalLinks" value="" />
+
+                                                        	<c:if test="${not empty calendarAccount.proxyAddresses }">
+                                                                       <c:set var="additionalLinks" value="Additional Addresses for this Share: " />
+                                                                       <c:forEach items="${calendarAccount.proxyAddresses }" var="pAddr">
+                                                                               <c:set var="additionalLinks" value="${additionalLinks} ${pAddr}, " />
+                                                                       </c:forEach>
+                                                               </c:if>
+								
 							</c:when>
 							<c:otherwise>
 								<c:set var="linkText"
 									value="Edit Privacy Settings for ${share.key }" />
 							</c:otherwise>
 						</c:choose>
-						<li class="share"><a
-									title="View Details and/or Manage ${share.key}"
-									href="${manageUrl}"><span class="key large">${linkText}<c:if
-												test="${not empty share.label}">&nbsp;<i>(${share.label})</i>
-											</c:if></span></a><br />
-											
+						<li class="share">
+							<a title="View Details and/or Manage ${share.key}" href="${manageUrl}">
+								<span class="key large">${linkText}
+									<c:if test="${not empty share.label}">
+										&nbsp;<i>(${share.label})</i>
+									</c:if>
+								</span>
+							</a><br />
+						<c:if test="${not empty additionalLinks }">
+							<span class="details">${additionalLinks }</span><br />
+						</c:if>					
 						<c:choose>
 							<c:when test="${share.freeBusyOnly == true}">
 								

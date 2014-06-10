@@ -214,11 +214,11 @@ public final class Calendars {
 		
 		
 		MAIN_LOG.info("calling getCalendarsInternal for " + account.getEmailAddress() + " and date range " + startDate + " through " + endDate);
-		List<CalendarWithURI> calendars = cInstance.getCalendarsInternal(account,startDate,endDate);
+		Calendar calendar = cInstance.getCalendar(account,startDate,endDate);
 	
-		MAIN_LOG.info("getCalendarsInternal returns: " + calendars);
-		Calendar consolidated = cInstance.consolidate(calendars);
-		MAIN_LOG.info("after consolidate: " + consolidated);
+		MAIN_LOG.info("getCalendars returns: " + calendar);
+//		Calendar consolidated = cInstance.consolidate(calendar);
+//		MAIN_LOG.info("after consolidate: " + consolidated);
 		
 		System.exit(0);
 		}

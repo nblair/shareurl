@@ -68,6 +68,11 @@ public class DelegateCalendarAccountUserDetailsServiceImpl implements
 		}
 		Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) user;
+		
+		if(currentUser.getCalendarAccount().getUsername().equals(username)) {
+			return currentUser;
+		}
+		
 		//IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegate(username, currentUser.getCalendarAccount());
 		IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegateByMail(username, currentUser.getCalendarAccount());
 

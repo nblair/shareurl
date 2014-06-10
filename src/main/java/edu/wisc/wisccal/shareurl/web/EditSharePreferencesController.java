@@ -499,6 +499,11 @@ public class EditSharePreferencesController extends WebContentGenerator {
 		
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount activeAccount = currentUser.getCalendarAccount();
+		
+		if(StringUtils.isBlank(calendarType)) {
+			calendarType = (activeAccount.isExchange() ? "Office 365 - " : "WiscCal -");
+		}
+		
 		Map<String, String> calendarMap = calendarDataDao.listCalendars(activeAccount);
 		model.addAttribute("calendarMap", calendarMap);
 		if(log.isDebugEnabled()) {

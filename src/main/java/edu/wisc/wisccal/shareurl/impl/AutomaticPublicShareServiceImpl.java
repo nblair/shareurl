@@ -294,13 +294,6 @@ AutomaticPublicShareService {
 	 */
 	protected boolean isEligibleForAutomaticPublicShare(ICalendarAccount calendarAccount) {
 		
-//		return calendarAccount != null && calendarAccount.isEligible() 
-//				&& !hasOptedOut(calendarAccount);
-		
-		
-		//TODO ferpahold is ucrrently broken in esbtest		
-		//TODO ignore unsearchablestatus as it's not currently modifyable
-		//https://kb.wisc.edu/wisccal/page.php?id=24383
 		return calendarAccount != null && calendarAccount.isEligible() 
 				&& !isUnsearchable(calendarAccount) && !hasOptedOut(calendarAccount)
 				&& !hasFerpaHold(calendarAccount);

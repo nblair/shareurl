@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +61,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ModelMap;
 
 import edu.wisc.wisccal.shareurl.AutomaticPublicShareService;
-import edu.wisc.wisccal.shareurl.IShareCalendarDataDao;
 import edu.wisc.wisccal.shareurl.IShareDao;
 import edu.wisc.wisccal.shareurl.domain.FreeBusyPreference;
 import edu.wisc.wisccal.shareurl.domain.Share;
@@ -507,7 +507,7 @@ public class SharedCalendarControllerTest {
 		
 		Calendar agenda = new Calendar();
 		//when(calendarDataDao.getCalendar(eq(account), eq(share), isA(java.util.Date.class), isA(java.util.Date.class), isA(List.class) )).thenReturn(agenda);
-		when(calendarDataDao.getCalendar(eq(account), isA(java.util.Date.class), isA(java.util.Date.class), isA(List.class) )).thenReturn(agenda);
+		when(calendarDataDao.getCalendar(eq(account), isA(java.util.Date.class), isA(java.util.Date.class), isA(Collection.class) )).thenReturn(agenda);
 		
 		dataProcessor.noRecurrence(eq(agenda), isA(java.util.Date.class), isA(java.util.Date.class), isA(Boolean.class));
 		dataProcessor.filterAgendaForDateRange(isA(Calendar.class), isA(IShareRequestDetails.class));

@@ -22,9 +22,12 @@ package edu.wisc.wisccal.shareurl.web;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -538,22 +541,21 @@ public class SharedCalendarController {
 	private Calendar obtainAgenda(ICalendarAccount account, ShareRequestDetails requestDetails, Share share) {
 		//Calendar agenda = calendarDataDao.getCalendar(account, share, requestDetails.getStartDate(), requestDetails.getEndDate());
 		
-		List<String> calendarIdsList = new ArrayList<String>();
+		Set<String> calendarIds = new HashSet<String>();
 		List<CalendarMatchPreference> calendarMatchPreferences = share.getSharePreferences().getCalendarMatchPreferences();
 		if(!CollectionUtils.isEmpty(calendarMatchPreferences)) {
 			for(CalendarMatchPreference p: calendarMatchPreferences){
 				String calendarId = p.getValue();
 				if(p.isExchange() && account.isExchange()) {
-					calendarIdsList.add(calendarId);
+					calendarIds.add(calendarId);
 				}else if(!p.isExchange() && !account.isExchange()) {
-					calendarIdsList.add(calendarId);
+					calendarIds.add(calendarId);
 				}else {
 					LOG.error("INVALID CALMATCH PREFERENCE FOR ACCOUNT="+account);
 				}
 			}
 		}
-		//TODO if exchange, try to avoid calling getCalendar as it must do a getItem() for every item in range.
-		Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarIdsList);
+		Calendar agenda = calendarDataDao.getCalendar(account, requestDetails.getStartDate(), requestDetails.getEndDate(), calendarIds);
 				
 		return checkAndFilterAgenda(account, requestDetails, share.getSharePreferences(), agenda);
 	}
