@@ -144,10 +144,14 @@ function disableCalendarSelect(){
 
 function enableFreeBusy() {
 	// noop?
+	$('#ip').attr('disabled', 'disabled');
+	$('#isc').attr('disabled', 'disabled');
 }
 function disableFreeBusy() {
 	$('#fbRadio').attr('checked', '');
 	$('#scFreeBusyInner').addClass('notselected');
+	$('#ip').attr('disabled', '');
+	$('#isc').attr('disabled', '');
 }
 function enableAllCalendar() {
 	$('#filters').attr('disabled', '');

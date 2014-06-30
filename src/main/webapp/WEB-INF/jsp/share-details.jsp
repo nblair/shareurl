@@ -577,7 +577,10 @@ function postSetLabel(form) {
 					<form action="${includeP}" method="post" id="includeP1">
 						<fieldset>
 							<input id="ip" type="checkbox" name="includeParticipants"
-								<c:if test="${share.includeParticipants }">checked="checked"</c:if> />&nbsp;<label
+								<c:if test="${share.includeParticipants }">checked="checked"</c:if>
+								<c:if test="${share.freeBusyOnly}">disabled="disabled"</c:if>
+							/>&nbsp;
+							<label
 								for="includeParticipants">Include attendees and
 								organizer on group appointments</label>&nbsp;<span id="labelindicatorip"
 								class="ind"></span>&nbsp;<a id="ipTrigger"
@@ -589,7 +592,9 @@ function postSetLabel(form) {
 					<form action="${includeSC}" method="post" id="includeSC">
 						<fieldset>
 							<input id="isc" type="checkbox" name="includeSourceCalendar"
-								<c:if test="${share.includeSourceCalendar }">checked="checked"</c:if> />&nbsp;<label
+								<c:if test="${share.includeSourceCalendar }">checked="checked"</c:if> 
+								<c:if test="${share.freeBusyOnly}">disabled="disabled"</c:if>
+								/>&nbsp;<label
 								for="includeSourceCalendar">Include the name of the calendar which contains this event</label>&nbsp;<span id="labelindicatorsc"
 								class="ind"></span>&nbsp;<a id="iSCTrigger"
 								href="#includeSourceCalendarHelp"

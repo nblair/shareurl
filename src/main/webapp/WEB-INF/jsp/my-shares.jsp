@@ -48,6 +48,7 @@ li.share a:hover {
 
 .details {
 	font-style: italic;
+	font-size: smaller;
 }
 
 #footnotewarning {
@@ -332,8 +333,9 @@ function postCreateTraditional() {
 						<c:url var="manageUrl" value="manage.html">
 							<c:param name="id" value="${share.key}" />
 						</c:url>
+						<c:set var="additionalLinks" value="" />
 						<c:choose>
-							<c:when test="${share.guessable }">
+							<c:when test="${share.guessable == true}">
 								<c:choose>
 									<c:when test="${not empty calendarAccount.primaryEmailAddress }">
 										<c:set var="linkText" value="Edit Privacy Settings for ${calendarAccount.primaryEmailAddress } (Public ShareURL)" />
@@ -343,15 +345,22 @@ function postCreateTraditional() {
 									value="Edit Privacy Settings for ${share.key } (Public ShareURL)" />
 									</c:otherwise>
 								</c:choose>
-								<c:set var="additionalLinks" value="" />
 
-                                                        	<c:if test="${not empty calendarAccount.proxyAddresses }">
-                                                                       <c:set var="additionalLinks" value="Additional Addresses for this Share: " />
-                                                                       <c:forEach items="${calendarAccount.proxyAddresses }" var="pAddr">
-                                                                               <c:set var="additionalLinks" value="${additionalLinks} ${pAddr}, " />
-                                                                       </c:forEach>
-                                                               </c:if>
-								
+
+								<c:if test="${not empty calendarAccount.proxyAddresses }">
+									<c:set var="additionalLinks" value="Additional Addresses: " />
+									<c:forEach items="${calendarAccount.proxyAddresses }" var="pAddr" varStatus="status">
+										<c:choose>
+											<c:when test="${status.last }">
+												<c:set var="additionalLinks" value="${additionalLinks} ${pAddr}. " />
+											</c:when>
+											<c:otherwise>
+												<c:set var="additionalLinks" value="${additionalLinks} ${pAddr}, " />
+											</c:otherwise>
+										</c:choose>
+									</c:forEach>
+								</c:if>
+
 							</c:when>
 							<c:otherwise>
 								<c:set var="linkText"
@@ -366,9 +375,7 @@ function postCreateTraditional() {
 									</c:if>
 								</span>
 							</a><br />
-						<c:if test="${not empty additionalLinks }">
-							<span class="details">${additionalLinks }</span><br />
-						</c:if>					
+				
 						<c:choose>
 							<c:when test="${share.freeBusyOnly == true}">
 								
@@ -390,7 +397,11 @@ function postCreateTraditional() {
 								</c:choose>
 							</c:otherwise>
 						</c:choose>
-						<br /><span class="details">Selected Calendars: 
+						<br />
+						<c:if test="${not empty additionalLinks }">
+							<span class="details">${additionalLinks }</span><br />
+						</c:if>
+						<span class="details">Selected Calendars: 
 						<c:choose>
 							<c:when test="${empty share.sharePreferences.calendarMatchPreferences}" >
 								<c:out value="${allCalendarList[defaultCalendarId]}" />
@@ -400,14 +411,15 @@ function postCreateTraditional() {
 								<c:forEach items="${share.sharePreferences.calendarMatchPreferences }" var="pref" varStatus="status">
 									<c:out value="${allCalendarList[pref.value]}" />
 									<c:choose>
-										<c:when test="${status.last }">. </c:when>
-										<c:otherwise>, </c:otherwise>
+										<c:when test="${status.last }">.</c:when>
+										<c:otherwise>,</c:otherwise>
 									</c:choose>
 								</c:forEach>
 								
 							</c:otherwise>
 						</c:choose>
 						</span>
+							
 						</li>
 					</c:forEach>
 				</ul>
