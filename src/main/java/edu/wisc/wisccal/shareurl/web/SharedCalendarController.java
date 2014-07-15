@@ -421,12 +421,18 @@ public class SharedCalendarController {
 		if(requestDetails.isPublicUrl()) {
 			try {
 				resolvedAccount = calendarAccountDao.resolveAccount(requestDetails.getShareKey());
-				if(null != resolvedAccount && resolvedAccount.isExchange() && resolvedAccount.getProxyAddresses().contains(requestDetails.getShareKey())) {
-					Share guessableShare = shareDao.retrieveGuessableShare(resolvedAccount);
+				if(null != resolvedAccount && resolvedAccount.isExchange()) {
+					Share guessableShare = null;
+					if(null != resolvedAccount.getProxyAddresses()	&& resolvedAccount.getProxyAddresses().contains(requestDetails.getShareKey())) {
+						guessableShare = shareDao.retrieveGuessableShare(resolvedAccount);
+					}else if(null != resolvedAccount.getEmailAddress() && resolvedAccount.getEmailAddress().equalsIgnoreCase(requestDetails.getShareKey())){
+						guessableShare = shareDao.retrieveGuessableShare(resolvedAccount);
+					}
 					if(null != guessableShare && guessableShare.isValid()) {
 						share = guessableShare;
 					}
 				}
+				
 			}catch(Exception e){
 				LOG.error(e);
 			}

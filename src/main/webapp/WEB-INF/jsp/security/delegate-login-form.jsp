@@ -23,7 +23,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>WiscCal ShareURL - Log in as a Resource account</title>
+<title>ShareURL - Log in as a Resource account</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 
 <rs:resourceURL var="jqueryUiCssPath"

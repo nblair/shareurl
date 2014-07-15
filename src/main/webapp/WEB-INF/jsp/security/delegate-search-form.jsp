@@ -23,7 +23,7 @@
 <html>
 <%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <head>
-<title>WiscCal ShareURL - Find a Resource</title>
+<title>ShareURL - Find a Resource</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 <script type="text/javascript"
 	src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>

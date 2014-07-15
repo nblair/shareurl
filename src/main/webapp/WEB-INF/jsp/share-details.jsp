@@ -28,7 +28,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="-1">
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
-<title>WiscCal ShareURL - Manage ${share.key }</title>
+<title>ShareURL - Manage ${share.key }</title>
 <rs:resourceURL var="revokeIcon"
 	value="/rs/famfamfam/silk/1.3/cross.png" />
 <rs:resourceURL var="tickIcon" value="/rs/famfamfam/silk/1.3/tick.png" />
@@ -454,12 +454,12 @@ function postSetLabel(form) {
 				<form action="${tocd }" method="post" id="tocd">
 					<fieldset>
 						<input id="cdRadio" type="radio" name="calDefault" value="true" /><label
-							for="calDefault"><strong>Default WiscCal calendar Only</strong></label>&nbsp;<span
+							for="calDefault"><strong>Default Calendar Only</strong></label>&nbsp;<span
 							id="labelindicatorcd" class="ind"></span>
 					</fieldset>
 				</form>
 				<div id="scCalDefaultInner">
-					<p>Only display events contained in your default WiscCal Calendar</p>
+					<p>Only display events contained in your default Calendar</p>
 				</div>
 			</div>
 			<!-- end calDefault -->
@@ -757,7 +757,7 @@ function postSetLabel(form) {
 				Consider this option carefully: <strong>if you meet with
 					students regularly, you should not enable this setting</strong>. This
 				setting is best used on Traditional ShareURLs that are not shared
-				with a wide audience. The WiscCal team recommends you avoid using
+				with a wide audience. Please avoid using
 				this setting on your Public ShareURL.
 			</p>
 		</div>

@@ -25,8 +25,8 @@ import java.util.Map;
 
 import net.fortuna.ical4j.model.Calendar;
 
+import org.jasig.schedassist.CalendarWithURI;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
-import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.impl.exchange.ExchangeCalendarDataDaoImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;

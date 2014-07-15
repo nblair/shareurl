@@ -25,7 +25,7 @@
 <head>
 <link rel="stylesheet" type="text/css"
 	href="<c:url value="/css/extras.css"/>" />
-<title>WiscCal Information Unavailable</title>
+<title>Information Unavailable</title>
 </head>
 <body>
 	<p class="alert">

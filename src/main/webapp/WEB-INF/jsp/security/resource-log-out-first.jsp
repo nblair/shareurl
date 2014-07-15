@@ -26,7 +26,7 @@
 <html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
-<title>WiscCal ShareURL - Feature not accessible by Resources</title>
+<title>ShareURL - Feature not accessible by Resources</title>
 </head>
 
 <body>
@@ -42,7 +42,7 @@
 				requested feature.
 			</p>
 			<a href="<c:url value="/delegate_switch_exit"/>">Log Out as
-				WiscCal Resource and return to your personal account&nbsp;&#187;</a><br />
+				a Resource and return to your personal account&nbsp;&#187;</a><br />
 		</div>
 
 	</div>

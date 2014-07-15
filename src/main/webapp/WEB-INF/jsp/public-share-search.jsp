@@ -23,7 +23,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <html>
 <head>
-<title>WiscCal ShareURL - Search for Calendars</title>
+<title>ShareURL - Search for Calendars</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 
 <rs:resourceURL var="jqueryUiCssPath"
@@ -81,7 +81,7 @@ $(document).ready(function(){
 		</c:if>
 		<div id="searchInner">
 			<div id="help" class="info">
-				<p>Looking for someone's WiscCal agenda? Start typing the email
+				<p>Looking for someone's agenda? Start typing the email
 					address of the person you are looking for, suggestions will appear
 					as you type.</p>
 			</div>

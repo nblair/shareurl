@@ -30,7 +30,7 @@
 <body>
 	<p class="alert">
 		Calendar data is temporarily unavailable. This error may appear if the
-		WiscCal service is offline for repair or maintenance.<br /> Please <a
+		calendar service is offline for repair or maintenance.<br /> Please <a
 			href="https://kb.wisc.edu/helpdesk/page.php?id=1">contact the
 			DoIT Help Desk</a> if you continue to see this error message.
 		<!-- 

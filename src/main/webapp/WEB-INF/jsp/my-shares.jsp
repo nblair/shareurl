@@ -192,7 +192,7 @@ function postCreateTraditional() {
             }, 'json');
 };
 </script>
-<title>Share your WiscCal Calendar - My ShareURLs</title>
+<title>Share your Calendar - My ShareURLs</title>
 </head>
 
 <body>
@@ -434,10 +434,10 @@ function postCreateTraditional() {
 	<!-- content -->
 	<div class="alert" id="footnotewarning">
 		<p>
-			<strong>Security note</strong><br /> The intent of this WiscCal
-			feature is to allow you to share your WiscCal calendar data in a
+			<strong>Security note</strong><br /> The intent of this tool
+			is to allow you to share your calendar data in a
 			manner that does not require authentication. All information that you
-			store in WiscCal, or that other faculty, staff, or students submit to
+			store in your calendar, or that other faculty, staff, or students submit to
 			your calendar, may be viewable by any external user. The University
 			of Wisconsin-Madison assumes no responsibility for how you share this
 			information or how it is used.

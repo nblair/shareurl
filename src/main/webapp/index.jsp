@@ -24,7 +24,7 @@
 <html>
 <head>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
-<title>WiscCal ShareURL</title>
+<title>ShareURL</title>
 <style type="text/css">
 #briefdescr {
 	font-weight: bold;
@@ -53,14 +53,14 @@
 	<div id="content" class="main col">
 		<div id="briefdescr">
 			<p>
-				ShareURL is an enhancement for WiscCal that allows you to create a
+				ShareURL is a tool that allows you to create a
 				unique <abbr title="Uniform Resource Locator; a web address">URL</abbr>
-				that allows you and anyone else to view your WiscCal event data.
+				that allows you and anyone else to view your calendar data.
 			</p>
 		</div>
 
 		<p>Once you create your ShareURL, it can be used to retrieve your
-			WiscCal event data in a number of different formats:</p>
+			calendar data in a number of different formats:</p>
 		<ul>
 			<li><abbr
 				title="Internet Standard for Calendar data exchange - RFC 5545">iCalendar</abbr>,
@@ -82,14 +82,14 @@
 			<a class="login" href="<c:url value="/my-shares"/>">Log in to
 				Manage ShareURLs for your personal or role based account&nbsp;&#187;</a><br />
 			<a class="login" href="<c:url value="/delegate-login.html"/>">Log
-				in to Manage ShareURLs for a WiscCal <abbr
+				in to Manage ShareURLs for a <abbr
 				title="Conference Room, Projector, etc.">Resource</abbr>&nbsp;&#187;
 			</a>
 		</div>
 
 
 		<p>
-			Your ShareURL can provide a read-only link to all your WiscCal
+			Your ShareURL can provide a read-only link to all your
 			calendar data. <strong>If you have ANY sensitive data (e.g.,
 				personal, financial, medical information, or <a
 				href="https://kb.wisc.edu/helpdesk/page.php?id=24155">data
@@ -97,12 +97,6 @@
 				caution with this feature.
 			</strong>
 		</p>
-
-		<%-- 
-<div class="info" id="news" style="margin: 1em 0 1em 0; font-weight: bold;">
-<p>This instance of ShareURL is "pre-production" until June 4 2012; please continue to use <a href="https://tools.wisccal.wisc.edu/cal/">the old WiscCal instance</a> until that date.</p>
-</div>
---%>
 
 
 	</div>

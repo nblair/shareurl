@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.TimeZone;
@@ -34,9 +35,10 @@ import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Transp;
 import net.sf.ehcache.CacheManager;
 
+import org.jasig.schedassist.CalendarWithURI;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
-import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.wisc.wisccal.shareurl.ical.CalendarDataUtils;
 
 /**

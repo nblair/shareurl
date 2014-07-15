@@ -22,6 +22,7 @@ package edu.wisc.wisccal.shareurl.sasecurity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.IDelegateCalendarAccountDao;
+import org.jasig.schedassist.impl.owner.ResourceAlreadyLoggedInException;
 import org.jasig.schedassist.model.IDelegateCalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -67,6 +68,10 @@ public class DelegateCalendarAccountUserDetailsServiceImpl implements
 			throw new UsernameNotFoundException(NONE_PROVIDED);
 		}
 		Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	
+		if(user instanceof DelegateCalendarAccountUserDetailsImpl){
+			throw new ResourceAlreadyLoggedInException();
+		}
 		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) user;
 		
 		if(currentUser.getCalendarAccount().getUsername().equals(username)) {

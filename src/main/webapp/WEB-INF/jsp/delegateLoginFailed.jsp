@@ -23,7 +23,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <html>
 <head>
-<title>WiscCal ShareURL - Resource Login Failed</title>
+<title>ShareURL - Resource Login Failed</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 <style type="text/css"></style>
 </head>
@@ -31,6 +31,9 @@
 <body>
 	<%@ include file="/WEB-INF/jsp/theme/body-start.jsp"%>
 	<%@ include file="/WEB-INF/jsp/login-info.jsp"%>
+	<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+	<%@ taglib prefix="security"
+		uri="http://www.springframework.org/security/tags"%>
 	<div id="content" class="main col">
 
 		<div class="alert">
@@ -39,18 +42,27 @@
 					or more of the following reasons:</strong>
 			</p>
 			<ul>
-				<li>The Resource does not exist.</li>
-				<li>You do not have permission to administer this Resource.</li>
-				<li>The Resource account is not eligible for ShareURL.</li>
+				<security:authorize ifAllGranted="ROLE_DELEGATE_ACCOUNT">
+					<li>You are already logged in as a Resource. <a href="/share/delegate_switch_exit">Log Out as a Resource and return to your personal account&nbsp;</a></li>
+				</security:authorize>
+				<security:authorize ifNotGranted="ROLE_DELEGATE_ACCOUNT">
+					<li>The Resource does not exist.</li>
+					<li>You do not have permission to administer this Resource.</li>
+					<li>The Resource account is not eligible for ShareURL.</li>
+				</security:authorize>
 			</ul>
 			<p>
 				Please see the <a
 					href="http://kb.wisc.edu/helpdesk/page.php?id=5538">Help Desk
-					documentation regarding ShareURL for WiscCal Resources</a>.
+					documentation regarding ShareURL for Resources</a>.
 			</p>
-			<a href="<c:url value="/delegate-login.html"/>">Log in again as a
-				Resource</a>, <a href="<c:url value="/"/>">Return to ShareURL Home</a>,
-			or <a href="<c:url value="/logout.html"/>">Log out</a>
+				<security:authorize ifAllGranted="ROLE_DELEGATE_ACCOUNT">
+					<a href="/share/delegate_switch_exit">Log Out as a Resource and return to your personal account&nbsp;</a>
+				</security:authorize>
+				<security:authorize ifNotGranted="ROLE_DELEGATE_ACCOUNT">
+					<a href="<c:url value="/delegate-login.html"/>">Log in again as a Resource</a>
+				</security:authorize>
+				,<a href="<c:url value="/"/>">Return to ShareURL Home</a>, or <a href="<c:url value="/logout.html"/>">Log out</a>
 		</div>
 	</div>
 	<!--  content -->

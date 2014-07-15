@@ -23,7 +23,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <html>
 <head>
-<title>WiscCal ShareURL - Log In</title>
+<title>ShareURL - Log In</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 <style type="text/css">
 #logincontainer {

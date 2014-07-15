@@ -23,7 +23,7 @@
 <html>
 <%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <head>
-<title>WiscCal ShareURL - Resource Search Results</title>
+<title>ShareURL - Resource Search Results</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 </head>
 

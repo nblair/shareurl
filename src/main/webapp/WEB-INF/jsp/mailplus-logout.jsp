@@ -23,7 +23,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp"%>
 <html>
 <head>
-<title>WiscCal ShareURL - Logged Out (WiscMail Plus)</title>
+<title>ShareURL - Logged Out</title>
 <%@ include file="/WEB-INF/jsp/theme/head-elements.jsp"%>
 <style type="text/css">
 #status p {

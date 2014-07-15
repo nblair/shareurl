@@ -67,7 +67,7 @@
 <key>PayloadDescription</key>
 <string>${description}</string>
 <key>PayloadDisplayName</key>
-<string>Subscribed Calendar (WiscCal ShareURL - ${share.key})</string>
+<string>Subscribed Calendar (ShareURL - ${share.key})</string>
 <key>PayloadIdentifier</key>
 <string>edu.wisc.wisccal.shareurl.mobileconfig.${share.key}</string>
 <key>PayloadOrganization</key>
@@ -75,11 +75,11 @@
 <key>PayloadType</key>
 <string>com.apple.subscribedcalendar.account</string>
 <key>PayloadUUID</key>
-<string>WiscCal-ShareURL-${share.key}</string>
+<string>ShareURL-${share.key}</string>
 <key>PayloadVersion</key>
 <integer>1</integer>
 <key>SubCalAccountDescription</key>
-<string>WiscCal ShareURL - ${share.key}</string>
+<string>ShareURL - ${share.key}</string>
 <key>SubCalAccountHostName</key>
 <string>${subscribeUrl}</string>
 <key>SubCalAccountUseSSL</key>
@@ -88,10 +88,10 @@
 </array>
 <key>PayloadDescription</key>
 <%-- displayed on Install Profile page --%>
-<string>WiscCal ShareURL iOS configuration for ${share.key}.
+<string>ShareURL iOS configuration for ${share.key}.
 ${description}.</string>
 <key>PayloadDisplayName</key>
-<string>WiscCal ShareURL - ${share.key}</string>
+<string>ShareURL - ${share.key}</string>
 <key>PayloadIdentifier</key>
 <string>edu.wisc.wisccal.shareurl.mobileconfig.${share.key}</string>
 <key>PayloadOrganization</key>
@@ -101,7 +101,7 @@ ${description}.</string>
 <key>PayloadType</key>
 <string>Configuration</string>
 <key>PayloadUUID</key>
-<string>WiscCal-ShareURL-MobileConfig-${share.key}</string>
+<string>ShareURL-MobileConfig-${share.key}</string>
 <key>PayloadVersion</key>
 <integer>1</integer>
 </dict>

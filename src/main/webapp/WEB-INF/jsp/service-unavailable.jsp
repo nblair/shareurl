@@ -25,12 +25,12 @@
 <head>
 <link rel="stylesheet" type="text/css"
 	href="<c:url value="/css/extras.css"/>" />
-<title>WiscCal ShareURL Temporarily Unavailable</title>
+<title>ShareURL Temporarily Unavailable</title>
 </head>
 <body>
 	<p class="alert">
-		WiscCal ShareURL is temporarily unavailable. You may see this message
-		during scheduled maintenance for WiscCal ShareURL, which may occur
+		ShareURL is temporarily unavailable. You may see this message
+		during scheduled maintenance for ShareURL, which may occur
 		between 5 and 7 am on Tuesday mornings. <br /> Please <a
 			href="http://kb.wisc.edu/helpdesk/page.php?id=1">contact the DoIT
 			Help Desk</a> if you continue to see this error message outside of
